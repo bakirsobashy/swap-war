@@ -1,0 +1,63 @@
+[gd_scene format=3 uid="uid://ddsrtd7ijxm5u"]
+
+[ext_resource type="Script" uid="uid://wf2wnrstdysj" path="res://Scripts/Actor-Movement.gd" id="1_7ei5c"]
+[ext_resource type="Script" uid="uid://i1jc224moi8w" path="res://Scenes/Actor_Body.gd" id="1_lfvdv"]
+[ext_resource type="Script" uid="uid://cbrbt0jaxurum" path="res://Scripts/Components/WeaponHolder.gd" id="4_wholder"]
+[ext_resource type="Script" uid="uid://cgnkpv7hfem6j" path="res://Scripts/Components/Health.gd" id="5_health"]
+[ext_resource type="Script" uid="uid://my7ucja7hpxn" path="res://Scripts/Components/TeamMember.gd" id="6_team"]
+[ext_resource type="Script" uid="uid://cxtm3eepkr1ht" path="res://Scripts/Components/AIController.gd" id="7_ai"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_7ei5c"]
+friction = 0.1
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_315j3"]
+radius = 19.0
+height = 62.0
+
+[node name="Actor" type="RigidBody2D" unique_id=304031720]
+collision_layer = 2
+collision_mask = 15
+physics_material_override = SubResource("PhysicsMaterial_7ei5c")
+can_sleep = false
+lock_rotation = true
+contact_monitor = true
+max_contacts_reported = 4
+script = ExtResource("1_7ei5c")
+
+[node name="VisualBody" type="Node2D" parent="." unique_id=1990988547]
+script = ExtResource("1_lfvdv")
+
+[node name="Sprite2D" type="Sprite2D" parent="VisualBody" unique_id=533744129]
+
+[node name="WeaponSocket" type="Marker2D" parent="." unique_id=1672751271]
+
+[node name="GroundCheck" type="RayCast2D" parent="." unique_id=1980831231]
+position = Vector2(0, 30)
+target_position = Vector2(0, 15)
+
+[node name="PickupArea" type="Area2D" parent="." unique_id=1672752271]
+collision_layer = 16
+collision_mask = 8
+
+[node name="PickupShape" type="CollisionShape2D" parent="PickupArea" unique_id=1672753271]
+shape = SubResource("CapsuleShape2D_315j3")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1672755271]
+shape = SubResource("CapsuleShape2D_315j3")
+
+[node name="HeldHand" type="Sprite2D" parent="." unique_id=1672758261]
+visible = false
+
+[node name="WeaponHolder" type="Node" parent="." unique_id=1672754272]
+script = ExtResource("4_wholder")
+
+[node name="AIController" type="Node" parent="." unique_id=1672759272]
+script = ExtResource("7_ai")
+
+[node name="Components" type="Node" parent="." unique_id=1672754271]
+
+[node name="Health" type="Node" parent="Components" unique_id=1672756271]
+script = ExtResource("5_health")
+
+[node name="TeamMember" type="Node" parent="Components" unique_id=1672757271]
+script = ExtResource("6_team")

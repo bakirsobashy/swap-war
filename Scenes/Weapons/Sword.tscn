@@ -1,0 +1,36 @@
+[gd_scene format=3 uid="uid://cy8rjm7jcdeq6"]
+
+[ext_resource type="Script" uid="uid://bf52fisn7gxny" path="res://Scripts/Weapons/Weapon.gd" id="1_sword"]
+[ext_resource type="Texture2D" uid="uid://vosh7iiioqi0" path="res://Assets/PNG/Default/item_sword.png" id="2_sword_tex"]
+[ext_resource type="Script" uid="uid://8kobn4n4afst" path="res://Scenes/Weapons/SwordVisuals.gd" id="3_sword_visuals"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_sword"]
+friction = 0.3
+bounce = 0.1
+
+[node name="Sword" type="RigidBody2D" unique_id=879293480]
+collision_layer = 8
+collision_mask = 11
+physics_material_override = SubResource("PhysicsMaterial_sword")
+can_sleep = false
+script = ExtResource("1_sword")
+
+[node name="SwordVisuals" type="Node2D" parent="." unique_id=434171920]
+script = ExtResource("3_sword_visuals")
+
+[node name="Sprite2D" type="Sprite2D" parent="SwordVisuals" unique_id=434171921]
+z_index = 10
+texture = ExtResource("2_sword_tex")
+
+[node name="HandSocket" type="Marker2D" parent="SwordVisuals" unique_id=434171922]
+position = Vector2(0, 20)
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="." unique_id=297980025]
+polygon = PackedVector2Array(10, 13, 6, 28, -7, 28, -10, 15, -4, -25, 1, -29, 4, -24)
+
+[node name="HitBox" type="Area2D" parent="." unique_id=879293481]
+collision_layer = 0
+collision_mask = 2
+
+[node name="HitBoxShape" type="CollisionPolygon2D" parent="HitBox" unique_id=879293482]
+polygon = PackedVector2Array(12, 16, 7, 29, -7, 29, -11, 15, -6, -25, 1, -29, 7, -24)
