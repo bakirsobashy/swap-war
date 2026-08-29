@@ -1,0 +1,65 @@
+class_name Projectile
+extends Area2D
+
+var _data: WeaponData = null
+var _source: Node = null
+var _velocity: Vector2 = Vector2.ZERO
+var _life_timer: float = 0.0
+
+@onready var _sprite: Sprite2D = $Sprite2D
+
+
+func start(pos: Vector2, dir: Vector2, data: WeaponData, source: Node) -> void:
+	global_position = pos
+	_data = data
+	_source = source
+	_velocity = dir.normalized() * data.projectile_speed
+	_life_timer = data.projectile_lifetime
+	rotation = dir.angle()
+
+
+func _ready() -> void:
+	body_entered.connect(_on_body_entered)
+	area_entered.connect(_on_area_entered)
+
+
+func _physics_process(delta: float) -> void:
+	position += _velocity * delta
+	_life_timer -= delta
+	if _life_timer <= 0.0:
+		queue_free()
+
+
+func _on_body_entered(body: Node) -> void:
+	if body == _source:
+		return
+
+	# Collide with teammates but do not damage them.
+	if TeamMember.is_same_team(_source, body):
+		return
+
+	var health := body.get_node_or_null("Components/Health") as Health
+	if health:
+		var final_damage := _data.damage
+		var is_critical := randf() < _data.critical_chance
+		if is_critical:
+			final_damage *= 1.5
+		health.take_damage(final_damage, _source)
+		_apply_knockback(body)
+		if is_critical and "flash_damage" in body:
+			body.flash_damage()
+
+	queue_free()
+
+
+func _on_area_entered(area: Area2D) -> void:
+	# Ignore other projectiles and pickup/interaction zones.
+	pass
+
+
+func _apply_knockback(body: Node) -> void:
+	var other_body := body as RigidBody2D
+	if not other_body:
+		return
+	var dir := _velocity.normalized()
+	other_body.apply_central_impulse(dir * _data.knockback)

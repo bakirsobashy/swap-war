@@ -37,5 +37,8 @@ extends Resource
 ## How long a projectile lives before despawning.
 @export var projectile_lifetime: float = 1.0
 
+## Held position offset relative to the actor's weapon socket.
+@export var follow_offset: Vector2 = Vector2(24.0, -4.0)
+
 ## Display texture for the weapon when held / on the ground.
 @export var texture: Texture2D = null

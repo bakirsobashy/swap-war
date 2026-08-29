@@ -6,7 +6,7 @@ func get_name() -> String:
 
 
 func physics_update(_delta: float) -> String:
-	var weapon: Weapon = owner.sensors.nearest_weapon
+	var weapon: WeaponBase = owner.sensors.nearest_weapon
 
 	if not weapon or not is_instance_valid(weapon) or weapon.is_held():
 		return "Idle"

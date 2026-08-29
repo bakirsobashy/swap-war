@@ -1,7 +1,7 @@
 class_name WeaponHolder
 extends Node
 
-var current_weapon: Weapon = null
+var current_weapon: WeaponBase = null
 var last_attacker: Node = null
 
 @onready var _actor: RigidBody2D = get_parent()
@@ -55,10 +55,10 @@ func _get_actor_facing() -> float:
 func _on_pickup_body_entered(body: Node) -> void:
 	if current_weapon != null:
 		return
-	if not body is Weapon:
+	if not body is WeaponBase:
 		return
 
-	var weapon := body as Weapon
+	var weapon := body as WeaponBase
 	if weapon.is_held():
 		return
 

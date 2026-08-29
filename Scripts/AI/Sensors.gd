@@ -6,7 +6,7 @@ const UNREACHABLE_TIMEOUT: float = 1.5
 var owner = null
 
 var nearest_enemy: Node2D = null
-var nearest_weapon: Weapon = null
+var nearest_weapon: WeaponBase = null
 var aim_direction: Vector2 = Vector2.RIGHT
 var is_grounded: bool = false
 var wall_ahead: bool = false
@@ -79,12 +79,12 @@ func _find_nearest_enemy() -> Node2D:
 	return best
 
 
-func _find_nearest_weapon() -> Weapon:
-	var best: Weapon = null
+func _find_nearest_weapon() -> WeaponBase:
+	var best: WeaponBase = null
 	var best_dist: float = owner.weapon_seek_radius
 
 	for w in owner.actor.get_tree().get_nodes_in_group("weapons"):
-		var weapon := w as Weapon
+		var weapon := w as WeaponBase
 		if not weapon:
 			continue
 		if not is_instance_valid(weapon):
@@ -93,7 +93,11 @@ func _find_nearest_weapon() -> Weapon:
 			continue
 
 		var d: float = owner.actor.global_position.distance_to(weapon.global_position)
-		if d < best_dist:
+
+		# Prefer ranged weapons at equal distance.
+		if weapon.is_ranged() and is_equal_approx(d, best_dist):
+			best = weapon
+		elif d < best_dist:
 			best_dist = d
 			best = weapon
 
@@ -138,14 +142,24 @@ func reset_unreachable() -> void:
 
 ## Aim toward the nearest enemy if present, otherwise forward.
 func _update_aim() -> void:
+	var facing: float = _get_actor_facing()
 	if nearest_enemy and is_instance_valid(nearest_enemy):
 		var to_target: Vector2 = nearest_enemy.global_position - owner.actor.global_position
 		if to_target.length_squared() > 1.0:
 			aim_direction = to_target.normalized()
 		else:
-			aim_direction = Vector2(owner.actor.facing_direction, 0.0)
+			aim_direction = Vector2(facing, 0.0)
 	else:
-		aim_direction = Vector2(owner.actor.facing_direction, 0.0)
+		aim_direction = Vector2(facing, 0.0)
+
+
+func _get_actor_facing() -> float:
+	var a: Node = owner.actor
+	if "facing_direction" in a:
+		return sign(a.facing_direction)
+	if abs(a.linear_velocity.x) > 10.0:
+		return sign(a.linear_velocity.x)
+	return 1.0
 
 
 ## Mirror the actor's contact-normal ground check.
@@ -167,7 +181,7 @@ func _update_ground_state() -> void:
 func _update_navigation_rays() -> void:
 	var space: PhysicsDirectSpaceState2D = owner.actor.get_world_2d().direct_space_state
 	var pos: Vector2 = owner.actor.global_position
-	var dir: float = owner.actor.facing_direction
+	var dir: float = _get_actor_facing()
 	var radius: float = 19.0
 	var collision_mask: int = 1 | 4  # world (layer 1) + one-way platforms (layer 3)
 

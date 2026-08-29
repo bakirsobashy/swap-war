@@ -34,7 +34,8 @@ func navigate_to(target: Vector2) -> Dictionary:
 	result.move_direction = dir
 
 	# Match facing to movement while navigating.
-	owner.actor.facing_direction = dir
+	if "facing_direction" in owner.actor:
+		owner.actor.facing_direction = dir
 
 	var can_jump: bool = _jump_timer <= 0.0 and owner.sensors.is_grounded
 

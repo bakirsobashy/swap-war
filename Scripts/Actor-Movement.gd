@@ -1,5 +1,7 @@
 extends RigidBody2D
 
+const WeaponBase = preload("res://Scripts/Weapons/WeaponBase.gd")
+
 @export var run_force: float = 1200.0
 @export var max_run_speed: float = 300.0
 @export var jump_impulse: float = 450.0
@@ -141,7 +143,20 @@ func _update_aim(delta: float) -> void:
 		if facing_direction == 0.0:
 			facing_direction = 1.0
 
-	aim_direction = target_aim.normalized()
+	# Smooth AI gun aim so the weapon turns toward the target gradually.
+	if not is_player and _is_holding_ranged_weapon():
+		aim_direction = aim_direction.slerp(target_aim.normalized(), 5.0 * delta)
+	else:
+		aim_direction = target_aim.normalized()
+
+
+func _is_holding_ranged_weapon() -> bool:
+	if not _weapon_holder:
+		return false
+	var weapon: WeaponBase = _weapon_holder.current_weapon
+	if not weapon:
+		return false
+	return weapon.is_ranged()
 
 func _get_target_aim() -> Vector2:
 	if is_player:
@@ -190,7 +205,7 @@ func _update_attack() -> void:
 		return
 	if not _get_attack_input():
 		return
-	var weapon := _weapon_holder.current_weapon as Weapon
+	var weapon := _weapon_holder.current_weapon as WeaponBase
 	if weapon:
 		weapon.attack()
 		if AudioManager:

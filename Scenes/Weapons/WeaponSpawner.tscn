@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://b85pu1unpwads"]
+
+[ext_resource type="Script" path="res://Scripts/Weapons/WeaponSpawner.gd" id="1_spawner"]
+
+[node name="WeaponSpawner" type="Node"]
+script = ExtResource("1_spawner")

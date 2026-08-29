@@ -21,6 +21,7 @@ TeamManager="*res://Scripts/Components/TeamManager.gd"
 ScoreManager="*res://Scripts/Components/ScoreManager.gd"
 ArenaManager="*res://Scripts/Components/ArenaManager.gd"
 AudioManager="*res://Scripts/Components/AudioManager.gd"
+WeaponDatabase="*res://Scripts/Weapons/WeaponDatabase.gd"
 
 [display]
 

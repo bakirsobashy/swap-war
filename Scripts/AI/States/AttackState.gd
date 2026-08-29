@@ -46,8 +46,8 @@ func _is_in_attack_range(enemy: Node2D) -> bool:
 	var attack_reach: float = owner.attack_range
 
 	if owner.weapon_holder and owner.weapon_holder.is_holding_weapon():
-		var weapon: Weapon = owner.weapon_holder.current_weapon
+		var weapon: WeaponBase = owner.weapon_holder.current_weapon
 		if weapon:
-			attack_reach = max(attack_reach, weapon.follow_offset.length() + weapon.attack_thrust_distance)
+			attack_reach = max(attack_reach, weapon.get_attack_range())
 
 	return owner.actor.global_position.distance_to(enemy.global_position) <= attack_reach

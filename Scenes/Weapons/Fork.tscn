@@ -1,0 +1,39 @@
+[gd_scene format=3 uid="uid://cdaeqm5ekpmuy"]
+
+[ext_resource type="Script" path="res://Scripts/Weapons/Fork.gd" id="1_fork"]
+[ext_resource type="Texture2D" path="res://Assets/PNG/Default/item_rod.png" id="2_fork_tex"]
+[ext_resource type="Script" path="res://Scenes/Weapons/SwordVisuals.gd" id="3_visuals"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_fork"]
+friction = 0.3
+bounce = 0.1
+
+[sub_resource type="ConvexPolygonShape2D" id="ConvexPolygonShape2D_fork"]
+points = PackedVector2Array(2, -35, -2, -35, -2, 28, 2, 28)
+
+[node name="Fork" type="RigidBody2D" groups=["weapons"]]
+collision_layer = 8
+collision_mask = 11
+physics_material_override = SubResource("PhysicsMaterial_fork")
+can_sleep = false
+script = ExtResource("1_fork")
+
+[node name="Visuals" type="Node2D" parent="."]
+script = ExtResource("3_visuals")
+
+[node name="Sprite2D" type="Sprite2D" parent="Visuals"]
+z_index = 10
+texture = ExtResource("2_fork_tex")
+
+[node name="HandSocket" type="Marker2D" parent="Visuals"]
+position = Vector2(0, 22)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("ConvexPolygonShape2D_fork")
+
+[node name="HitBox" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="HitBoxShape" type="CollisionShape2D" parent="HitBox"]
+shape = SubResource("ConvexPolygonShape2D_fork")

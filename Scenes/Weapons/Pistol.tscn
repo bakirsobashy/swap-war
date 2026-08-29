@@ -1,0 +1,42 @@
+[gd_scene format=3 uid="uid://cy78xoj7xnii7"]
+
+[ext_resource type="Script" path="res://Scripts/Weapons/Pistol.gd" id="1_pistol"]
+[ext_resource type="Texture2D" path="res://Assets/PNG/Default/item_gun.png" id="2_pistol_tex"]
+[ext_resource type="Script" path="res://Scenes/Weapons/SwordVisuals.gd" id="3_visuals"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_pistol"]
+friction = 0.3
+bounce = 0.1
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_pistol"]
+size = Vector2(12, 24)
+
+[node name="Pistol" type="RigidBody2D" groups=["weapons"]]
+collision_layer = 8
+collision_mask = 11
+physics_material_override = SubResource("PhysicsMaterial_pistol")
+can_sleep = false
+script = ExtResource("1_pistol")
+
+[node name="Visuals" type="Node2D" parent="."]
+script = ExtResource("3_visuals")
+
+[node name="Sprite2D" type="Sprite2D" parent="Visuals"]
+z_index = 10
+texture = ExtResource("2_pistol_tex")
+
+[node name="HandSocket" type="Marker2D" parent="Visuals"]
+position = Vector2(0, 8)
+
+[node name="Muzzle" type="Marker2D" parent="Visuals"]
+position = Vector2(0, -14)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_pistol")
+
+[node name="HitBox" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="HitBoxShape" type="CollisionShape2D" parent="HitBox"]
+shape = SubResource("RectangleShape2D_pistol")
