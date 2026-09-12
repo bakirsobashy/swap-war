@@ -1,0 +1,367 @@
+[gd_scene format=3 uid="uid://b4m3x7q1main0"]
+
+[ext_resource type="Script" uid="uid://euc6e166pilj" path="res://Scripts/UI/MainMenu.gd" id="1_main0"]
+[ext_resource type="Theme" uid="uid://sw4pw4rth3m3" path="res://Assets/ui/Themes/swap_war_theme.tres" id="2_theme"]
+
+[node name="MainMenu" type="CanvasLayer" unique_id=553296457]
+script = ExtResource("1_main0")
+
+[node name="MainPanel" type="PanelContainer" parent="." unique_id=1092478875]
+unique_name_in_owner = true
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -180.0
+offset_top = -210.0
+offset_right = 180.0
+offset_bottom = 210.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MainPanel" unique_id=226741147]
+layout_mode = 2
+alignment = 1
+
+[node name="Title" type="Label" parent="MainPanel/VBoxContainer" unique_id=320615669]
+layout_mode = 2
+theme = ExtResource("2_theme")
+theme_override_font_sizes/font_size = 42
+text = "SWAP-WAR"
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="MainPanel/VBoxContainer" unique_id=277819709]
+custom_minimum_size = Vector2(0, 12)
+layout_mode = 2
+theme = ExtResource("2_theme")
+
+[node name="PlayBtn" type="Button" parent="MainPanel/VBoxContainer" unique_id=1454923022]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 56)
+layout_mode = 2
+theme = ExtResource("2_theme")
+text = "PLAY"
+
+[node name="HowToPlayBtn" type="Button" parent="MainPanel/VBoxContainer" unique_id=1714799643]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 56)
+layout_mode = 2
+text = "HOW TO PLAY"
+
+[node name="SettingsBtn" type="Button" parent="MainPanel/VBoxContainer" unique_id=1284864197]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 56)
+layout_mode = 2
+text = "SETTINGS"
+
+[node name="QuitBtn" type="Button" parent="MainPanel/VBoxContainer" unique_id=567504605]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 56)
+layout_mode = 2
+text = "QUIT"
+
+[node name="OptionsPanel" type="PanelContainer" parent="." unique_id=79168547]
+unique_name_in_owner = true
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -210.0
+offset_top = -230.0
+offset_right = 210.0
+offset_bottom = 230.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="OptionsPanel" unique_id=2085536041]
+layout_mode = 2
+alignment = 1
+
+[node name="Title" type="Label" parent="OptionsPanel/VBoxContainer" unique_id=1597051037]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "MATCH OPTIONS"
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="OptionsPanel/VBoxContainer" unique_id=1537778134]
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+
+[node name="AIBox" type="HBoxContainer" parent="OptionsPanel/VBoxContainer" unique_id=1439807844]
+layout_mode = 2
+alignment = 1
+
+[node name="AILabel" type="Label" parent="OptionsPanel/VBoxContainer/AIBox" unique_id=1922386991]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(140, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "AI Count: 3"
+
+[node name="AISlider" type="HSlider" parent="OptionsPanel/VBoxContainer/AIBox" unique_id=23746510]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 40)
+layout_mode = 2
+max_value = 3.0
+value = 3.0
+
+[node name="ModeBox" type="HBoxContainer" parent="OptionsPanel/VBoxContainer" unique_id=741043189]
+layout_mode = 2
+alignment = 1
+
+[node name="ModeLabel" type="Label" parent="OptionsPanel/VBoxContainer/ModeBox" unique_id=610058224]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Win Mode"
+
+[node name="ModeOption" type="OptionButton" parent="OptionsPanel/VBoxContainer/ModeBox" unique_id=1982050594]
+unique_name_in_owner = true
+layout_mode = 2
+selected = 0
+item_count = 2
+popup/item_0/text = "Score Target"
+popup/item_0/id = 0
+popup/item_1/text = "Timed Score"
+popup/item_1/id = 1
+
+[node name="ScoreBox" type="HBoxContainer" parent="OptionsPanel/VBoxContainer" unique_id=553293638]
+layout_mode = 2
+alignment = 1
+
+[node name="ScoreLabel" type="Label" parent="OptionsPanel/VBoxContainer/ScoreBox" unique_id=1749979896]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(140, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Target: 10"
+
+[node name="ScoreSlider" type="HSlider" parent="OptionsPanel/VBoxContainer/ScoreBox" unique_id=728793455]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 40)
+layout_mode = 2
+min_value = 3.0
+max_value = 30.0
+value = 10.0
+
+[node name="DurationBox" type="HBoxContainer" parent="OptionsPanel/VBoxContainer" unique_id=1963809657]
+layout_mode = 2
+alignment = 1
+
+[node name="DurationLabel" type="Label" parent="OptionsPanel/VBoxContainer/DurationBox" unique_id=1040248656]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(140, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Duration: 120 s"
+
+[node name="DurationSlider" type="HSlider" parent="OptionsPanel/VBoxContainer/DurationBox" unique_id=1195230371]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 40)
+layout_mode = 2
+min_value = 30.0
+max_value = 300.0
+step = 10.0
+value = 120.0
+
+[node name="Spacer2" type="Control" parent="OptionsPanel/VBoxContainer" unique_id=931343967]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+
+[node name="StartMatchBtn" type="Button" parent="OptionsPanel/VBoxContainer" unique_id=1416052378]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 56)
+layout_mode = 2
+text = "START MATCH"
+
+[node name="OptionsBackBtn" type="Button" parent="OptionsPanel/VBoxContainer" unique_id=405614396]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 56)
+layout_mode = 2
+text = "BACK"
+
+[node name="HelpPanel" type="PanelContainer" parent="." unique_id=1390669815]
+unique_name_in_owner = true
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -230.0
+offset_top = -391.5
+offset_right = 230.0
+offset_bottom = 391.5
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HelpPanel" unique_id=142187405]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="HelpPanel/VBoxContainer" unique_id=1542522448]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "HOW TO PLAY"
+horizontal_alignment = 1
+
+[node name="HelpText" type="Label" parent="HelpPanel/VBoxContainer" unique_id=238410603]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Move: A / D or Left / Right arrows
+Jump: Space, W, or Up arrow
+Attack: J or Right Ctrl
+Pause: Escape
+
+Pick up weapons by walking over them.
+Weapons break with use — grab a new one!
+
+TEAMS swap every 10-15 seconds.
+Same color = allies (no damage).
+Different color = enemies (score on kill).
+
+Win by reaching the score target or having the most kills when time runs out."
+autowrap_mode = 3
+
+[node name="Spacer" type="Control" parent="HelpPanel/VBoxContainer" unique_id=1158831901]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+
+[node name="HelpBackBtn" type="Button" parent="HelpPanel/VBoxContainer" unique_id=522378241]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 56)
+layout_mode = 2
+text = "BACK"
+
+[node name="SettingsPanel" type="PanelContainer" parent="." unique_id=1285881015]
+unique_name_in_owner = true
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -210.0
+offset_top = -220.0
+offset_right = 210.0
+offset_bottom = 220.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SettingsPanel" unique_id=332680952]
+layout_mode = 2
+alignment = 1
+
+[node name="Title" type="Label" parent="SettingsPanel/VBoxContainer" unique_id=2060730652]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "SETTINGS"
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="SettingsPanel/VBoxContainer" unique_id=570540419]
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+
+[node name="SFXBox" type="HBoxContainer" parent="SettingsPanel/VBoxContainer" unique_id=1235945840]
+layout_mode = 2
+
+[node name="SFXLabel" type="Label" parent="SettingsPanel/VBoxContainer/SFXBox" unique_id=1881925599]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "SFX Vol"
+
+[node name="SFXSlider" type="HSlider" parent="SettingsPanel/VBoxContainer/SFXBox" unique_id=4705233]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 40)
+layout_mode = 2
+min_value = -30.0
+max_value = 0.0
+value = -6.0
+
+[node name="SFXCheck" type="CheckBox" parent="SettingsPanel/VBoxContainer/SFXBox" unique_id=464119754]
+unique_name_in_owner = true
+layout_mode = 2
+text = "On"
+
+[node name="MusicBox" type="HBoxContainer" parent="SettingsPanel/VBoxContainer" unique_id=1637190524]
+layout_mode = 2
+
+[node name="MusicLabel" type="Label" parent="SettingsPanel/VBoxContainer/MusicBox" unique_id=2126004285]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Music Vol"
+
+[node name="MusicSlider" type="HSlider" parent="SettingsPanel/VBoxContainer/MusicBox" unique_id=944025182]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 40)
+layout_mode = 2
+min_value = -30.0
+max_value = 0.0
+value = -12.0
+
+[node name="MusicCheck" type="CheckBox" parent="SettingsPanel/VBoxContainer/MusicBox" unique_id=1665859288]
+unique_name_in_owner = true
+layout_mode = 2
+text = "On"
+
+[node name="TouchBox" type="HBoxContainer" parent="SettingsPanel/VBoxContainer" unique_id=1207730366]
+layout_mode = 2
+
+[node name="TouchLabel" type="Label" parent="SettingsPanel/VBoxContainer/TouchBox" unique_id=1848945941]
+custom_minimum_size = Vector2(140, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Touch Controls"
+
+[node name="TouchOption" type="OptionButton" parent="SettingsPanel/VBoxContainer/TouchBox" unique_id=1419333573]
+unique_name_in_owner = true
+layout_mode = 2
+selected = 0
+item_count = 3
+popup/item_0/text = "Auto"
+popup/item_0/id = 0
+popup/item_1/text = "Always"
+popup/item_1/id = 1
+popup/item_2/text = "Hidden"
+popup/item_2/id = 2
+
+[node name="Spacer2" type="Control" parent="SettingsPanel/VBoxContainer" unique_id=809856035]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+
+[node name="SettingsBackBtn" type="Button" parent="SettingsPanel/VBoxContainer" unique_id=918368014]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 56)
+layout_mode = 2
+text = "BACK"
+
+[connection signal="pressed" from="MainPanel/VBoxContainer/PlayBtn" to="." method="_on_play_pressed"]
+[connection signal="pressed" from="MainPanel/VBoxContainer/PlayBtn" to="." method="_play_click"]
+[connection signal="pressed" from="MainPanel/VBoxContainer/HowToPlayBtn" to="." method="_on_how_to_play_pressed"]
+[connection signal="pressed" from="MainPanel/VBoxContainer/HowToPlayBtn" to="." method="_play_click"]
+[connection signal="pressed" from="MainPanel/VBoxContainer/SettingsBtn" to="." method="_on_settings_pressed"]
+[connection signal="pressed" from="MainPanel/VBoxContainer/SettingsBtn" to="." method="_play_click"]
+[connection signal="pressed" from="MainPanel/VBoxContainer/QuitBtn" to="." method="_play_click"]
+[connection signal="pressed" from="MainPanel/VBoxContainer/QuitBtn" to="." method="_on_quit_pressed"]
+[connection signal="value_changed" from="OptionsPanel/VBoxContainer/AIBox/AISlider" to="." method="_on_ai_slider_changed"]
+[connection signal="item_selected" from="OptionsPanel/VBoxContainer/ModeBox/ModeOption" to="." method="_on_mode_option_changed"]
+[connection signal="value_changed" from="OptionsPanel/VBoxContainer/ScoreBox/ScoreSlider" to="." method="_on_score_slider_changed"]
+[connection signal="value_changed" from="OptionsPanel/VBoxContainer/DurationBox/DurationSlider" to="." method="_on_duration_slider_changed"]
+[connection signal="pressed" from="OptionsPanel/VBoxContainer/StartMatchBtn" to="." method="_play_click"]
+[connection signal="pressed" from="OptionsPanel/VBoxContainer/StartMatchBtn" to="." method="_on_start_match_pressed"]
+[connection signal="pressed" from="OptionsPanel/VBoxContainer/OptionsBackBtn" to="." method="_on_back_pressed"]
+[connection signal="pressed" from="OptionsPanel/VBoxContainer/OptionsBackBtn" to="." method="_play_click"]
+[connection signal="pressed" from="HelpPanel/VBoxContainer/HelpBackBtn" to="." method="_on_back_pressed"]
+[connection signal="pressed" from="HelpPanel/VBoxContainer/HelpBackBtn" to="." method="_play_click"]
+[connection signal="value_changed" from="SettingsPanel/VBoxContainer/SFXBox/SFXSlider" to="." method="_on_sfx_volume_changed"]
+[connection signal="toggled" from="SettingsPanel/VBoxContainer/SFXBox/SFXCheck" to="." method="_on_sfx_toggled"]
+[connection signal="value_changed" from="SettingsPanel/VBoxContainer/MusicBox/MusicSlider" to="." method="_on_music_volume_changed"]
+[connection signal="toggled" from="SettingsPanel/VBoxContainer/MusicBox/MusicCheck" to="." method="_on_music_toggled"]
+[connection signal="item_selected" from="SettingsPanel/VBoxContainer/TouchBox/TouchOption" to="." method="_on_touch_mode_changed"]
+[connection signal="pressed" from="SettingsPanel/VBoxContainer/SettingsBackBtn" to="." method="_on_back_pressed"]
+[connection signal="pressed" from="SettingsPanel/VBoxContainer/SettingsBackBtn" to="." method="_play_click"]

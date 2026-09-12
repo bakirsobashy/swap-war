@@ -1,0 +1,60 @@
+[gd_scene load_steps=2 format=3 uid="uid://b4m3x7q1paus3"]
+
+[ext_resource type="Script" path="res://Scripts/UI/PauseMenu.gd" id="1_paus3"]
+[ext_resource type="Theme" path="res://Assets/ui/Themes/swap_war_theme.tres" id="2_theme"]
+
+[node name="PauseMenu" type="CanvasLayer"]
+process_mode = 3
+visible = false
+theme = ExtResource("2_theme")
+script = ExtResource("1_paus3")
+
+[node name="Panel" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+anchors_preset = 8
+offset_left = -180.0
+offset_top = -180.0
+offset_right = 180.0
+offset_bottom = 180.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+alignment = 1
+
+[node name="Title" type="Label" parent="Panel/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "PAUSED"
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="Panel/VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 24)
+
+[node name="ResumeBtn" type="Button" parent="Panel/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(240, 56)
+text = "RESUME"
+
+[node name="RestartBtn" type="Button" parent="Panel/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(240, 56)
+text = "RESTART MATCH"
+
+[node name="QuitBtn" type="Button" parent="Panel/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(240, 56)
+text = "QUIT TO MENU"
+
+[connection signal="pressed" from="Panel/VBoxContainer/ResumeBtn" to="." method="_on_resume_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/RestartBtn" to="." method="_on_restart_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/QuitBtn" to="." method="_on_quit_to_menu_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/ResumeBtn" to="." method="_play_click"]
+[connection signal="pressed" from="Panel/VBoxContainer/RestartBtn" to="." method="_play_click"]
+[connection signal="pressed" from="Panel/VBoxContainer/QuitBtn" to="." method="_play_click"]

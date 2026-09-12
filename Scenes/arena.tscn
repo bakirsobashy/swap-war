@@ -1,11 +1,11 @@
 [gd_scene format=4 uid="uid://b0tqcdqr6iyl5"]
 
 [ext_resource type="Texture2D" uid="uid://bnx6a81lekr07" path="res://Assets/PNG/spritesheet_default.png" id="1_lq7nq"]
-[ext_resource type="PackedScene" uid="uid://ddsrtd7ijxm5u" path="res://Scenes/actor.tscn" id="2_ra5jo"]
 [ext_resource type="PackedScene" uid="uid://cy78xoj7xnii7" path="res://Scenes/Weapons/Pistol.tscn" id="3_csrox"]
 [ext_resource type="PackedScene" uid="uid://b3nq1gq7qvnwi" path="res://Scenes/HUD.tscn" id="4_hud"]
-[ext_resource type="PackedScene" uid="uid://bwg6480uhvu2k" path="res://Scenes/Weapons/Chest.tscn" id="5_chest"]
+[ext_resource type="PackedScene" uid="uid://bx0ou8gupfcu7" path="res://Scenes/Weapons/Rifle.tscn" id="5_csrox"]
 [ext_resource type="PackedScene" uid="uid://b85pu1unpwads" path="res://Scenes/Weapons/WeaponSpawner.tscn" id="6_spawner"]
+[ext_resource type="Script" uid="uid://c5cq7n7g52pjj" path="res://Scripts/Components/KillZone.gd" id="10_killzone"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ra5jo"]
 texture = ExtResource("1_lq7nq")
@@ -167,6 +167,9 @@ physics_layer_0/collision_layer = 1
 physics_layer_1/collision_layer = 4
 sources/1 = SubResource("TileSetAtlasSource_ra5jo")
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_kill"]
+size = Vector2(2000, 200)
+
 [node name="Arena" type="Node2D" unique_id=397479642]
 
 [node name="World" type="Node2D" parent="." unique_id=2080880066]
@@ -194,12 +197,6 @@ position = Vector2(0, -250)
 [node name="SkyRight" type="Marker2D" parent="World/WeaponSpawnPoints" unique_id=300004195 groups=["weapon_spawn_points"]]
 position = Vector2(300, -250)
 
-[node name="Chest" parent="World" unique_id=781323654 instance=ExtResource("5_chest")]
-position = Vector2(-207, 93)
-
-[node name="Chest2" parent="World" unique_id=1895665600 instance=ExtResource("5_chest")]
-position = Vector2(200, 120)
-
 [node name="StairWaypoints" type="Node2D" parent="World" unique_id=999999999]
 
 [node name="Bottom" type="Marker2D" parent="World/StairWaypoints" unique_id=999999998 groups=["stair_waypoints"]]
@@ -214,17 +211,7 @@ metadata/target_level = "mid"
 position = Vector2(-24, -95)
 metadata/target_level = "top"
 
-[node name="Pistol" parent="World" unique_id=1430598368 instance=ExtResource("3_csrox")]
-position = Vector2(-377, 68)
-
 [node name="Actors" type="Node2D" parent="." unique_id=304031720]
-
-[node name="Actor" parent="Actors" unique_id=304031721 instance=ExtResource("2_ra5jo")]
-position = Vector2(-496, 87)
-is_player = true
-
-[node name="EnemyA" parent="Actors" unique_id=304031723 instance=ExtResource("2_ra5jo")]
-position = Vector2(-111, -163)
 
 [node name="Effects" type="Node2D" parent="." unique_id=1357137672]
 
@@ -234,3 +221,18 @@ zoom = Vector2(0.69, 0.69)
 [node name="WeaponSpawner" parent="." unique_id=1032767521 instance=ExtResource("6_spawner")]
 
 [node name="HUD" parent="." unique_id=1802762642 instance=ExtResource("4_hud")]
+
+[node name="KillZone" type="Area2D" parent="." unique_id=518586221]
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("10_killzone")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="KillZone" unique_id=1734146401]
+position = Vector2(0, 600)
+shape = SubResource("RectangleShape2D_kill")
+
+[node name="Rifle" parent="." unique_id=1880507475 instance=ExtResource("5_csrox")]
+position = Vector2(302, 27)
+
+[node name="Pistol" parent="." unique_id=1972863452 instance=ExtResource("3_csrox")]
+position = Vector2(-439, 48)

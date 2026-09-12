@@ -3,6 +3,7 @@ extends Node
 
 var current_weapon: WeaponBase = null
 var last_attacker: Node = null
+var last_attacker_time: float = 0.0
 
 @onready var _actor: RigidBody2D = get_parent()
 @onready var _pickup_area: Area2D = _actor.get_node_or_null("PickupArea")
@@ -71,6 +72,12 @@ func drop_weapon() -> void:
 	current_weapon.drop()
 	current_weapon = null
 	_update_unarmed_hand_position(_get_actor_facing())
+
+func record_attacker(attacker: Node) -> void:
+	if not attacker:
+		return
+	last_attacker = attacker
+	last_attacker_time = Time.get_ticks_msec() / 1000.0
 
 func is_holding_weapon() -> bool:
 	return current_weapon != null

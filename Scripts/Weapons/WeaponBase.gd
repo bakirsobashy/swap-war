@@ -27,6 +27,7 @@ func _ready() -> void:
 
 	contact_monitor = true
 	max_contacts_reported = 4
+	body_entered.connect(_on_body_entered)
 
 
 ## Override in subclass.
@@ -118,6 +119,12 @@ func _get_aim_direction() -> Vector2:
 	if _holder and "aim_direction" in _holder:
 		return _holder.aim_direction
 	return Vector2(_target_facing, 0.0)
+
+
+## Called when the weapon body physically contacts another body.
+## Subclasses (MeleeWeapon) override this to apply damage.
+func _on_body_entered(_body: Node) -> void:
+	pass
 
 
 func _physics_process(_delta: float) -> void:

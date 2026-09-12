@@ -24,9 +24,10 @@ This plan locks scope, fixes the critical bugs, builds the missing shell, and th
 | **Win conditions** | Player selects in the menu: **Score Target** (first to N kills) or **Timed Score** (most kills in M minutes). Last-team-standing can be added later as a stretch. |
 | **Team swap cadence** | **10–15 seconds** (slower than the original 5 s for more strategic clarity). |
 | **Mobile controls** | On-screen buttons: left, right, jump, attack, pause. |
-| **Audio** | Procedural/placeholder sounds first. Final asset pass happens before release. |
+| **Audio** | Procedural/placeholder gameplay sounds. UI sounds use new `Assets/ui/Sounds/`. Final asset pass happens before release. |
 | **Tutorial** | Static “How to Play” screen is mandatory. In-game tutorial match is a stretch goal. |
 | **One-way platforms / drop-through** | Keep. Fix the layer-3 drop-through check in `Actor-Movement.gd`. Preserve all existing platform geometry and AI navigation. |
+| **UI theme** | Blue theme from `Assets/ui/PNG/Blue/` and `Assets/ui/Vector/Blue/`. Font: `Kenney Future`. Buttons: flat. Panels: framed. Old `Assets/PNG/Default/ui_*.png` assets deleted. |
 
 ---
 
@@ -72,23 +73,30 @@ This plan locks scope, fixes the critical bugs, builds the missing shell, and th
 - `Scenes/UI/MainMenu.tscn`
 - `Scripts/UI/MainMenu.gd`
 
+**Asset sources:**
+- Font: `Assets/ui/Font/Kenney Future.ttf`
+- Buttons: `Assets/ui/PNG/Blue/button_rectangle_flat.png` (or matching vector/PNG variant)
+- Panels: `Assets/ui/PNG/Blue/` framed panel texture (inspect `Extra/` or `Blue/` for panel/box textures)
+- Sound: `Assets/ui/Sounds/click-a.ogg` for button press
+
 **Tasks:**
 1. Create a CanvasLayer scene with a centered panel.
 2. Buttons: **Play**, **How to Play**, **Settings**, **Quit** (desktop only).
-3. **Play** opens a pre-match options panel:
+3. Use `Kenney Future` font for all labels and buttons.
+4. **Play** opens a pre-match options panel:
    - AI count slider: 1, 2, 3.
    - Win mode selector: **Score Target** / **Timed Score**.
    - Default values: 3 AI, Score Target, target = 10.
-4. **How to Play** opens a help panel:
+5. **How to Play** opens a help panel:
    - Controls (desktop + mobile).
    - Team swap explanation.
    - Pickup weapons, throw weapons, score on kills.
-5. **Settings** opens a settings panel:
+6. **Settings** opens a settings panel:
    - Music volume slider.
    - SFX volume slider.
    - Touch controls toggle (always show / auto / hide).
-6. Persist settings with `ConfigFile`.
-7. Change `project.godot` `run/main_scene` to `Scenes/UI/MainMenu.tscn`.
+7. Persist settings with `ConfigFile`.
+8. Change `project.godot` `run/main_scene` to `Scenes/UI/MainMenu.tscn`.
 
 #### 1.2 Pause Menu
 
@@ -96,11 +104,15 @@ This plan locks scope, fixes the critical bugs, builds the missing shell, and th
 - `Scenes/UI/PauseMenu.tscn`
 - `Scripts/UI/PauseMenu.gd`
 
+**Asset sources:**
+- Same Blue flat button and framed panel set as MainMenu.
+- Sound: `Assets/ui/Sounds/click-a.ogg` for buttons.
+
 **Tasks:**
 1. CanvasLayer with `process_mode = WHEN_PAUSED`.
 2. Buttons: **Resume**, **Restart Match**, **Quit to Main Menu**.
 3. Input action: `Pause` mapped to `Escape` on keyboard.
-4. Mobile pause button in top-right of HUD (persistent in match).
+4. Mobile pause button in top-right of HUD (persistent in match) using a small Blue round button.
 5. Pause the scene tree and dim the background.
 
 #### 1.3 Post-Round Screen
@@ -108,6 +120,10 @@ This plan locks scope, fixes the critical bugs, builds the missing shell, and th
 **New files:**
 - `Scenes/UI/PostRoundMenu.tscn`
 - `Scripts/UI/PostRoundMenu.gd`
+
+**Asset sources:**
+- Same Blue flat button and framed panel set as MainMenu.
+- Winner banner can use a larger decorative panel from `Assets/ui/PNG/Blue/` or `Assets/ui/PNG/Extra/`.
 
 **Tasks:**
 1. Remove the 5-second auto-restart in `Scripts/Components/ArenaManager.gd:46-74`.
@@ -276,8 +292,14 @@ This plan locks scope, fixes the critical bugs, builds the missing shell, and th
 **Files:**
 - `Scripts/Components/AudioManager.gd`
 
+**Asset sources:**
+- UI sounds: `Assets/ui/Sounds/click-a.ogg` (button press), `click-b.ogg` (alternate), `tap-a.ogg` (touch), `switch-a.ogg` (toggle/slider).
+- Gameplay sounds: generate procedural placeholders until final assets arrive.
+
 **Tasks:**
-1. Fix empty `AudioManager` exports by generating procedural WAV/OGG placeholders.
+1. Fix empty `AudioManager` exports:
+   - Assign `Assets/ui/Sounds/click-a.ogg` to UI click exports.
+   - Generate procedural WAV/OGG placeholders for gameplay sounds (jump, land, attack, hit, death, pickup, throw, team swap, win, music).
 2. Required sounds:
    - jump
    - land
@@ -291,7 +313,7 @@ This plan locks scope, fixes the critical bugs, builds the missing shell, and th
    - win jingle
    - UI click / hover
    - background music loop
-3. Use `AudioStreamGenerator` or import tiny synthesized clips.
+3. Use `AudioStreamGenerator` or import tiny synthesized clips for gameplay placeholders.
 4. Create audio buses: Master, Music, SFX. Add volume sliders in Settings.
 5. Remove duplicate ranged attack sound: `Actor-Movement.gd` and `RangedWeapon.gd` both call `AudioManager.play_attack()`. Keep only the weapon’s call.
 6. Hook sounds to gameplay events:
@@ -301,7 +323,9 @@ This plan locks scope, fixes the critical bugs, builds the missing shell, and th
    - `WeaponHolder`: pickup, drop/throw.
    - `TeamManager`: team swap.
    - `ArenaManager`: win.
-   - UI buttons: click/hover.
+   - UI buttons: `click-a.ogg`.
+   - Touch controls: `tap-a.ogg`.
+   - Toggles/sliders: `switch-a.ogg`.
 
 #### 3.2 Input Abstraction Layer
 
@@ -331,6 +355,11 @@ This plan locks scope, fixes the critical bugs, builds the missing shell, and th
 **New files:**
 - `Scenes/UI/TouchControls.tscn`
 - `Scripts/UI/TouchControls.gd`
+
+**Asset sources:**
+- Direction arrows: `Assets/ui/Vector/Blue/arrow_basic_w.svg` (left), `Assets/ui/Vector/Blue/arrow_basic_e.svg` (right), or PNG equivalents.
+- Action buttons: `Assets/ui/PNG/Blue/button_round_flat.png` for jump, attack, pause.
+- Sound: `Assets/ui/Sounds/tap-a.ogg` on press.
 
 **Tasks:**
 1. CanvasLayer with `TouchScreenButton` nodes:

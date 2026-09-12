@@ -23,6 +23,7 @@ func take_damage(amount: float, attacker: Node = null) -> void:
 	current_health = clamp(current_health, 0.0, max_health)
 	health_changed.emit(current_health, max_health)
 	_flash_hit()
+	_spawn_hit_particles()
 
 	if attacker:
 		_record_attacker(attacker)
@@ -41,10 +42,39 @@ func _flash_hit() -> void:
 			body.modulate = original_mod
 	)
 
+func _spawn_hit_particles() -> void:
+	var effects := _actor.get_tree().current_scene.get_node_or_null("Effects")
+	if not effects:
+		return
+
+	var particles := CPUParticles2D.new()
+	particles.global_position = _actor.global_position + Vector2(0.0, -20.0)
+	particles.amount = 8
+	particles.lifetime = 0.25
+	particles.explosiveness = 0.9
+	particles.emission_shape = CPUParticles2D.EMISSION_SHAPE_SPHERE
+	particles.emission_sphere_radius = 8.0
+	particles.direction = Vector2(0, -1)
+	particles.spread = 60.0
+	particles.initial_velocity_min = 40.0
+	particles.initial_velocity_max = 90.0
+	particles.scale_amount_min = 1.0
+	particles.scale_amount_max = 3.0
+	particles.color = Color.YELLOW
+	particles.modulate = Color(1.0, 0.9, 0.4, 0.9)
+	effects.add_child(particles)
+	particles.emitting = true
+	particles.one_shot = true
+
+	_actor.get_tree().create_timer(particles.lifetime).timeout.connect(func() -> void:
+		if is_instance_valid(particles):
+			particles.queue_free()
+	)
+
 func _record_attacker(attacker: Node) -> void:
 	var holder := _actor.get_node_or_null("WeaponHolder") as WeaponHolder
 	if holder:
-		holder.last_attacker = attacker
+		holder.record_attacker(attacker)
 
 func die() -> void:
 	if _is_dead:
@@ -117,6 +147,12 @@ func _respawn() -> void:
 	_actor.global_position = chosen
 	current_health = max_health
 	_is_dead = false
+
+	var holder := _actor.get_node_or_null("WeaponHolder") as WeaponHolder
+	if holder:
+		holder.last_attacker = null
+		holder.last_attacker_time = 0.0
+
 	_actor.set_deferred("collision_layer", 2)
 	_actor.set_deferred("collision_mask", 15)
 	_actor.visible = true

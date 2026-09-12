@@ -1,0 +1,61 @@
+[gd_scene load_steps=2 format=3 uid="uid://b4m3x7q1p0str0und"]
+
+[ext_resource type="Script" path="res://Scripts/UI/PostRoundMenu.gd" id="1_post0"]
+[ext_resource type="Theme" path="res://Assets/ui/Themes/swap_war_theme.tres" id="2_theme"]
+
+[node name="PostRoundMenu" type="CanvasLayer"]
+process_mode = 3
+visible = false
+theme = ExtResource("2_theme")
+script = ExtResource("1_post0")
+
+[node name="Panel" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+anchors_preset = 8
+offset_left = -210.0
+offset_top = -200.0
+offset_right = 210.0
+offset_bottom = 200.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+alignment = 1
+
+[node name="Title" type="Label" parent="Panel/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "MATCH OVER"
+horizontal_alignment = 1
+
+[node name="Scoreboard" type="Label" parent="Panel/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(360, 120)
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="Spacer" type="Control" parent="Panel/VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 16)
+
+[node name="PlayAgainBtn" type="Button" parent="Panel/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(240, 56)
+text = "PLAY AGAIN"
+
+[node name="MainMenuBtn" type="Button" parent="Panel/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(240, 56)
+text = "MAIN MENU"
+
+[connection signal="pressed" from="Panel/VBoxContainer/PlayAgainBtn" to="." method="_on_play_again_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/MainMenuBtn" to="." method="_on_main_menu_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/PlayAgainBtn" to="." method="_play_click"]
+[connection signal="pressed" from="Panel/VBoxContainer/MainMenuBtn" to="." method="_play_click"]

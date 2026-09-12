@@ -32,7 +32,7 @@ func _ready() -> void:
 	add_to_group("actors")
 
 func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
-	_update_ground_state()
+	_update_ground_state(state)
 	_apply_run_force(state)
 	_apply_jump(state)
 	_apply_friction(state)
@@ -46,15 +46,11 @@ func _process(delta: float) -> void:
 	_update_visuals()
 	_update_drop_timer(delta)
 
-func _update_ground_state() -> void:
-	_is_grounded = _check_grounded_by_contacts()
+func _update_ground_state(state: PhysicsDirectBodyState2D) -> void:
+	_is_grounded = _check_grounded_by_contacts(state)
 
-func _check_grounded_by_contacts() -> bool:
-	# Use physics contacts instead of a single downward ray so slopes are detected reliably.
-	var state := PhysicsServer2D.body_get_direct_state(get_rid())
-	if not state:
-		return false
-
+func _check_grounded_by_contacts(state: PhysicsDirectBodyState2D) -> bool:
+	# Use the passed physics body state so this is safe inside _integrate_forces.
 	var up := Vector2.UP
 	for i in range(state.get_contact_count()):
 		var local_normal := state.get_contact_local_normal(i)

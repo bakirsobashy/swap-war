@@ -49,8 +49,6 @@ func _attack_ended() -> void:
 func _on_body_entered(body: Node) -> void:
 	if not _holder or body == _holder:
 		return
-	if not _is_attacking:
-		return
 
 	var health := body.get_node_or_null("Components/Health") as Health
 	if not health:

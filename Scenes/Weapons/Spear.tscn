@@ -1,39 +1,39 @@
 [gd_scene format=3 uid="uid://cy8rjm7jcdeq7"]
 
-[ext_resource type="Script" path="res://Scripts/Weapons/Spear.gd" id="1_spear"]
-[ext_resource type="Texture2D" path="res://Assets/PNG/Default/item_spear.png" id="2_spear_tex"]
-[ext_resource type="Script" path="res://Scenes/Weapons/SwordVisuals.gd" id="3_visuals"]
+[ext_resource type="Script" uid="uid://cyxxmn1mvlbsf" path="res://Scripts/Weapons/Spear.gd" id="1_spear"]
+[ext_resource type="Texture2D" uid="uid://2mmrcxurkix6" path="res://Assets/PNG/Default/item_spear.png" id="2_spear_tex"]
+[ext_resource type="Script" uid="uid://8kobn4n4afst" path="res://Scenes/Weapons/SwordVisuals.gd" id="3_visuals"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_spear"]
 friction = 0.3
 bounce = 0.1
 
 [sub_resource type="ConvexPolygonShape2D" id="ConvexPolygonShape2D_spear"]
-points = PackedVector2Array(2, -50, -2, -50, -3, 40, 3, 40)
+points = PackedVector2Array(6, -56, -5, -56, -5, 57, 5, 57)
 
-[node name="Spear" type="RigidBody2D" groups=["weapons"]]
+[node name="Spear" type="RigidBody2D" unique_id=1002594543 groups=["weapons"]]
 collision_layer = 8
 collision_mask = 11
 physics_material_override = SubResource("PhysicsMaterial_spear")
 can_sleep = false
 script = ExtResource("1_spear")
 
-[node name="Visuals" type="Node2D" parent="."]
+[node name="Visuals" type="Node2D" parent="." unique_id=621165171]
 script = ExtResource("3_visuals")
 
-[node name="Sprite2D" type="Sprite2D" parent="Visuals"]
+[node name="Sprite2D" type="Sprite2D" parent="Visuals" unique_id=1126457976]
 z_index = 10
 texture = ExtResource("2_spear_tex")
 
-[node name="HandSocket" type="Marker2D" parent="Visuals"]
+[node name="HandSocket" type="Marker2D" parent="Visuals" unique_id=1550556993]
 position = Vector2(0, 30)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1381056334]
 shape = SubResource("ConvexPolygonShape2D_spear")
 
-[node name="HitBox" type="Area2D" parent="."]
+[node name="HitBox" type="Area2D" parent="." unique_id=492524636]
 collision_layer = 0
 collision_mask = 2
 
-[node name="HitBoxShape" type="CollisionShape2D" parent="HitBox"]
+[node name="HitBoxShape" type="CollisionShape2D" parent="HitBox" unique_id=7022455]
 shape = SubResource("ConvexPolygonShape2D_spear")

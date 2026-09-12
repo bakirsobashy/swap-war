@@ -1,0 +1,91 @@
+extends Node
+
+enum WinMode { SCORE_TARGET, TIMED_SCORE }
+enum TouchControlsMode { AUTO, ALWAYS, HIDDEN }
+
+const CONFIG_PATH := "user://swap_war_settings.cfg"
+
+# Audio settings
+@export var sfx_volume_db: float = -6.0
+@export var music_volume_db: float = -12.0
+@export var sfx_enabled: bool = true
+@export var music_enabled: bool = true
+
+# UI settings
+@export var touch_controls_mode: TouchControlsMode = TouchControlsMode.AUTO
+
+# Match options (persisted as last-used)
+@export var ai_count: int = 3
+@export var win_mode: WinMode = WinMode.SCORE_TARGET
+@export var score_target: int = 10
+@export var match_duration_seconds: float = 120.0
+
+func _ready() -> void:
+	load_settings()
+	_apply_audio_settings()
+
+func save_settings() -> void:
+	var config := ConfigFile.new()
+	config.set_value("audio", "sfx_volume_db", sfx_volume_db)
+	config.set_value("audio", "music_volume_db", music_volume_db)
+	config.set_value("audio", "sfx_enabled", sfx_enabled)
+	config.set_value("audio", "music_enabled", music_enabled)
+	config.set_value("ui", "touch_controls_mode", touch_controls_mode)
+	config.set_value("match", "ai_count", ai_count)
+	config.set_value("match", "win_mode", win_mode)
+	config.set_value("match", "score_target", score_target)
+	config.set_value("match", "match_duration_seconds", match_duration_seconds)
+	var err := config.save(CONFIG_PATH)
+	if err != OK:
+		push_warning("Failed to save settings: %d" % err)
+
+func load_settings() -> void:
+	var config := ConfigFile.new()
+	var err := config.load(CONFIG_PATH)
+	if err != OK:
+		return
+
+	sfx_volume_db = config.get_value("audio", "sfx_volume_db", sfx_volume_db)
+	music_volume_db = config.get_value("audio", "music_volume_db", music_volume_db)
+	sfx_enabled = config.get_value("audio", "sfx_enabled", sfx_enabled)
+	music_enabled = config.get_value("audio", "music_enabled", music_enabled)
+	touch_controls_mode = config.get_value("ui", "touch_controls_mode", touch_controls_mode)
+	ai_count = config.get_value("match", "ai_count", ai_count)
+	win_mode = config.get_value("match", "win_mode", win_mode)
+	score_target = config.get_value("match", "score_target", score_target)
+	match_duration_seconds = config.get_value("match", "match_duration_seconds", match_duration_seconds)
+
+func _apply_audio_settings() -> void:
+	if AudioManager:
+		AudioManager.set_sfx_volume_db(sfx_volume_db)
+		AudioManager.set_music_volume_db(music_volume_db)
+		AudioManager.set_sfx_enabled(sfx_enabled)
+		AudioManager.set_music_enabled(music_enabled)
+
+func set_audio_settings(sfx_db: float, music_db: float, sfx_on: bool, music_on: bool) -> void:
+	sfx_volume_db = sfx_db
+	music_volume_db = music_db
+	sfx_enabled = sfx_on
+	music_enabled = music_on
+	_apply_audio_settings()
+	save_settings()
+
+func set_match_options(new_ai_count: int, new_win_mode: WinMode, new_score_target: int, new_duration: float) -> void:
+	ai_count = clampi(new_ai_count, 1, 3)
+	win_mode = new_win_mode
+	score_target = maxi(new_score_target, 1)
+	match_duration_seconds = maxf(new_duration, 30.0)
+	save_settings()
+
+func set_touch_controls_mode(mode: TouchControlsMode) -> void:
+	touch_controls_mode = mode
+	save_settings()
+
+func get_win_mode_name() -> String:
+	match win_mode:
+		WinMode.SCORE_TARGET:
+			return "Score Target"
+		WinMode.TIMED_SCORE:
+			return "Timed Score"
+		_:
+			return "Unknown"
