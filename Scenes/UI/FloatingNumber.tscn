@@ -1,0 +1,20 @@
+[gd_scene format=3 uid="uid://c2yam8n7v1k4q"]
+
+[ext_resource type="Script" uid="uid://bdy2p6c0vx7ds" path="res://Scripts/UI/FloatingNumber.gd" id="1_fn"]
+[ext_resource type="FontFile" uid="uid://bakm364u30ws1" path="res://Assets/ui/Font/Kenney Future Narrow.ttf" id="2_554s3"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_3xxsy"]
+font = ExtResource("2_554s3")
+font_color = Color(1, 1, 1, 1)
+
+[node name="FloatingNumber" type="Node2D" unique_id=2092589426]
+z_index = 100
+script = ExtResource("1_fn")
+
+[node name="Label" type="Label" parent="." unique_id=2135326544]
+offset_right = 40.0
+offset_bottom = 20.0
+text = "50"
+label_settings = SubResource("LabelSettings_3xxsy")
+horizontal_alignment = 1
+vertical_alignment = 1

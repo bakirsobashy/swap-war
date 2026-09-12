@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://b3nq1gq7qvnwi"]
 
 [ext_resource type="Script" uid="uid://ct5q6v7gq3w7m" path="res://Scripts/UI/HUD.gd" id="1_hud"]
+[ext_resource type="PackedScene" uid="uid://d4k8x7q1touch0" path="res://Scenes/UI/TouchControls.tscn" id="2_tc"]
 
 [node name="HUD" type="CanvasLayer"]
 script = ExtResource("1_hud")
@@ -64,3 +65,5 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+
+[node name="TouchControls" parent="." instance=ExtResource("2_tc")]

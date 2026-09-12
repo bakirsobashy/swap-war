@@ -5,6 +5,8 @@ enum TouchControlsMode { AUTO, ALWAYS, HIDDEN }
 
 const CONFIG_PATH := "user://swap_war_settings.cfg"
 
+signal settings_loaded()
+
 # Audio settings
 @export var sfx_volume_db: float = -6.0
 @export var music_volume_db: float = -12.0
@@ -23,6 +25,7 @@ const CONFIG_PATH := "user://swap_war_settings.cfg"
 func _ready() -> void:
 	load_settings()
 	_apply_audio_settings()
+	settings_loaded.emit()
 
 func save_settings() -> void:
 	var config := ConfigFile.new()
@@ -80,6 +83,9 @@ func set_match_options(new_ai_count: int, new_win_mode: WinMode, new_score_targe
 func set_touch_controls_mode(mode: TouchControlsMode) -> void:
 	touch_controls_mode = mode
 	save_settings()
+	setting_changed.emit()
+
+signal setting_changed()
 
 func get_win_mode_name() -> String:
 	match win_mode:

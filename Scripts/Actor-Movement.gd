@@ -199,6 +199,9 @@ func _update_attack() -> void:
 		return
 	if not _weapon_holder.is_holding_weapon():
 		return
+	if _get_drop_weapon_input():
+		_weapon_holder.drop_weapon()
+		return
 	if not _get_attack_input():
 		return
 	var weapon := _weapon_holder.current_weapon as WeaponBase
@@ -206,6 +209,11 @@ func _update_attack() -> void:
 		weapon.attack()
 		if AudioManager:
 			AudioManager.play_attack()
+
+func _get_drop_weapon_input() -> bool:
+	if is_player:
+		return Input.is_action_just_pressed("Drop_Weapon")
+	return false
 
 func _apply_friction(state: PhysicsDirectBodyState2D) -> void:
 	var input_x := _get_move_input()

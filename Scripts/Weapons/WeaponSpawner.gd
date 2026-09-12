@@ -7,6 +7,9 @@ extends Node
 ## Seconds between spawn waves.
 @export var wave_interval: float = 10.0
 
+## Total weapon instances allowed at once (held + ground + dropped).
+const MAX_ACTIVE_WEAPONS: int = 10
+
 ## How many guns (held + ground) are allowed at once. Melee is unlimited.
 @export var max_active_guns: int = 2
 
@@ -25,6 +28,8 @@ const GUN_SCENES: Array[PackedScene] = [
 	preload("res://Scenes/Weapons/Rifle.tscn"),
 ]
 
+static var _active_weapon_count: int = 0
+
 var _wave_timer: float = 0.0
 
 
@@ -39,7 +44,22 @@ func _process(delta: float) -> void:
 		_spawn_wave()
 
 
+static func can_spawn_weapon() -> bool:
+	return _active_weapon_count < MAX_ACTIVE_WEAPONS
+
+
+static func register_weapon() -> void:
+	_active_weapon_count += 1
+
+
+static func unregister_weapon() -> void:
+	_active_weapon_count = maxi(_active_weapon_count - 1, 0)
+
+
 func spawn_weapon(at_global_position: Vector2) -> WeaponBase:
+	if not can_spawn_weapon():
+		return null
+
 	var scene := _pick_weapon_scene()
 	if scene == null:
 		return null
@@ -59,11 +79,16 @@ func spawn_weapon(at_global_position: Vector2) -> WeaponBase:
 
 
 func _spawn_wave() -> void:
+	if not can_spawn_weapon():
+		return
+
 	var points := get_tree().get_nodes_in_group("weapon_spawn_points")
 	if points.is_empty():
 		return
 
 	for i in wave_size:
+		if not can_spawn_weapon():
+			break
 		var point := points.pick_random() as Node2D
 		if point == null:
 			continue

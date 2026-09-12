@@ -1,6 +1,8 @@
 class_name Health
 extends Node
 
+const FloatingNumberScene := preload("res://Scenes/UI/FloatingNumber.tscn")
+
 @export var max_health: float = 100.0
 
 signal health_changed(current: float, max_health: float)
@@ -10,11 +12,16 @@ var current_health: float = max_health
 var _is_dead: bool = false
 
 @onready var _actor: RigidBody2D = get_parent().get_parent()
+@onready var _health_bar: HealthBar2D = _actor.get_node_or_null("HealthBar2D") as HealthBar2D
 
 func _ready() -> void:
 	add_to_group("actors")
 	current_health = max_health
-	health_changed.emit(current_health, max_health)
+	health_changed.connect(_on_health_changed)
+	died.connect(_on_actor_died)
+	if _health_bar:
+		_health_bar.set_color(_team_color())
+		_update_bar()
 
 func take_damage(amount: float, attacker: Node = null) -> void:
 	if _is_dead:
@@ -24,6 +31,7 @@ func take_damage(amount: float, attacker: Node = null) -> void:
 	health_changed.emit(current_health, max_health)
 	_flash_hit()
 	_spawn_hit_particles()
+	_spawn_floating_number(amount)
 
 	if attacker:
 		_record_attacker(attacker)
@@ -41,6 +49,25 @@ func _flash_hit() -> void:
 		if is_instance_valid(body):
 			body.modulate = original_mod
 	)
+
+func _spawn_floating_number(amount: float) -> void:
+	var effects := _actor.get_tree().current_scene.get_node_or_null("Effects")
+	if not effects:
+		return
+	var label := FloatingNumberScene.instantiate() as FloatingNumber
+	label.global_position = _actor.global_position + Vector2(randf_range(-10.0, 10.0), -50.0)
+	label.start(amount, _team_color(), Vector2.UP)
+	effects.add_child(label)
+
+func _on_health_changed(current: float, max_health: float) -> void:
+	_update_bar(current, max_health)
+
+func _update_bar(current := current_health, max := max_health) -> void:
+	if _health_bar:
+		_health_bar.update_value(current, max)
+
+func _on_actor_died() -> void:
+	_update_bar(0.0, max_health)
 
 func _spawn_hit_particles() -> void:
 	var effects := _actor.get_tree().current_scene.get_node_or_null("Effects")

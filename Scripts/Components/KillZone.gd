@@ -11,12 +11,17 @@ func _ready() -> void:
 func _on_body_entered(body: Node) -> void:
 	if not enabled:
 		return
-	if not body.is_in_group("actors"):
+
+	# Actors: run the normal death/respawn sequence.
+	if body.is_in_group("actors"):
+		var health := body.get_node_or_null("Components/Health") as Health
+		if health:
+			health.die()
 		return
 
-	var health := body.get_node_or_null("Components/Health") as Health
-	if not health:
+	# Weapons that fall off the map are removed from play.
+	if body.is_in_group("weapons"):
+		var weapon := body as WeaponBase
+		if weapon and not weapon.is_queued_for_deletion():
+			weapon.remove_from_world()
 		return
-
-	# Let Health handle the death sequence (particles, respawn, score attribution).
-	health.die()

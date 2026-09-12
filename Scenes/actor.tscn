@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://cgnkpv7hfem6j" path="res://Scripts/Components/Health.gd" id="5_health"]
 [ext_resource type="Script" uid="uid://my7ucja7hpxn" path="res://Scripts/Components/TeamMember.gd" id="6_team"]
 [ext_resource type="Script" uid="uid://cxtm3eepkr1ht" path="res://Scripts/Components/AIController.gd" id="7_ai"]
+[ext_resource type="PackedScene" uid="uid://b8eqm7g5v2k3p" path="res://Scenes/UI/HealthBar2D.tscn" id="8_hb"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_7ei5c"]
 friction = 0.1
@@ -23,6 +24,9 @@ lock_rotation = true
 contact_monitor = true
 max_contacts_reported = 4
 script = ExtResource("1_7ei5c")
+
+[node name="HealthBar2D" parent="." instance=ExtResource("8_hb")]
+position = Vector2(0, -55)
 
 [node name="VisualBody" type="Node2D" parent="." unique_id=1990988547]
 script = ExtResource("1_lfvdv")

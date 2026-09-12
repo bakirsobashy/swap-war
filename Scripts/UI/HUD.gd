@@ -4,10 +4,8 @@ extends CanvasLayer
 @onready var _score_board: HBoxContainer = %ScoreBoard
 @onready var _team_timer_label: Label = %TeamTimerLabel
 @onready var _winner_message: Label = %WinnerMessage
-@onready var _health_bar_root: Control = %ActorHealthBars
 
 var _actor_labels: Dictionary = {}
-var _health_bars: Dictionary = {}
 
 func _ready() -> void:
 	if TeamManager:
@@ -21,15 +19,11 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_update_team_timer()
-	_update_health_bars()
 
 func _build_initial_ui() -> void:
 	for c in _score_board.get_children():
 		c.queue_free()
-	for c in _health_bar_root.get_children():
-		c.queue_free()
 	_actor_labels.clear()
-	_health_bars.clear()
 
 	if not TeamManager:
 		return
@@ -48,21 +42,6 @@ func _on_actor_registered(actor: Node) -> void:
 	_actor_labels[actor] = label
 	_score_board.add_child(label)
 
-	var bar := ProgressBar.new()
-	bar.max_value = 100.0
-	bar.value = 100.0
-	bar.custom_minimum_size = Vector2(60, 10)
-	bar.show_percentage = false
-	_health_bars[actor] = bar
-	_health_bar_root.add_child(bar)
-
-	var health := actor.get_node_or_null("Components/Health") as Health
-	if health:
-		var health_callable := _on_health_changed.bind(actor)
-		if not health.health_changed.is_connected(health_callable):
-			health.health_changed.connect(health_callable)
-		_on_health_changed(health.current_health, health.max_health, actor)
-
 	_update_score_label(actor)
 
 func _on_actor_unregistered(actor: Node) -> void:
@@ -70,11 +49,6 @@ func _on_actor_unregistered(actor: Node) -> void:
 	if label:
 		label.queue_free()
 		_actor_labels.erase(actor)
-
-	var bar := _health_bars.get(actor) as ProgressBar
-	if bar:
-		bar.queue_free()
-		_health_bars.erase(actor)
 
 func _on_team_changed(_teams: Dictionary) -> void:
 	for actor in _actor_labels.keys():
@@ -84,6 +58,8 @@ func _on_score_changed(actor: Node, _score: int) -> void:
 	_update_score_label(actor)
 
 func show_winner(winner_name: String) -> void:
+	if not is_instance_valid(_winner_message):
+		return
 	if winner_name.is_empty():
 		_winner_message.text = "DRAW!"
 	else:
@@ -91,14 +67,9 @@ func show_winner(winner_name: String) -> void:
 	_winner_message.visible = true
 
 func hide_winner() -> void:
-	_winner_message.visible = false
-
-func _on_health_changed(current: float, max_health: float, actor: Node) -> void:
-	var bar := _health_bars.get(actor) as ProgressBar
-	if not bar:
+	if not is_instance_valid(_winner_message):
 		return
-	bar.max_value = max_health
-	bar.value = current
+	_winner_message.visible = false
 
 func _update_score_label(actor: Node) -> void:
 	var label := _actor_labels.get(actor) as Label
@@ -119,18 +90,6 @@ func _update_team_timer() -> void:
 		return
 	var remaining := TeamManager._swap_timer.time_left
 	_team_timer_label.text = "Swap: %.1f" % remaining
-
-func _update_health_bars() -> void:
-	for actor in _health_bars.keys():
-		if not is_instance_valid(actor):
-			continue
-		var node2d_actor := actor as Node2D
-		if not node2d_actor:
-			continue
-		var bar := _health_bars[actor] as ProgressBar
-		if not bar:
-			continue
-		bar.position = node2d_actor.get_global_transform_with_canvas().origin + Vector2(-30, -60)
 
 func _team_color(team_id: int) -> Color:
 	match team_id:

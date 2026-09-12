@@ -32,6 +32,11 @@ func _local_weapon_rotation() -> float:
 	return 0.0
 
 
+## Gun sprites point right, so facing left mirrors them on the X axis.
+func _get_facing_scale() -> Vector2:
+	return Vector2(_target_facing, 1.0)
+
+
 func _fire_projectile() -> void:
 	var projectile_scene := preload("res://Scenes/Weapons/Projectile.tscn")
 	var projectile := projectile_scene.instantiate() as Projectile
@@ -46,8 +51,17 @@ func _fire_projectile() -> void:
 		if not muzzle_dir.is_zero_approx():
 			dir = muzzle_dir
 
-	get_tree().current_scene.add_child(projectile)
-	projectile.start(spawn_pos, dir, _data, _holder)
+	# Defer spawn to avoid adding an Area2D during _integrate_forces.
+	call_deferred("_spawn_projectile_deferred", projectile, spawn_pos, dir, _data, _holder)
 
+
+func _spawn_projectile_deferred(projectile: Projectile, spawn_pos: Vector2, dir: Vector2, data: WeaponData, source: Node) -> void:
+	if not is_instance_valid(projectile):
+		return
+	var root := get_tree().current_scene
+	if not root:
+		return
+	root.add_child(projectile)
+	projectile.start(spawn_pos, dir, data, source)
 	if AudioManager:
 		AudioManager.play_attack()

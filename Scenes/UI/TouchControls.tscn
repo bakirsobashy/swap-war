@@ -1,0 +1,41 @@
+[gd_scene format=3 uid="uid://d1r8qvpi16ghr"]
+
+[ext_resource type="Script" uid="uid://ct5q6v7gq3w7m" path="res://Scripts/UI/TouchControls.gd" id="1_tc"]
+[ext_resource type="Texture2D" uid="uid://8lmc81n4us13" path="res://Assets/ui/PNG/Green/Default/button_round_flat.png" id="2_btn"]
+
+[node name="TouchControls" type="CanvasLayer"]
+script = ExtResource("1_tc")
+
+[node name="DropButton" type="TextureButton" parent="."]
+unique_name_in_owner = true
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -88.0
+offset_top = -88.0
+offset_right = -24.0
+offset_bottom = -24.0
+grow_horizontal = 0
+grow_vertical = 0
+focus_mode = 0
+texture_normal = ExtResource("2_btn")
+stretch_mode = 5
+
+[node name="Label" type="Label" parent="DropButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -4.0
+offset_top = -4.0
+offset_right = 4.0
+offset_bottom = 4.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "DROP"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[connection signal="pressed" from="DropButton" to="." method="_on_drop_button_pressed"]

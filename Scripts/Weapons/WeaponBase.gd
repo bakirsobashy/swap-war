@@ -29,6 +29,13 @@ func _ready() -> void:
 	max_contacts_reported = 4
 	body_entered.connect(_on_body_entered)
 
+	WeaponSpawner.register_weapon()
+	tree_exiting.connect(_on_tree_exiting)
+
+
+func _on_tree_exiting() -> void:
+	WeaponSpawner.unregister_weapon()
+
 
 ## Override in subclass.
 func attack() -> void:
@@ -42,6 +49,16 @@ func is_attacking() -> bool:
 
 func is_held() -> bool:
 	return _holder != null
+
+
+## Drop the weapon if currently held, then remove it from the world.
+## Used by the death plane / kill zone when a weapon falls off the map.
+func remove_from_world() -> void:
+	if _holder:
+		var holder_weapon := _holder.get_node_or_null("WeaponHolder") as WeaponHolder
+		if holder_weapon and holder_weapon.current_weapon == self:
+			holder_weapon.drop_weapon()
+	queue_free()
 
 
 func is_broken() -> bool:
@@ -80,22 +97,36 @@ func pick_up(holder: RigidBody2D, socket: Node2D) -> void:
 
 
 func drop() -> void:
-	if _holder:
-		remove_collision_exception_with(_holder)
-
 	var throw_velocity := Vector2.ZERO
-	if _holder:
-		throw_velocity = _holder.linear_velocity * 0.5
+	var cached_holder := _holder
+	if cached_holder:
+		throw_velocity = cached_holder.linear_velocity * 0.5
 		throw_velocity += Vector2(_target_facing * 100.0, -80.0)
 
 	_holder = null
 	_socket = null
-	gravity_scale = 1.0
-	set_deferred("freeze", false)
-	set_deferred("lock_rotation", true)
 
-	set_deferred("linear_velocity", throw_velocity)
-	set_deferred("angular_velocity", _target_facing * -2.0)
+	# Reset to a neutral dropped appearance so it doesn't keep the held orientation/scale.
+	scale = Vector2.ONE
+	rotation = randf_range(-0.2, 0.2)
+	gravity_scale = 1.0
+
+	# Apply all physics-affecting changes together in one deferred call to avoid
+	# one-frame state mixes (kinematic + gravity, frozen + velocity, etc.).
+	call_deferred("_do_drop", cached_holder, throw_velocity)
+
+
+func _do_drop(holder: RigidBody2D, throw_velocity: Vector2) -> void:
+	if is_instance_valid(holder):
+		remove_collision_exception_with(holder)
+
+	# Pop the weapon a little away from the actor so it doesn't start overlapping.
+	global_position += Vector2(_target_facing * 8.0, -4.0)
+
+	freeze = false
+	lock_rotation = false
+	linear_velocity = throw_velocity
+	angular_velocity = _target_facing * -2.0
 
 
 func set_facing(facing: float) -> void:
@@ -150,6 +181,10 @@ func _update_follow_transform() -> void:
 
 	global_position = target_pos
 	global_rotation = socket_rot + _local_weapon_rotation()
+
+	# Only ranged weapons flip scale when facing left; melee stays unchanged.
+	if self is RangedWeapon:
+		scale = Vector2(1.0,_target_facing)
 
 
 ## Override in subclasses to add attack offsets (thrust, slash, etc.).
