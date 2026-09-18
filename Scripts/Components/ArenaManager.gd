@@ -71,6 +71,7 @@ func _setup_menus() -> void:
 func _start_match() -> void:
 	_state = MatchState.PREPARE
 	_countdown_timer = prepare_countdown
+	_match_timer = _get_match_duration()
 	_win_reason = ""
 	_despawn_actors()
 	if ScoreManager:
@@ -81,6 +82,11 @@ func _start_match() -> void:
 			TeamManager._swap_timer.start()
 	_spawn_actors()
 	_show_countdown_display()
+
+func _get_match_duration() -> float:
+	if SettingsManager:
+		return SettingsManager.match_duration_seconds
+	return 60.0
 
 func restart_match() -> void:
 	_start_match()
@@ -230,6 +236,10 @@ func _show_post_round(winner: Node) -> void:
 	for actor in _spawned_actors:
 		if is_instance_valid(actor):
 			actor.process_mode = Node.PROCESS_MODE_DISABLED
+			# process_mode only stops script callbacks; RigidBody2Ds keep
+			# moving under physics integration unless we freeze them too.
+			if actor is RigidBody2D:
+				actor.freeze = true
 
 func _on_play_again() -> void:
 	if _post_round_menu:

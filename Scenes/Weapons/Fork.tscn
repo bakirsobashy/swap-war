@@ -13,7 +13,7 @@ points = PackedVector2Array(11, -55, -12, -54, -4, 53, 5, 54)
 
 [node name="Fork" type="RigidBody2D" unique_id=1704231431 groups=["weapons"]]
 collision_layer = 8
-collision_mask = 11
+collision_mask = 9
 physics_material_override = SubResource("PhysicsMaterial_fork")
 can_sleep = false
 script = ExtResource("1_fork")

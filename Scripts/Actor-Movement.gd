@@ -7,18 +7,18 @@ const WeaponBase = preload("res://Scripts/Weapons/WeaponBase.gd")
 @export var jump_impulse: float = 450.0
 @export var air_force_multiplier: float = 0.4
 @export var ground_friction: float = 0.88
-@export var air_friction: float = 0.98
+@export var air_friction: float = 0.92
 @export var is_player: bool = false
 
 @export var socket_rotate_speed: float = 4.0
 @export var socket_radius: float = 6.0
 
 var _is_grounded: bool = false
+var _was_grounded: bool = false
 var facing_direction: float = 1.0
 var aim_direction: Vector2 = Vector2.RIGHT
 
 @onready var ground_check: RayCast2D = $GroundCheck
-@onready var visual_body: Node2D = $VisualBody
 @onready var weapon_socket: Node2D = $WeaponSocket
 @onready var _ai_controller: Node = get_node_or_null("AIController")
 @onready var _weapon_holder: Node = get_node_or_null("WeaponHolder")
@@ -28,10 +28,25 @@ const DROP_DURATION: float = 0.3
 
 var _drop_timer: float = 0.0
 
+## Timestamps of the most recent REAL mouse and touch input. Emulated
+## mouse-from-touch events are excluded (they carry the emulation device id),
+## so taps on menus never register as mouse activity.
+var _last_mouse_msec: int = -1
+var _last_touch_msec: int = 0
+
 func _ready() -> void:
 	add_to_group("actors")
 
+func _input(event: InputEvent) -> void:
+	if event is InputEventScreenTouch or event is InputEventScreenDrag:
+		_last_touch_msec = Time.get_ticks_msec()
+	elif event is InputEventMouse and event.device != InputEvent.DEVICE_ID_EMULATION:
+		_last_mouse_msec = Time.get_ticks_msec()
+
 func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
+	# Capture previous grounded state before this frame's ground check,
+	# so landing detection can compare air -> ground across physics steps.
+	_was_grounded = _is_grounded
 	_update_ground_state(state)
 	_apply_run_force(state)
 	_apply_jump(state)
@@ -40,11 +55,13 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
 	_update_facing(state)
 	_update_attack()
 
+func _physics_process(delta: float) -> void:
+	_update_drop_timer(delta)
+
 func _process(delta: float) -> void:
 	_update_aim(delta)
 	_update_socket(delta)
 	_update_visuals()
-	_update_drop_timer(delta)
 
 func _update_ground_state(state: PhysicsDirectBodyState2D) -> void:
 	_is_grounded = _check_grounded_by_contacts(state)
@@ -85,13 +102,39 @@ func _wants_drop_through() -> bool:
 		return _ai_controller.wants_drop
 	return false
 
-func _is_on_one_way_slope() -> bool:
-	# Detect if we're standing on anything via contacts; one-way slopes use layer 3.
-	return _is_grounded
+func _is_on_one_way_slope(_state: PhysicsDirectBodyState2D) -> bool:
+	# Use the downward ground ray to detect what the actor is standing on.
+	# This is more reliable than contact colliders for TileMapLayer one-way tiles,
+	# because the TileMapLayer node's own collision_layer is 0; the layer comes from
+	# the TileSet physics layer assigned to the tile.
+	if not ground_check or not ground_check.is_colliding():
+		return false
 
-func _start_drop_through() -> void:
+	var collider := ground_check.get_collider()
+	if collider is TileMapLayer:
+		var tilemap := collider as TileMapLayer
+		var hit_point := ground_check.get_collision_point()
+		var local_point := tilemap.to_local(hit_point)
+		var cell := tilemap.local_to_map(local_point)
+		var tile_data := tilemap.get_cell_tile_data(cell)
+		if tile_data:
+			# Physics layer 1 in the TileSet is mapped to collision layer 4 (layer 3).
+			var tile_physics_count := tile_data.get_collision_polygons_count(1)
+			if tile_physics_count > 0:
+				return true
+	elif collider is CollisionObject2D:
+		var obj := collider as CollisionObject2D
+		if (obj.collision_layer & (1 << (ONE_WAY_LAYER - 1))) != 0:
+			return true
+
+	return false
+
+func _start_drop_through(state: PhysicsDirectBodyState2D) -> void:
 	_drop_timer = DROP_DURATION
 	set_collision_mask_value(ONE_WAY_LAYER, false)
+	# Give the body an immediate downward nudge so it separates from the
+	# one-way platform within the same physics step the mask bit flips off.
+	state.apply_central_impulse(Vector2(0.0, 80.0))
 
 func _update_drop_timer(delta: float) -> void:
 	if _drop_timer > 0.0:
@@ -156,6 +199,12 @@ func _is_holding_ranged_weapon() -> bool:
 
 func _get_target_aim() -> Vector2:
 	if is_player:
+		# Touch play has no mouse to aim with (mouse-from-touch emulation is
+		# disabled during gameplay so taps never fire the mouse-bound Attack
+		# action), so on a touchscreen the player aims along facing direction
+		# — like a classic button-driven mobile platformer.
+		if DisplayServer.is_touchscreen_available() and _last_touch_msec >= _last_mouse_msec:
+			return Vector2(facing_direction, 0.0)
 		var mouse_pos := get_global_mouse_position()
 		return mouse_pos - global_position
 
@@ -179,10 +228,8 @@ func _update_visuals() -> void:
 	$VisualBody/Sprite2D.flip_h = facing_direction < 0.0
 
 func _apply_jump(state: PhysicsDirectBodyState2D) -> void:
-	var was_grounded := _is_grounded
-
-	if _wants_drop_through() and _is_grounded and _is_on_one_way_slope():
-		_start_drop_through()
+	if _wants_drop_through() and _is_grounded and _is_on_one_way_slope(state):
+		_start_drop_through(state)
 		return
 
 	if _get_jump_input() and _is_grounded:
@@ -190,7 +237,8 @@ func _apply_jump(state: PhysicsDirectBodyState2D) -> void:
 		_is_grounded = false
 		if AudioManager:
 			AudioManager.play_jump()
-	elif not was_grounded and _is_grounded:
+	elif not _was_grounded and _is_grounded:
+		# Landed this physics step (was in air last step, on ground now).
 		if AudioManager:
 			AudioManager.play_land()
 
@@ -206,9 +254,9 @@ func _update_attack() -> void:
 		return
 	var weapon := _weapon_holder.current_weapon as WeaponBase
 	if weapon:
+		# Let the weapon class play its own attack sound so melee/ranged can
+		# handle cooldown checks and avoid doubling up with projectile spawn.
 		weapon.attack()
-		if AudioManager:
-			AudioManager.play_attack()
 
 func _get_drop_weapon_input() -> bool:
 	if is_player:

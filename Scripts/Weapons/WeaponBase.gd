@@ -14,6 +14,11 @@ var _holder: RigidBody2D = null
 var _socket: Node2D = null
 var _target_facing: float = 1.0
 
+const GROUND_MASK: int = CollisionConfig.MASK_GROUND_WEAPON  # World + Weapons: ground weapons collide with level and each other.
+const HELD_MASK: int = CollisionConfig.LAYER_WORLD | CollisionConfig.LAYER_ACTORS  # World + other actors: needed for melee contact damage. The holder is excluded via collision exception; other weapons are never touched.
+const GROUND_LAYER: int = CollisionConfig.LAYER_WEAPONS  # Layer 4 (Weapons), same as the weapon scenes.
+const HELD_LAYER: int = CollisionConfig.LAYER_HELD_WEAPONS  # Layer 6 (HeldWeapons)
+
 
 func _ready() -> void:
 	add_to_group("weapons")
@@ -28,6 +33,10 @@ func _ready() -> void:
 	contact_monitor = true
 	max_contacts_reported = 4
 	body_entered.connect(_on_body_entered)
+
+	# Weapons that are not held should not physically block actors.
+	if not is_held():
+		collision_mask = GROUND_MASK
 
 	WeaponSpawner.register_weapon()
 	tree_exiting.connect(_on_tree_exiting)
@@ -87,6 +96,8 @@ func pick_up(holder: RigidBody2D, socket: Node2D) -> void:
 	_target_facing = _get_holder_facing()
 
 	add_collision_exception_with(holder)
+	collision_layer = HELD_LAYER
+	collision_mask = HELD_MASK
 
 	gravity_scale = 0.0
 	set_deferred("freeze_mode", RigidBody2D.FREEZE_MODE_KINEMATIC)
@@ -111,6 +122,11 @@ func drop() -> void:
 	rotation = randf_range(-0.2, 0.2)
 	gravity_scale = 1.0
 
+	# Return to ground layer/mask immediately so the weapon doesn't keep
+	# interacting with actors or other held weapons for even one frame.
+	collision_layer = GROUND_LAYER
+	collision_mask = GROUND_MASK
+
 	# Apply all physics-affecting changes together in one deferred call to avoid
 	# one-frame state mixes (kinematic + gravity, frozen + velocity, etc.).
 	call_deferred("_do_drop", cached_holder, throw_velocity)
@@ -123,6 +139,8 @@ func _do_drop(holder: RigidBody2D, throw_velocity: Vector2) -> void:
 	# Pop the weapon a little away from the actor so it doesn't start overlapping.
 	global_position += Vector2(_target_facing * 8.0, -4.0)
 
+	collision_layer = GROUND_LAYER
+	collision_mask = GROUND_MASK
 	freeze = false
 	lock_rotation = false
 	linear_velocity = throw_velocity

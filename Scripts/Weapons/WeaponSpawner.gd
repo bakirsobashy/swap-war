@@ -70,6 +70,7 @@ func spawn_weapon(at_global_position: Vector2) -> WeaponBase:
 
 	weapon.global_position = at_global_position
 	weapon.rotation = randf_range(-0.2, 0.2)
+	weapon.collision_mask = WeaponBase.GROUND_MASK
 
 	var root := get_tree().current_scene
 	if root:

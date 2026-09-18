@@ -13,7 +13,7 @@ size = Vector2(40, 19)
 
 [node name="Pistol" type="RigidBody2D" unique_id=564209104 groups=["weapons"]]
 collision_layer = 8
-collision_mask = 11
+collision_mask = 9
 physics_material_override = SubResource("PhysicsMaterial_pistol")
 can_sleep = false
 script = ExtResource("1_pistol")
@@ -33,11 +33,4 @@ position = Vector2(26, -2)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=12670733]
 position = Vector2(-1, -2.5)
-shape = SubResource("RectangleShape2D_pistol")
-
-[node name="HitBox" type="Area2D" parent="." unique_id=1942567]
-collision_layer = 0
-collision_mask = 2
-
-[node name="HitBoxShape" type="CollisionShape2D" parent="HitBox" unique_id=423466542]
 shape = SubResource("RectangleShape2D_pistol")

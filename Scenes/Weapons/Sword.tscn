@@ -13,7 +13,7 @@ points = PackedVector2Array(10, 13, 6, 28, -7, 28, -10, 15, -4, -25, 1, -29, 4, 
 
 [node name="Sword" type="RigidBody2D" groups=["weapons"]]
 collision_layer = 8
-collision_mask = 11
+collision_mask = 9
 physics_material_override = SubResource("PhysicsMaterial_sword")
 can_sleep = false
 script = ExtResource("1_sword")

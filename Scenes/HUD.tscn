@@ -1,44 +1,41 @@
 [gd_scene format=3 uid="uid://b3nq1gq7qvnwi"]
 
-[ext_resource type="Script" uid="uid://ct5q6v7gq3w7m" path="res://Scripts/UI/HUD.gd" id="1_hud"]
-[ext_resource type="PackedScene" uid="uid://d4k8x7q1touch0" path="res://Scenes/UI/TouchControls.tscn" id="2_tc"]
+[ext_resource type="Script" uid="uid://d1d8qwqwhwb8s" path="res://Scripts/UI/HUD.gd" id="1_hud"]
+[ext_resource type="PackedScene" uid="uid://d1r8qvpi16ghr" path="res://Scenes/UI/TouchControls.tscn" id="2_tc"]
 
-[node name="HUD" type="CanvasLayer"]
+[node name="HUD" type="CanvasLayer" unique_id=1514791500]
 script = ExtResource("1_hud")
 
-[node name="TopBar" type="Control" parent="."]
+[node name="TopBar" type="Control" parent="." unique_id=998798779]
+unique_name_in_owner = true
 layout_mode = 3
 anchors_preset = 10
 anchor_right = 1.0
-offset_bottom = 48.0
+offset_bottom = 56.0
+grow_horizontal = 2
 
-[node name="ScoreBoard" type="HBoxContainer" parent="TopBar"]
+[node name="ScoreBoard" type="HBoxContainer" parent="TopBar" unique_id=328348980]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -200.0
-offset_right = 200.0
-offset_bottom = 40.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
+grow_vertical = 2
 alignment = 1
 
-[node name="TeamTimerLabel" type="Label" parent="TopBar"]
+[node name="TeamTimerLabel" type="Label" parent="TopBar" unique_id=580497220]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -120.0
-offset_top = 8.0
-offset_right = -16.0
-offset_bottom = 40.0
-grow_horizontal = 0
+offset_left = 8.0
+offset_top = 16.0
+offset_right = 160.0
+offset_bottom = 48.0
+grow_horizontal = 2
 text = "Swap: 5.0"
 horizontal_alignment = 2
 
-[node name="WinnerMessage" type="Label" parent="."]
+[node name="WinnerMessage" type="Label" parent="." unique_id=2073104039]
 unique_name_in_owner = true
 visible = false
 anchors_preset = 8
@@ -56,7 +53,7 @@ text = "WINNER"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ActorHealthBars" type="Control" parent="."]
+[node name="ActorHealthBars" type="Control" parent="." unique_id=1374174464]
 unique_name_in_owner = true
 layout_mode = 3
 anchors_preset = 15
@@ -66,4 +63,4 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="TouchControls" parent="." instance=ExtResource("2_tc")]
+[node name="TouchControls" parent="." unique_id=2135960030 instance=ExtResource("2_tc")]

@@ -5,6 +5,8 @@ var current_weapon: WeaponBase = null
 var last_attacker: Node = null
 var last_attacker_time: float = 0.0
 
+const ATTRIBUTION_WINDOW: float = 5.0
+
 @onready var _actor: RigidBody2D = get_parent()
 @onready var _pickup_area: Area2D = _actor.get_node_or_null("PickupArea")
 @onready var _socket: Node2D = _actor.get_node_or_null("WeaponSocket")
@@ -65,12 +67,16 @@ func _on_pickup_body_entered(body: Node) -> void:
 
 	current_weapon = weapon
 	weapon.pick_up(_actor, _socket)
+	if AudioManager:
+		AudioManager.play_pickup()
 
 func drop_weapon() -> void:
 	if current_weapon == null:
 		return
 	current_weapon.drop()
 	current_weapon = null
+	if AudioManager:
+		AudioManager.play_drop()
 	_update_unarmed_hand_position(_get_actor_facing())
 
 func record_attacker(attacker: Node) -> void:
@@ -78,6 +84,18 @@ func record_attacker(attacker: Node) -> void:
 		return
 	last_attacker = attacker
 	last_attacker_time = Time.get_ticks_msec() / 1000.0
+
+func get_last_attacker() -> Node:
+	if not last_attacker:
+		return null
+	var now := Time.get_ticks_msec() / 1000.0
+	if now - last_attacker_time > ATTRIBUTION_WINDOW:
+		return null
+	return last_attacker
+
+func clear_attacker() -> void:
+	last_attacker = null
+	last_attacker_time = 0.0
 
 func is_holding_weapon() -> bool:
 	return current_weapon != null

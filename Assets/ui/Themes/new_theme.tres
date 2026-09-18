@@ -1,0 +1,83 @@
+[gd_resource type="Theme" format=3 uid="uid://c6r67tty4fd5u"]
+
+[ext_resource type="Texture2D" uid="uid://bkooxlrb52wk4" path="res://Assets/ui/Drawing 2.png" id="1_hxola"]
+[ext_resource type="Texture2D" uid="uid://dqp0il0v5qfkk" path="res://Assets/ui/Drawing 2-2.png" id="2_hkpw1"]
+[ext_resource type="Texture2D" uid="uid://hrqvv46eu406" path="res://Assets/ui/new_atlas_texture.tres" id="3_64132"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_64132"]
+texture = ExtResource("1_hxola")
+texture_margin_left = 15.0
+texture_margin_top = 15.0
+texture_margin_right = 15.0
+texture_margin_bottom = 15.0
+region_rect = Rect2(56, 257, 125, 53)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_hxola"]
+texture = ExtResource("1_hxola")
+texture_margin_left = 15.0
+texture_margin_top = 15.0
+texture_margin_right = 15.0
+texture_margin_bottom = 15.0
+region_rect = Rect2(52, 174, 125, 54)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_6xawr"]
+texture = ExtResource("1_hxola")
+texture_margin_left = 15.0
+texture_margin_top = 15.0
+texture_margin_right = 15.0
+texture_margin_bottom = 15.0
+region_rect = Rect2(56, 257, 125, 53)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_0h8h8"]
+texture = ExtResource("1_hxola")
+texture_margin_left = 15.0
+texture_margin_top = 15.0
+texture_margin_right = 15.0
+texture_margin_bottom = 15.0
+region_rect = Rect2(52, 91, 125, 54)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ik432"]
+texture = ExtResource("1_hxola")
+texture_margin_left = 15.0
+texture_margin_top = 15.0
+texture_margin_right = 15.0
+texture_margin_bottom = 15.0
+region_rect = Rect2(56, 257, 125, 53)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_3i33y"]
+texture = ExtResource("1_hxola")
+texture_margin_left = 10.0
+texture_margin_top = 10.0
+texture_margin_right = 10.0
+texture_margin_bottom = 10.0
+expand_margin_left = 15.0
+expand_margin_top = 15.0
+expand_margin_right = 15.0
+expand_margin_bottom = 15.0
+region_rect = Rect2(67.579865, 418.79898, 169.88873, 167.49692)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_8e2ic"]
+texture = ExtResource("1_hxola")
+texture_margin_left = 10.0
+texture_margin_top = 10.0
+texture_margin_right = 10.0
+texture_margin_bottom = 10.0
+region_rect = Rect2(69, 423, 169, 161)
+
+[resource]
+Button/colors/font_color = Color(0, 0, 0, 1)
+Button/colors/font_hover_color = Color(0, 0, 0, 1)
+Button/colors/font_hover_pressed_color = Color(0, 0, 0, 1)
+Button/colors/font_pressed_color = Color(0, 0, 0, 1)
+Button/styles/disabled = SubResource("StyleBoxTexture_64132")
+Button/styles/hover = SubResource("StyleBoxTexture_hxola")
+Button/styles/hover_pressed = SubResource("StyleBoxTexture_6xawr")
+Button/styles/normal = SubResource("StyleBoxTexture_0h8h8")
+Button/styles/pressed = SubResource("StyleBoxTexture_ik432")
+CheckBox/constants/icon_max_width = 22
+CheckBox/icons/checked = ExtResource("2_hkpw1")
+CheckBox/icons/unchecked = ExtResource("3_64132")
+Label/colors/font_color = Color(0, 0, 0, 1)
+PanelContainer/styles/panel = SubResource("StyleBoxTexture_3i33y")
+PopupMenu/colors/font_color = Color(0, 0, 0, 1)
+PopupMenu/styles/panel = SubResource("StyleBoxTexture_8e2ic")

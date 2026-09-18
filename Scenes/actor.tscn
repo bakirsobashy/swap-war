@@ -17,7 +17,7 @@ height = 62.0
 
 [node name="Actor" type="RigidBody2D" unique_id=304031720]
 collision_layer = 2
-collision_mask = 15
+collision_mask = 5
 physics_material_override = SubResource("PhysicsMaterial_7ei5c")
 can_sleep = false
 lock_rotation = true
@@ -37,7 +37,9 @@ script = ExtResource("1_lfvdv")
 
 [node name="GroundCheck" type="RayCast2D" parent="." unique_id=1980831231]
 position = Vector2(0, 30)
-target_position = Vector2(0, 15)
+target_position = Vector2(0, 25)
+collision_mask = 5
+enabled = true
 
 [node name="PickupArea" type="Area2D" parent="." unique_id=1672752271]
 collision_layer = 16

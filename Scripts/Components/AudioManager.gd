@@ -10,11 +10,22 @@ extends Node
 @export var death_sound: AudioStream
 @export var jump_sound: AudioStream
 @export var land_sound: AudioStream
-@export var attack_sound: AudioStream
+@export var melee_attack_sound: AudioStream
+@export var ranged_attack_sound: AudioStream
 @export var team_swap_sound: AudioStream
 @export var win_sound: AudioStream
 @export var pickup_sound: AudioStream
 @export var drop_sound: AudioStream
+@export var music_sound: AudioStream
+
+const SOUND_DIR := "res://Assets/audio/vfx/"
+const GENERATED_DIR := "res://Assets/audio/generated/"
+const DEFAULT_MUSIC_PATH := "res://Assets/audio/music/Street-Chaos.ogg"
+
+# Multi-variant clips (e.g. swing1/swing2, land1/land2): when no export is
+# assigned, a random clip from these lists plays for cheap variety.
+var _melee_attack_variants: Array[AudioStream] = []
+var _land_variants: Array[AudioStream] = []
 
 # UI sounds
 @export var ui_click_sound: AudioStream
@@ -27,7 +38,9 @@ var _music_bus: int = 0
 
 func _ready() -> void:
 	_load_default_ui_sounds()
+	_load_default_gameplay_sounds()
 	_setup_audio_buses()
+	_start_default_music()
 
 func _load_default_ui_sounds() -> void:
 	if not ui_click_sound:
@@ -38,6 +51,43 @@ func _load_default_ui_sounds() -> void:
 		ui_toggle_sound = load("res://Assets/ui/Sounds/switch-a.ogg")
 	if not ui_touch_sound:
 		ui_touch_sound = load("res://Assets/ui/Sounds/tap-a.ogg")
+
+## Library defaults; explicit exports on the autoload still win.
+func _load_default_gameplay_sounds() -> void:
+	if not jump_sound:
+		jump_sound = load(SOUND_DIR + "jump.mp3")
+	if not melee_attack_sound:
+		_melee_attack_variants = _load_clips(["swing1.mp3", "swing2.mp3"])
+	if not land_sound:
+		_land_variants = _load_clips(["land1.mp3", "land2.mp3"])
+	if not ranged_attack_sound:
+		ranged_attack_sound = load(SOUND_DIR + "fire.mp3")
+	if not pickup_sound:
+		pickup_sound = load(SOUND_DIR + "Pickup.mp3")
+	if not win_sound:
+		win_sound = load(SOUND_DIR + "win-jingle.mp3")
+	if not team_swap_sound:
+		team_swap_sound = load(SOUND_DIR + "Transitions.mp3")
+	# TODO: synthesized placeholders until final assets arrive.
+	if not hit_sound:
+		hit_sound = load(GENERATED_DIR + "hit.wav")
+	if not death_sound:
+		death_sound = load(GENERATED_DIR + "death.wav")
+	if not drop_sound:
+		drop_sound = load(GENERATED_DIR + "drop.wav")
+
+func _load_clips(file_names: Array) -> Array[AudioStream]:
+	var clips: Array[AudioStream] = []
+	for file_name in file_names:
+		var clip := load(SOUND_DIR + file_name) as AudioStream
+		if clip:
+			clips.append(clip)
+	return clips
+
+func _pick_clip(clips: Array[AudioStream]) -> AudioStream:
+	if clips.is_empty():
+		return null
+	return clips[randi() % clips.size()]
 
 func play_sfx(stream: AudioStream, pitch_random: float = 0.0) -> void:
 	if not sfx_enabled or not stream:
@@ -62,7 +112,17 @@ func play_music(stream: AudioStream) -> void:
 	player.stream = stream
 	player.bus = AudioServer.get_bus_name(_music_bus)
 	player.autoplay = true
+	# Safety net: if the stream cannot loop internally, keep it playing anyway.
+	player.finished.connect(player.play)
 	add_child(player)
+
+## Play the default background music everywhere (menu + arena).
+func _start_default_music() -> void:
+	if music_sound == null:
+		music_sound = load(DEFAULT_MUSIC_PATH)
+		if music_sound is AudioStreamOggVorbis and "loop" in music_sound:
+			music_sound.loop = true
+	play_music(music_sound)
 
 func stop_music() -> void:
 	_stop_music()
@@ -77,10 +137,13 @@ func play_jump() -> void:
 	play_sfx(jump_sound, 0.05)
 
 func play_land() -> void:
-	play_sfx(land_sound, 0.1)
+	play_sfx(land_sound if land_sound else _pick_clip(_land_variants), 0.1)
 
-func play_attack() -> void:
-	play_sfx(attack_sound, 0.1)
+func play_melee_attack() -> void:
+	play_sfx(melee_attack_sound if melee_attack_sound else _pick_clip(_melee_attack_variants), 0.08)
+
+func play_ranged_fire() -> void:
+	play_sfx(ranged_attack_sound, 0.05)
 
 func play_team_swap() -> void:
 	play_sfx(team_swap_sound, 0.0)
@@ -127,6 +190,8 @@ func set_music_enabled(enabled: bool) -> void:
 	music_enabled = enabled
 	if not enabled:
 		_stop_music()
+	elif get_node_or_null("MusicPlayer") == null:
+		_start_default_music()
 
 func _setup_audio_buses() -> void:
 	var master_name := AudioServer.get_bus_name(0)

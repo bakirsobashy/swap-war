@@ -21,6 +21,9 @@ func attack() -> void:
 	_attack_timer = _data.attack_thrust_duration
 	_is_attacking = true
 
+	if AudioManager:
+		AudioManager.play_melee_attack()
+
 
 func is_attacking() -> bool:
 	return _is_attacking
@@ -73,10 +76,6 @@ func _on_body_entered(body: Node) -> void:
 
 	if AudioManager:
 		AudioManager.play_hit()
-
-	# Placeholder critical hit flash.
-	if is_critical and "flash_damage" in body:
-		body.flash_damage()
 
 
 func _apply_knockback(body: Node) -> void:

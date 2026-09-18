@@ -49,7 +49,7 @@ func reset_scores() -> void:
 
 func get_leader() -> Node:
 	var best: Node = null
-	var best_score := -1
+	var best_score := 0
 	for actor in _scores.keys():
 		var s: int = _scores[actor]
 		if s > best_score:
@@ -63,15 +63,17 @@ func _on_actor_died(victim: Node) -> void:
 	var killer := _find_last_attacker(victim)
 	if not killer:
 		return
+	if killer == victim:
+		return
 	if _is_same_team(killer, victim):
 		return
 	add_score(killer, 1)
 
 func _find_last_attacker(victim: Node) -> Node:
-	# Fallback: last actor who recently damaged this victim is tracked by WeaponHolder.
+	# Use the per-actor WeaponHolder attribution, which expires after a short window.
 	var holder := victim.get_node_or_null("WeaponHolder") as WeaponHolder
-	if holder and holder.last_attacker:
-		return holder.last_attacker
+	if holder:
+		return holder.get_last_attacker()
 	return null
 
 func _is_same_team(a: Node, b: Node) -> bool:

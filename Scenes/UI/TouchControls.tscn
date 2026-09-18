@@ -1,41 +1,81 @@
 [gd_scene format=3 uid="uid://d1r8qvpi16ghr"]
 
-[ext_resource type="Script" uid="uid://ct5q6v7gq3w7m" path="res://Scripts/UI/TouchControls.gd" id="1_tc"]
+[ext_resource type="Script" uid="uid://ctrg6l82xt3to" path="res://Scripts/UI/TouchControls.gd" id="1_tc"]
 [ext_resource type="Texture2D" uid="uid://8lmc81n4us13" path="res://Assets/ui/PNG/Green/Default/button_round_flat.png" id="2_btn"]
+[ext_resource type="Texture2D" path="res://Assets/ui/PNG/Green/Default/arrow_basic_w.png" id="3_left"]
+[ext_resource type="Texture2D" path="res://Assets/ui/PNG/Green/Default/arrow_basic_w_small.png" id="4_left_pressed"]
+[ext_resource type="Texture2D" path="res://Assets/ui/PNG/Green/Default/arrow_basic_e.png" id="5_right"]
+[ext_resource type="Texture2D" path="res://Assets/ui/PNG/Green/Default/arrow_basic_e_small.png" id="6_right_pressed"]
+[ext_resource type="Texture2D" path="res://Assets/ui/PNG/Green/Default/button_round_gloss.png" id="7_jump"]
+[ext_resource type="Texture2D" path="res://Assets/ui/PNG/Green/Default/button_round_depth_flat.png" id="8_jump_pressed"]
+[ext_resource type="Texture2D" path="res://Assets/ui/PNG/Red/Default/button_round_flat.png" id="9_attack"]
+[ext_resource type="Texture2D" path="res://Assets/ui/PNG/Red/Default/button_round_depth_flat.png" id="10_attack_pressed"]
+[ext_resource type="Texture2D" uid="uid://bqhyiihvkqic6" path="res://Assets/ui/PNG/Green/Default/arrow_basic_s.png" id="11_down"]
+[ext_resource type="Texture2D" uid="uid://de63qixrxraem" path="res://Assets/ui/PNG/Green/Default/arrow_basic_s_small.png" id="12_down_pressed"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_kl3t2"]
+load_path = "res://.godot/imported/Drawing 2.png-3cc7bf47eb404251615aa5f350a940f3.ctex"
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_pause"]
+atlas = SubResource("CompressedTexture2D_kl3t2")
+region = Rect2(183.56097, 88.09385, 137.0943, 68.04858)
 
 [node name="TouchControls" type="CanvasLayer"]
 script = ExtResource("1_tc")
 
-[node name="DropButton" type="TextureButton" parent="."]
+[node name="PauseButton" type="TouchScreenButton" parent="."]
 unique_name_in_owner = true
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -88.0
-offset_top = -88.0
-offset_right = -24.0
-offset_bottom = -24.0
-grow_horizontal = 0
-grow_vertical = 0
-focus_mode = 0
+visibility_mode = 0
+texture_normal = SubResource("AtlasTexture_pause")
+
+[node name="MoveLeft" type="TouchScreenButton" parent="."]
+unique_name_in_owner = true
+visibility_mode = 0
+action = &"Move_Left"
+texture_normal = ExtResource("3_left")
+texture_pressed = ExtResource("4_left_pressed")
+
+[node name="MoveRight" type="TouchScreenButton" parent="."]
+unique_name_in_owner = true
+visibility_mode = 0
+action = &"Move_Right"
+texture_normal = ExtResource("5_right")
+texture_pressed = ExtResource("6_right_pressed")
+
+[node name="MoveDown" type="TouchScreenButton" parent="."]
+unique_name_in_owner = true
+visibility_mode = 0
+action = &"Move_Down"
+texture_normal = ExtResource("11_down")
+texture_pressed = ExtResource("12_down_pressed")
+
+[node name="JumpButton" type="TouchScreenButton" parent="."]
+unique_name_in_owner = true
+visibility_mode = 0
+action = &"Jump"
+texture_normal = ExtResource("7_jump")
+texture_pressed = ExtResource("8_jump_pressed")
+
+[node name="AttackButton" type="TouchScreenButton" parent="."]
+unique_name_in_owner = true
+visibility_mode = 0
+action = &"Attack"
+texture_normal = ExtResource("9_attack")
+texture_pressed = ExtResource("10_attack_pressed")
+
+[node name="DropButton" type="TouchScreenButton" parent="."]
+unique_name_in_owner = true
+visibility_mode = 0
 texture_normal = ExtResource("2_btn")
-stretch_mode = 5
+texture_pressed = ExtResource("8_jump_pressed")
 
 [node name="Label" type="Label" parent="DropButton"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -4.0
-offset_top = -4.0
-offset_right = 4.0
-offset_bottom = 4.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 0
+offset_right = 64.0
+offset_bottom = 64.0
 text = "DROP"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[connection signal="pressed" from="PauseButton" to="." method="_on_pause_button_pressed"]
 [connection signal="pressed" from="DropButton" to="." method="_on_drop_button_pressed"]

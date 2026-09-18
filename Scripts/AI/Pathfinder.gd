@@ -21,7 +21,6 @@ const WAYPOINT_PASS_BUFFER: float = 20.0
 ## When off the path, the AI heads for the stair entry waypoint instead.
 const PATH_PROXIMITY: float = 80.0
 
-var _sequence: Array = []
 var _last_target: Vector2 = Vector2.ZERO
 var _committed_direction: String = ""
 
@@ -44,7 +43,6 @@ func get_move_target(final_target: Vector2) -> Vector2:
 
 	# Large target change: drop any stale stair plan.
 	if final_target.distance_to(_last_target) > 100.0:
-		_release_sequence()
 		_committed_direction = ""
 	_last_target = final_target
 
@@ -53,19 +51,14 @@ func get_move_target(final_target: Vector2) -> Vector2:
 	_update_committed_direction(dy)
 
 	if _committed_direction == "":
-		_release_sequence()
 		return final_target
 
 	var sequence := _build_sequence(_committed_direction)
 	if sequence.is_empty():
-		_release_sequence()
 		return final_target
-
-	_sequence = sequence
 
 	var target := _select_target_waypoint(pos, sequence)
 	if not target:
-		_release_sequence()
 		return final_target
 
 	# If we have reached the current waypoint, finish the stair plan when the
@@ -76,7 +69,6 @@ func get_move_target(final_target: Vector2) -> Vector2:
 		var reached_last: bool = (target == sequence[sequence.size() - 1])
 		var same_layer: bool = abs(dy) <= owner.layer_height_threshold
 		if same_layer or reached_last:
-			_release_sequence()
 			return final_target
 
 	return target.global_position
@@ -198,10 +190,6 @@ func _is_past_last_waypoint(pos: Vector2, sequence: Array) -> bool:
 	if ascending:
 		return pos.y <= last.global_position.y - WAYPOINT_PASS_BUFFER
 	return pos.y >= last.global_position.y + WAYPOINT_PASS_BUFFER
-
-
-func _release_sequence() -> void:
-	_sequence.clear()
 
 
 func update(_delta: float) -> void:

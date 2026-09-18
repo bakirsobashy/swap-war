@@ -4,6 +4,7 @@ extends CanvasLayer
 @onready var _score_board: HBoxContainer = %ScoreBoard
 @onready var _team_timer_label: Label = %TeamTimerLabel
 @onready var _winner_message: Label = %WinnerMessage
+@onready var _top_bar: Control = %TopBar
 
 var _actor_labels: Dictionary = {}
 
@@ -15,10 +16,34 @@ func _ready() -> void:
 	if ScoreManager:
 		ScoreManager.score_changed.connect(_on_score_changed)
 
+	get_viewport().size_changed.connect(_apply_responsive_layout)
+	_apply_responsive_layout()
+
 	call_deferred("_build_initial_ui")
 
 func _process(delta: float) -> void:
 	_update_team_timer()
+
+## Shift the top bar below any notch/status-bar inset and shrink the HUD font
+## on narrow viewports (phones in portrait) so the scoreboard never overflows.
+func _apply_responsive_layout() -> void:
+	var insets: Vector4 = SafeAreaUtil.get_canvas_insets(get_viewport())
+	_top_bar.offset_top = insets.y
+	_top_bar.offset_bottom = 56.0 + insets.y
+
+	# Size the fonts off the real WINDOW width: under canvas_items stretch with
+	# the expand aspect the canvas is never narrower than the 1152-unit base,
+	# so comparing canvas width would make these branches unreachable.
+	var window_width := float(DisplayServer.window_get_size().x)
+	if window_width < 500.0:
+		_score_board.add_theme_font_size_override("font_size", 13)
+		_team_timer_label.add_theme_font_size_override("font_size", 13)
+	elif window_width < 800.0:
+		_score_board.add_theme_font_size_override("font_size", 16)
+		_team_timer_label.add_theme_font_size_override("font_size", 16)
+	else:
+		_score_board.remove_theme_font_size_override("font_size")
+		_team_timer_label.remove_theme_font_size_override("font_size")
 
 func _build_initial_ui() -> void:
 	for c in _score_board.get_children():

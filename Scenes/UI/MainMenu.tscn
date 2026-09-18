@@ -1,13 +1,29 @@
 [gd_scene format=3 uid="uid://b4m3x7q1main0"]
 
 [ext_resource type="Script" uid="uid://euc6e166pilj" path="res://Scripts/UI/MainMenu.gd" id="1_main0"]
+[ext_resource type="Texture2D" uid="uid://cg3cbaffdr0j5" path="res://Assets/ui/IMG_0882.PNG" id="2_t6w0q"]
 [ext_resource type="Theme" uid="uid://sw4pw4rth3m3" path="res://Assets/ui/Themes/swap_war_theme.tres" id="2_theme"]
+[ext_resource type="Theme" uid="uid://c6r67tty4fd5u" path="res://Assets/ui/Themes/new_theme.tres" id="3_k8um8"]
+[ext_resource type="Texture2D" uid="uid://kmdb4qgie4c1" path="res://Assets/ui/Drawing 2-3.png" id="5_k8um8"]
 
 [node name="MainMenu" type="CanvasLayer" unique_id=553296457]
 script = ExtResource("1_main0")
 
+[node name="TextureRect" type="TextureRect" parent="." unique_id=1857810767]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -504.0
+offset_top = -486.0
+offset_right = 504.0
+offset_bottom = 486.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_t6w0q")
+
 [node name="MainPanel" type="PanelContainer" parent="." unique_id=1092478875]
 unique_name_in_owner = true
+visible = false
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -19,7 +35,7 @@ offset_right = 180.0
 offset_bottom = 210.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource("2_theme")
+theme = ExtResource("3_k8um8")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MainPanel" unique_id=226741147]
 layout_mode = 2
@@ -27,7 +43,6 @@ alignment = 1
 
 [node name="Title" type="Label" parent="MainPanel/VBoxContainer" unique_id=320615669]
 layout_mode = 2
-theme = ExtResource("2_theme")
 theme_override_font_sizes/font_size = 42
 text = "SWAP-WAR"
 horizontal_alignment = 1
@@ -41,7 +56,6 @@ theme = ExtResource("2_theme")
 unique_name_in_owner = true
 custom_minimum_size = Vector2(240, 56)
 layout_mode = 2
-theme = ExtResource("2_theme")
 text = "PLAY"
 
 [node name="HowToPlayBtn" type="Button" parent="MainPanel/VBoxContainer" unique_id=1714799643]
@@ -62,8 +76,15 @@ custom_minimum_size = Vector2(240, 56)
 layout_mode = 2
 text = "QUIT"
 
+[node name="TextureButton" type="TextureButton" parent="MainPanel/VBoxContainer" unique_id=1055166277]
+layout_mode = 2
+texture_normal = ExtResource("5_k8um8")
+ignore_texture_size = true
+stretch_mode = 0
+
 [node name="OptionsPanel" type="PanelContainer" parent="." unique_id=79168547]
 unique_name_in_owner = true
+visible = false
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -186,6 +207,7 @@ text = "BACK"
 
 [node name="HelpPanel" type="PanelContainer" parent="." unique_id=1390669815]
 unique_name_in_owner = true
+visible = false
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -238,6 +260,7 @@ text = "BACK"
 
 [node name="SettingsPanel" type="PanelContainer" parent="." unique_id=1285881015]
 unique_name_in_owner = true
+visible = false
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -249,7 +272,7 @@ offset_right = 210.0
 offset_bottom = 220.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource("2_theme")
+theme = ExtResource("3_k8um8")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="SettingsPanel" unique_id=332680952]
 layout_mode = 2
@@ -285,7 +308,10 @@ value = -6.0
 [node name="SFXCheck" type="CheckBox" parent="SettingsPanel/VBoxContainer/SFXBox" unique_id=464119754]
 unique_name_in_owner = true
 layout_mode = 2
-text = "On"
+keep_pressed_outside = true
+flat = true
+icon_alignment = 1
+expand_icon = true
 
 [node name="MusicBox" type="HBoxContainer" parent="SettingsPanel/VBoxContainer" unique_id=1637190524]
 layout_mode = 2
@@ -307,7 +333,9 @@ value = -12.0
 [node name="MusicCheck" type="CheckBox" parent="SettingsPanel/VBoxContainer/MusicBox" unique_id=1665859288]
 unique_name_in_owner = true
 layout_mode = 2
-text = "On"
+text = "
+"
+flat = true
 
 [node name="TouchBox" type="HBoxContainer" parent="SettingsPanel/VBoxContainer" unique_id=1207730366]
 layout_mode = 2
@@ -346,14 +374,14 @@ text = "BACK"
 [connection signal="pressed" from="MainPanel/VBoxContainer/HowToPlayBtn" to="." method="_play_click"]
 [connection signal="pressed" from="MainPanel/VBoxContainer/SettingsBtn" to="." method="_on_settings_pressed"]
 [connection signal="pressed" from="MainPanel/VBoxContainer/SettingsBtn" to="." method="_play_click"]
-[connection signal="pressed" from="MainPanel/VBoxContainer/QuitBtn" to="." method="_play_click"]
 [connection signal="pressed" from="MainPanel/VBoxContainer/QuitBtn" to="." method="_on_quit_pressed"]
+[connection signal="pressed" from="MainPanel/VBoxContainer/QuitBtn" to="." method="_play_click"]
 [connection signal="value_changed" from="OptionsPanel/VBoxContainer/AIBox/AISlider" to="." method="_on_ai_slider_changed"]
 [connection signal="item_selected" from="OptionsPanel/VBoxContainer/ModeBox/ModeOption" to="." method="_on_mode_option_changed"]
 [connection signal="value_changed" from="OptionsPanel/VBoxContainer/ScoreBox/ScoreSlider" to="." method="_on_score_slider_changed"]
 [connection signal="value_changed" from="OptionsPanel/VBoxContainer/DurationBox/DurationSlider" to="." method="_on_duration_slider_changed"]
-[connection signal="pressed" from="OptionsPanel/VBoxContainer/StartMatchBtn" to="." method="_play_click"]
 [connection signal="pressed" from="OptionsPanel/VBoxContainer/StartMatchBtn" to="." method="_on_start_match_pressed"]
+[connection signal="pressed" from="OptionsPanel/VBoxContainer/StartMatchBtn" to="." method="_play_click"]
 [connection signal="pressed" from="OptionsPanel/VBoxContainer/OptionsBackBtn" to="." method="_on_back_pressed"]
 [connection signal="pressed" from="OptionsPanel/VBoxContainer/OptionsBackBtn" to="." method="_play_click"]
 [connection signal="pressed" from="HelpPanel/VBoxContainer/HelpBackBtn" to="." method="_on_back_pressed"]

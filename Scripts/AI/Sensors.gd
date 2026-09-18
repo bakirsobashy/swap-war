@@ -184,6 +184,8 @@ func _update_navigation_rays() -> void:
 	var dir: float = _get_actor_facing()
 	var radius: float = 19.0
 	var collision_mask: int = 1 | 4  # world (layer 1) + one-way platforms (layer 3)
+	# Note: keep literal values because RefCounted cannot easily preload CollisionConfig
+	# without a Node reference, and Sensors is not an autoload.
 
 	# Wall ahead.
 	var wall_origin: Vector2 = pos + Vector2(dir * radius, 0)

@@ -20,7 +20,6 @@ func start(pos: Vector2, dir: Vector2, data: WeaponData, source: Node) -> void:
 
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)
-	area_entered.connect(_on_area_entered)
 
 
 func _physics_process(delta: float) -> void:
@@ -38,6 +37,10 @@ func _on_body_entered(body: Node) -> void:
 	if TeamMember.is_same_team(_source, body):
 		return
 
+	# Any non-teammate impact (actor or wall) gets impact feedback.
+	if AudioManager:
+		AudioManager.play_hit()
+
 	var health := body.get_node_or_null("Components/Health") as Health
 	if health:
 		var final_damage := _data.damage
@@ -46,15 +49,8 @@ func _on_body_entered(body: Node) -> void:
 			final_damage *= 1.5
 		health.take_damage(final_damage, _source)
 		_apply_knockback(body)
-		if is_critical and "flash_damage" in body:
-			body.flash_damage()
 
 	queue_free()
-
-
-func _on_area_entered(area: Area2D) -> void:
-	# Ignore other projectiles and pickup/interaction zones.
-	pass
 
 
 func _apply_knockback(body: Node) -> void:
