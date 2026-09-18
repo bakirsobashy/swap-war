@@ -1,7 +1,5 @@
 extends CanvasLayer
 
-const ArenaScene := "res://Scenes/arena.tscn"
-
 @onready var main_panel: PanelContainer = %MainPanel
 @onready var options_panel: PanelContainer = %OptionsPanel
 @onready var help_panel: PanelContainer = %HelpPanel
@@ -14,6 +12,7 @@ const ArenaScene := "res://Scenes/arena.tscn"
 @onready var duration_label: Label = %DurationLabel
 @onready var duration_slider: HSlider = %DurationSlider
 @onready var mode_option: OptionButton = %ModeOption
+@onready var arena_option: OptionButton = %ArenaOption
 
 @onready var sfx_slider: HSlider = %SFXSlider
 @onready var music_slider: HSlider = %MusicSlider
@@ -25,6 +24,7 @@ var _ai_count := 3
 var _win_mode := SettingsManager.WinMode.SCORE_TARGET
 var _score_target := 10
 var _match_duration := 120.0
+var _arena_index := 0
 
 func _ready() -> void:
 	if SettingsManager:
@@ -32,7 +32,9 @@ func _ready() -> void:
 		_win_mode = SettingsManager.win_mode
 		_score_target = SettingsManager.score_target
 		_match_duration = SettingsManager.match_duration_seconds
+		_arena_index = _path_to_index(SettingsManager.selected_arena_path)
 
+	_populate_arena_options()
 	_update_options_ui()
 	_update_settings_ui()
 	_show_panel(main_panel)
@@ -64,7 +66,8 @@ func _on_back_pressed() -> void:
 func _on_start_match_pressed() -> void:
 	if SettingsManager:
 		SettingsManager.set_match_options(_ai_count, _win_mode, _score_target, _match_duration)
-	get_tree().change_scene_to_file(ArenaScene)
+		SettingsManager.set_arena_path(ArenaDatabase.get_arena_path_by_index(_arena_index))
+	get_tree().change_scene_to_file(SettingsManager.selected_arena_path)
 
 func _on_ai_slider_changed(value: float) -> void:
 	_ai_count = int(value)
@@ -80,6 +83,10 @@ func _on_duration_slider_changed(value: float) -> void:
 
 func _on_mode_option_changed(index: int) -> void:
 	_win_mode = index as SettingsManager.WinMode
+	_update_options_ui()
+
+func _on_arena_option_changed(index: int) -> void:
+	_arena_index = index
 	_update_options_ui()
 
 func _on_sfx_volume_changed(value: float) -> void:
@@ -110,6 +117,21 @@ func _update_options_ui() -> void:
 	duration_label.text = "Duration: %d s" % int(_match_duration)
 	duration_slider.set_value_no_signal(_match_duration)
 	mode_option.selected = _win_mode
+	arena_option.selected = _arena_index
+
+func _populate_arena_options() -> void:
+	if not arena_option:
+		return
+	arena_option.clear()
+	for name in ArenaDatabase.get_arena_names():
+		arena_option.add_item(name)
+	arena_option.selected = _arena_index
+
+func _path_to_index(path: String) -> int:
+	for i in range(ArenaDatabase.ARENAS.size()):
+		if ArenaDatabase.ARENAS[i]["path"] == path:
+			return i
+	return ArenaDatabase.get_default_index()
 
 func _update_settings_ui() -> void:
 	if not SettingsManager:

@@ -64,13 +64,47 @@ func _on_pickup_body_entered(body: Node) -> void:
 	var weapon := body as WeaponBase
 	if weapon.is_held():
 		return
+	# A freshly dropped weapon is briefly unpickable so it doesn't snap right
+	# back into the dropper's hands while still inside their PickupArea.
+	if not weapon.can_be_picked_up():
+		return
 
+	_equip_weapon(weapon)
+
+
+func _equip_weapon(weapon: WeaponBase) -> void:
 	current_weapon = weapon
 	weapon.pick_up(_actor, _socket)
 	if AudioManager:
 		AudioManager.play_pickup()
 
-func drop_weapon() -> void:
+
+## Pick up the closest pickable weapon already overlapping the PickupArea.
+## Used right after a drop: a weapon that entered the area while the actor was
+## armed never re-fires body_entered, so an active scan is the only way to
+## grab it. The just-dropped weapon is excluded by its fresh-drop cooldown.
+func _try_pickup_nearby() -> void:
+	if current_weapon != null or _pickup_area == null:
+		return
+
+	var best: WeaponBase = null
+	var best_dist_sq := 0.0
+	for body in _pickup_area.get_overlapping_bodies():
+		if not body is WeaponBase:
+			continue
+		var weapon := body as WeaponBase
+		if weapon.is_held() or not weapon.can_be_picked_up():
+			continue
+		var dist_sq := _actor.global_position.distance_squared_to(weapon.global_position)
+		if best == null or dist_sq < best_dist_sq:
+			best = weapon
+			best_dist_sq = dist_sq
+
+	if best:
+		_equip_weapon(best)
+
+
+func drop_weapon(auto_pickup := true) -> void:
 	if current_weapon == null:
 		return
 	current_weapon.drop()
@@ -78,6 +112,11 @@ func drop_weapon() -> void:
 	if AudioManager:
 		AudioManager.play_drop()
 	_update_unarmed_hand_position(_get_actor_facing())
+	# If a different weapon is already lying at the actor's feet, grab it
+	# right away instead of waiting for a body_entered that already fired.
+	# Death drops pass false: a dead actor must not re-equip.
+	if auto_pickup:
+		_try_pickup_nearby()
 
 func record_attacker(attacker: Node) -> void:
 	if not attacker:

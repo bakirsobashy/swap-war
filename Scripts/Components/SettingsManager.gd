@@ -21,6 +21,7 @@ signal settings_loaded()
 @export var win_mode: WinMode = WinMode.SCORE_TARGET
 @export var score_target: int = 10
 @export var match_duration_seconds: float = 120.0
+@export var selected_arena_path: String = ArenaDatabase.DEFAULT_PATH
 
 func _ready() -> void:
 	load_settings()
@@ -38,6 +39,7 @@ func save_settings() -> void:
 	config.set_value("match", "win_mode", win_mode)
 	config.set_value("match", "score_target", score_target)
 	config.set_value("match", "match_duration_seconds", match_duration_seconds)
+	config.set_value("match", "selected_arena_path", selected_arena_path)
 	var err := config.save(CONFIG_PATH)
 	if err != OK:
 		push_warning("Failed to save settings: %d" % err)
@@ -57,6 +59,9 @@ func load_settings() -> void:
 	win_mode = config.get_value("match", "win_mode", win_mode)
 	score_target = config.get_value("match", "score_target", score_target)
 	match_duration_seconds = config.get_value("match", "match_duration_seconds", match_duration_seconds)
+	selected_arena_path = config.get_value("match", "selected_arena_path", selected_arena_path)
+	if selected_arena_path.is_empty():
+		selected_arena_path = ArenaDatabase.DEFAULT_PATH
 
 func _apply_audio_settings() -> void:
 	if AudioManager:
@@ -78,6 +83,13 @@ func set_match_options(new_ai_count: int, new_win_mode: WinMode, new_score_targe
 	win_mode = new_win_mode
 	score_target = maxi(new_score_target, 1)
 	match_duration_seconds = maxf(new_duration, 30.0)
+	save_settings()
+
+func set_arena_path(path: String) -> void:
+	if path.is_empty():
+		selected_arena_path = ArenaDatabase.DEFAULT_PATH
+	else:
+		selected_arena_path = path
 	save_settings()
 
 func set_touch_controls_mode(mode: TouchControlsMode) -> void:

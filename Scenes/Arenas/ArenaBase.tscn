@@ -4,7 +4,6 @@
 [ext_resource type="PackedScene" uid="uid://b3nq1gq7qvnwi" path="res://Scenes/HUD.tscn" id="4_hud"]
 [ext_resource type="PackedScene" uid="uid://b85pu1unpwads" path="res://Scenes/Weapons/WeaponSpawner.tscn" id="6_spawner"]
 [ext_resource type="Script" uid="uid://c5cq7n7g52pjj" path="res://Scripts/Components/KillZone.gd" id="10_killzone"]
-[ext_resource type="Script" uid="uid://byvndpktqgh4y" path="res://Scripts/Arena/ArenaBoundaries.gd" id="11_boundaries"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ra5jo"]
 texture = ExtResource("1_lq7nq")
@@ -166,14 +165,14 @@ physics_layer_0/collision_layer = 1
 physics_layer_1/collision_layer = 4
 sources/1 = SubResource("TileSetAtlasSource_ra5jo")
 
-[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_left"]
-normal = Vector2(1, 0)
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_left"]
+size = Vector2(64, 1200)
 
-[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_right"]
-normal = Vector2(-1, 0)
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_right"]
+size = Vector2(64, 1200)
 
-[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_top"]
-normal = Vector2(0, 1)
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_top"]
+size = Vector2(1600, 64)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kill"]
 size = Vector2(2000, 200)
@@ -228,16 +227,18 @@ metadata/target_level = "top"
 [node name="Boundaries" type="StaticBody2D" parent="World"]
 collision_layer = 1
 collision_mask = 0
-script = ExtResource("11_boundaries")
 
 [node name="LeftWall" type="CollisionShape2D" parent="World/Boundaries"]
-shape = SubResource("WorldBoundaryShape2D_left")
+position = Vector2(-700, 0)
+shape = SubResource("RectangleShape2D_left")
 
 [node name="RightWall" type="CollisionShape2D" parent="World/Boundaries"]
-shape = SubResource("WorldBoundaryShape2D_right")
+position = Vector2(700, 0)
+shape = SubResource("RectangleShape2D_right")
 
 [node name="TopWall" type="CollisionShape2D" parent="World/Boundaries"]
-shape = SubResource("WorldBoundaryShape2D_top")
+position = Vector2(0, -500)
+shape = SubResource("RectangleShape2D_top")
 
 [node name="Actors" type="Node2D" parent="."]
 

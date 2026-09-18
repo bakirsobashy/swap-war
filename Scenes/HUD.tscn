@@ -3,6 +3,9 @@
 [ext_resource type="Script" uid="uid://d1d8qwqwhwb8s" path="res://Scripts/UI/HUD.gd" id="1_hud"]
 [ext_resource type="PackedScene" uid="uid://d1r8qvpi16ghr" path="res://Scenes/UI/TouchControls.tscn" id="2_tc"]
 
+[sub_resource type="LabelSettings" id="LabelSettings_gj1gv"]
+font_color = Color(1, 0, 1, 1)
+
 [node name="HUD" type="CanvasLayer" unique_id=1514791500]
 script = ExtResource("1_hud")
 
@@ -33,6 +36,7 @@ offset_right = 160.0
 offset_bottom = 48.0
 grow_horizontal = 2
 text = "Swap: 5.0"
+label_settings = SubResource("LabelSettings_gj1gv")
 horizontal_alignment = 2
 
 [node name="WinnerMessage" type="Label" parent="." unique_id=2073104039]

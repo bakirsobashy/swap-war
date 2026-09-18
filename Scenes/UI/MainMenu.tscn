@@ -150,6 +150,28 @@ popup/item_0/id = 0
 popup/item_1/text = "Timed Score"
 popup/item_1/id = 1
 
+[node name="ArenaBox" type="HBoxContainer" parent="OptionsPanel/VBoxContainer" unique_id=741043190]
+layout_mode = 2
+alignment = 1
+
+[node name="ArenaLabel" type="Label" parent="OptionsPanel/VBoxContainer/ArenaBox" unique_id=610058225]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Arena"
+
+[node name="ArenaOption" type="OptionButton" parent="OptionsPanel/VBoxContainer/ArenaBox" unique_id=1982050595]
+unique_name_in_owner = true
+layout_mode = 2
+selected = 0
+item_count = 3
+popup/item_0/text = "Flat Arena"
+popup/item_0/id = 0
+popup/item_1/text = "Pit Arena"
+popup/item_1/id = 1
+popup/item_2/text = "Hazard Arena"
+popup/item_2/id = 2
+
 [node name="ScoreBox" type="HBoxContainer" parent="OptionsPanel/VBoxContainer" unique_id=553293638]
 layout_mode = 2
 alignment = 1
@@ -378,6 +400,7 @@ text = "BACK"
 [connection signal="pressed" from="MainPanel/VBoxContainer/QuitBtn" to="." method="_play_click"]
 [connection signal="value_changed" from="OptionsPanel/VBoxContainer/AIBox/AISlider" to="." method="_on_ai_slider_changed"]
 [connection signal="item_selected" from="OptionsPanel/VBoxContainer/ModeBox/ModeOption" to="." method="_on_mode_option_changed"]
+[connection signal="item_selected" from="OptionsPanel/VBoxContainer/ArenaBox/ArenaOption" to="." method="_on_arena_option_changed"]
 [connection signal="value_changed" from="OptionsPanel/VBoxContainer/ScoreBox/ScoreSlider" to="." method="_on_score_slider_changed"]
 [connection signal="value_changed" from="OptionsPanel/VBoxContainer/DurationBox/DurationSlider" to="." method="_on_duration_slider_changed"]
 [connection signal="pressed" from="OptionsPanel/VBoxContainer/StartMatchBtn" to="." method="_on_start_match_pressed"]

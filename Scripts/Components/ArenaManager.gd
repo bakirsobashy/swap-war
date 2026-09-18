@@ -34,7 +34,12 @@ func _is_arena_scene() -> bool:
 	var scene := get_tree().current_scene
 	if not scene:
 		return false
-	return scene.scene_file_path == "res://Scenes/arena.tscn" or scene.name == "Arena"
+	var path := scene.scene_file_path
+	# Support the legacy arena scene and any scene under Scenes/Arenas/.
+	if path == "res://Scenes/arena.tscn" or path.begins_with("res://Scenes/Arenas/"):
+		return true
+	# Fallback: treat any scene with the expected arena structure as an arena.
+	return scene.has_node("World/SpawnPoints") and scene.has_node("Actors")
 
 func _setup_arena() -> void:
 	_load_match_config()

@@ -14,6 +14,13 @@ var _holder: RigidBody2D = null
 var _socket: Node2D = null
 var _target_facing: float = 1.0
 
+## Earliest time (msec) the weapon may be picked up again. Stamped on drop so a
+## freshly dropped weapon is not instantly re-grabbed while it is still inside
+## the dropper's PickupArea.
+var _pickup_allowed_at_msec: int = 0
+
+const PICKUP_DELAY_SEC := 0.5
+
 const GROUND_MASK: int = CollisionConfig.MASK_GROUND_WEAPON  # World + Weapons: ground weapons collide with level and each other.
 const HELD_MASK: int = CollisionConfig.LAYER_WORLD | CollisionConfig.LAYER_ACTORS  # World + other actors: needed for melee contact damage. The holder is excluded via collision exception; other weapons are never touched.
 const GROUND_LAYER: int = CollisionConfig.LAYER_WEAPONS  # Layer 4 (Weapons), same as the weapon scenes.
@@ -87,8 +94,12 @@ func get_attack_range() -> float:
 	return _data.attack_thrust_distance
 
 
+func can_be_picked_up() -> bool:
+	return _holder == null and Time.get_ticks_msec() >= _pickup_allowed_at_msec
+
+
 func pick_up(holder: RigidBody2D, socket: Node2D) -> void:
-	if _holder != null:
+	if _holder != null or Time.get_ticks_msec() < _pickup_allowed_at_msec:
 		return
 
 	_holder = holder
@@ -116,6 +127,9 @@ func drop() -> void:
 
 	_holder = null
 	_socket = null
+	# Nobody (including the dropper) may re-pick this weapon until the delay
+	# passes — it is still inside the dropper's PickupArea at this moment.
+	_pickup_allowed_at_msec = Time.get_ticks_msec() + int(PICKUP_DELAY_SEC * 1000.0)
 
 	# Reset to a neutral dropped appearance so it doesn't keep the held orientation/scale.
 	scale = Vector2.ONE

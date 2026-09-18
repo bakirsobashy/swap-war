@@ -34,6 +34,13 @@ func invalidate_targets() -> void:
 
 ## Main update: perception + environment sensing.
 func update(delta: float) -> void:
+	# Cached targets can be freed between refresh cycles (weapon broke, fell off
+	# map, etc.). Clear stale references immediately so states never see them.
+	if nearest_weapon and not is_instance_valid(nearest_weapon):
+		nearest_weapon = null
+	if nearest_enemy and not is_instance_valid(nearest_enemy):
+		nearest_enemy = null
+
 	_reaction_timer -= delta
 	_target_switch_timer -= delta
 

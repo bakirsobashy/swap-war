@@ -6,7 +6,10 @@ func get_name() -> String:
 
 
 func physics_update(_delta: float) -> String:
-	var weapon: WeaponBase = owner.sensors.nearest_weapon
+	# Do not cast to WeaponBase here: if the cached weapon was freed since the
+	# last sensors refresh, a typed assignment would throw "invalid previously
+	# freed instance". Validate first, then use.
+	var weapon = owner.sensors.nearest_weapon
 
 	if not weapon or not is_instance_valid(weapon) or weapon.is_held():
 		return "Idle"

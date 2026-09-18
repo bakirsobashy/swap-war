@@ -1,8 +1,47 @@
-[gd_scene format=3 uid="uid://renaflat0001"]
+[gd_scene format=4 uid="uid://renaflat0001"]
 
 [ext_resource type="PackedScene" uid="uid://basearena0001" path="res://Scenes/Arenas/ArenaBase.tscn" id="1_base"]
+[ext_resource type="TileSet" uid="uid://c1y0r5e8kix61" path="res://resourses/arenas.tres" id="2_orkn4"]
 
-[node name="ArenaFlat" instance=ExtResource("1_base")]
+[node name="ArenaFlat" unique_id=1955597664 instance=ExtResource("1_base")]
 
 [node name="TileMapLayer" parent="World" index="0"]
-tile_map_data = PackedByteArray("AAD0/wIAAQAAAAMAAAD1/wIAAQAAAAMAAAD2/wIAAQAAAAMAAAD3/wIAAQAAAAMAAAD4/wIAAQAAAAMAAAD5/wIAAQAAAAMAAAD6/wIAAQAAAAMAAAD7/wIAAQAAAAMAAAD8/wIAAQAAAAMAAAD9/wIAAQAAAAMAAAADAAIAAQAAAAMAAAAEAAIAAQAAAAMAAAAFAAIAAQAAAAMAAAAGAAIAAQAAAAMAAAAHAAIAAQAAAAMAAAAIAAIAAQAAAAMAAAAJAAIAAQAAAAMAAAAKAAIAAQAAAAMAAAALAAIAAQAAAAMAAAAMAAIAAQAAAAMAAADy//r/AQAAAAMAAAAOAPr/AQAAAAMAAADy//v/AQAAAAMAAAAOAPv/AQAAAAMAAADy//z/AQAAAAMAAAAOAPz/AQAAAAMAAADy//3/AQAAAAMAAAAOAP3/AQAAAAMAAADy//7/AQAAAAMAAAAOAP7/AQAAAAMAAADy////AQAAAAMAAAAOAP//AQAAAAMAAADy/wAAAQAAAAMAAAAOAAAAAQAAAAMAAADy/wEAAQAAAAMAAAAOAAEAAQAAAAMAAADy/wIAAQAAAAMAAAAOAAIAAQAAAAMAAADz//r/AQAAAAMAAAD0//r/AQAAAAMAAAD1//r/AQAAAAMAAAAKAPr/AQAAAAMAAAALAPr/AQAAAAMAAAAMAPr/AQAAAAMAAAANAPr/AQAAAAMAAAAAAAIAAQAFAAUAAAABAAIAAQAFAAUAAAACAAIAAQAFAAUAAAAJAAEAAQAFAAgAAAD+/wIAAQAEAAMAAAD//wIAAQAEAAMAAAACAAEAAQACAAoAAAABAAAAAQACAAoAAAAAAP//AQACAAoAAAD/////AQABAAoAAAD+////AQABAAoAAAD9////AQABAAoAAAD7////AQABAAoAAAD8////AQABAAoAAAA=")
+tile_map_data = PackedByteArray("AAAKAAEAAQAGAAUAAAAKAAIAAQAGAAcAAAAKAAMAAQAGAAcAAAAAAAEAAQAGAAUAAAAAAAIAAQAGAAcAAAAAAAMAAQAGAAcAAAD1/wEAAQAGAAUAAAD1/wIAAQAGAAcAAAD1/wMAAQAGAAcAAAAOAAAAAQAFAAUAAAANAAAAAQAFAAUAAAAMAAAAAQAFAAUAAAALAAAAAQAFAAUAAAAKAAAAAQAFAAUAAAAJAAAAAQAFAAUAAAAIAAAAAQAFAAUAAAAHAAAAAQAFAAUAAAAGAAAAAQAFAAUAAAAFAAAAAQAFAAUAAAAEAAAAAQAFAAUAAAADAAAAAQAFAAUAAAACAAAAAQAFAAUAAAABAAAAAQAFAAUAAAAAAAAAAQAFAAUAAAD//wAAAQAFAAUAAAD+/wAAAQAFAAUAAAD9/wAAAQAFAAUAAAD8/wAAAQAFAAUAAAD7/wAAAQAFAAUAAAD6/wAAAQAFAAUAAAD5/wAAAQAFAAUAAAD4/wAAAQAFAAUAAAD3/wAAAQAFAAUAAAD2/wAAAQAFAAUAAAD1/wAAAQAFAAUAAAD0/wAAAQAFAAUAAADz/wAAAQAFAAUAAADy/wAAAQAFAAUAAADx/wAAAQAFAAUAAAD3//n/AQAAAAAAAAAKAPn/AQAAAAAAAAA=")
+tile_set = ExtResource("2_orkn4")
+
+[node name="SpawnA" parent="World/SpawnPoints" index="0"]
+position = Vector2(-788, -85)
+
+[node name="SpawnB" parent="World/SpawnPoints" index="1"]
+position = Vector2(-332, -104)
+
+[node name="SpawnC" parent="World/SpawnPoints" index="2"]
+position = Vector2(336, -98)
+
+[node name="SpawnD" parent="World/SpawnPoints" index="3"]
+position = Vector2(840, -92)
+
+[node name="SkyLeft" parent="World/WeaponSpawnPoints" index="0"]
+position = Vector2(-613, -441)
+
+[node name="SkyMid" parent="World/WeaponSpawnPoints" index="1"]
+position = Vector2(-2, -474)
+
+[node name="SkyRight" parent="World/WeaponSpawnPoints" index="2"]
+position = Vector2(632, -443)
+
+[node name="StairWaypoints" parent="World" index="3"]
+visible = false
+
+[node name="LeftWall" parent="World/Boundaries" index="0"]
+position = Vector2(-1084, 0)
+
+[node name="RightWall" parent="World/Boundaries" index="1"]
+position = Vector2(1084, 0)
+
+[node name="TopWall" parent="World/Boundaries" index="2"]
+position = Vector2(0, -623)
+scale = Vector2(1.3199998, 1)
+
+[node name="CollisionShape2D" parent="KillZone" index="0"]
+scale = Vector2(1.0466502, 0.86803913)

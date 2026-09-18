@@ -140,7 +140,7 @@ func die() -> void:
 
 	var holder = _actor.get_node_or_null("WeaponHolder")
 	if holder and holder.current_weapon:
-		holder.drop_weapon()
+		holder.drop_weapon(false)  # No auto-pickup: the actor is dead.
 
 	await _actor.get_tree().create_timer(1.5).timeout
 	_respawn()
