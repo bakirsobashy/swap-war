@@ -1,10 +1,10 @@
-[gd_scene format=3 uid="uid://teamtimer00001"]
+[gd_scene format=3 uid="uid://x3me4yg41ypk"]
 
-[ext_resource type="Script" path="res://Scripts/UI/TeamTimer.gd" id="1_teamtimer"]
-[ext_resource type="Script" path="res://Scripts/UI/BitmapNumberLabel.gd" id="2_bitmap"]
-[ext_resource type="Texture2D" path="res://Assets/ui/PNG/ui_circle.png" id="3_circle"]
+[ext_resource type="Script" uid="uid://c4ah4ov37w2xk" path="res://Scripts/UI/TeamTimer.gd" id="1_teamtimer"]
+[ext_resource type="Script" uid="uid://dvwbdl2cwax83" path="res://Scripts/UI/BitmapNumberLabel.gd" id="2_bitmap"]
+[ext_resource type="Texture2D" uid="uid://cy8f030hbv8ba" path="res://Assets/ui/PNG/ui_circle.png" id="3_circle"]
 
-[node name="TeamTimer" type="Control"]
+[node name="TeamTimer" type="Control" unique_id=1903866152]
 custom_minimum_size = Vector2(80, 80)
 layout_mode = 3
 anchors_preset = 0
@@ -13,20 +13,25 @@ offset_bottom = 80.0
 pivot_offset = Vector2(40, 40)
 script = ExtResource("1_teamtimer")
 
-[node name="CircleFill" type="TextureProgressBar" parent="." unique_name_in_owner = true]
+[node name="CircleFill" type="TextureProgressBar" parent="." unique_id=1400024027]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
 grow_horizontal = 2
 grow_vertical = 2
-max_value = 100.0
 step = 0.01
 value = 100.0
 fill_mode = 4
 texture_progress = ExtResource("3_circle")
 
-[node name="Center" type="CenterContainer" parent="."]
+[node name="Center" type="CenterContainer" parent="." unique_id=1757369021]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -34,7 +39,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Digits" type="HBoxContainer" parent="Center" unique_name_in_owner = true]
+[node name="Digits" type="HBoxContainer" parent="Center" unique_id=2078494400]
 layout_mode = 2
 script = ExtResource("2_bitmap")
-digit_size = Vector2(28, 28)
+digit_size = Vector2(64, 64)

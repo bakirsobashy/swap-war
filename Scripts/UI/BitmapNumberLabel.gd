@@ -13,6 +13,7 @@ var _digit_rects: Array[TextureRect] = []
 
 
 func _ready() -> void:
+	# Load single digits 0-9.
 	for i in range(10):
 		var path := "%s%d%s" % [digit_prefix, i, digit_suffix]
 		var tex := load(path) as Texture2D
@@ -25,18 +26,49 @@ func _ready() -> void:
 
 func set_value(value: int, modulate_color: Color = Color.WHITE) -> void:
 	value = maxi(value, 0)
+
+	# Use a single composed sprite for common values like 10 if the artist provided one.
+	var composed: Texture2D = _texture_for_number(value)
+	if composed:
+		_ensure_digit_count(1)
+		var rect: TextureRect = _digit_rects[0]
+		rect.texture = composed
+		rect.modulate = modulate_color
+		rect.visible = true
+		for i in range(1, _digit_rects.size()):
+			_digit_rects[i].visible = false
+		return
+
 	var text := "%d" % value
 	_ensure_digit_count(text.length())
 
 	for i in range(text.length()):
-		var digit: int = text[i].to_int()
 		var rect: TextureRect = _digit_rects[i]
-		rect.texture = _digit_textures[digit] if digit < _digit_textures.size() else null
+		var token: String = text[i]
+		var tex: Texture2D = _texture_for_token(token)
+		rect.texture = tex
 		rect.modulate = modulate_color
 		rect.visible = true
 
 	for i in range(text.length(), _digit_rects.size()):
 		_digit_rects[i].visible = false
+
+
+func _texture_for_token(token: String) -> Texture2D:
+	# Single digits; tokens "0" through "9" map to the first 10 textures.
+	var idx := token.to_int()
+	if idx >= 0 and idx < _digit_textures.size():
+		return _digit_textures[idx]
+	return null
+
+
+func _texture_for_number(value: int) -> Texture2D:
+	# Prefer a pre-composed multi-digit sprite when available (e.g. "10").
+	var composed_path := "%s%d%s" % [digit_prefix, value, digit_suffix]
+	var composed_tex := load(composed_path) as Texture2D
+	if composed_tex:
+		return composed_tex
+	return _digit_textures[value] if value >= 0 and value < _digit_textures.size() else null
 
 
 func _ensure_digit_count(count: int) -> void:

@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://d1d8qwqwhwb8s" path="res://Scripts/UI/HUD.gd" id="1_hud"]
 [ext_resource type="PackedScene" uid="uid://d1r8qvpi16ghr" path="res://Scenes/UI/TouchControls.tscn" id="2_tc"]
-[ext_resource type="PackedScene" path="res://Scenes/UI/TeamTimer.tscn" id="3_teamtimer"]
+[ext_resource type="PackedScene" uid="uid://x3me4yg41ypk" path="res://Scenes/UI/TeamTimer.tscn" id="3_teamtimer"]
 
 [node name="HUD" type="CanvasLayer" unique_id=1514791500]
 script = ExtResource("1_hud")
@@ -12,30 +12,39 @@ unique_name_in_owner = true
 layout_mode = 3
 anchors_preset = 10
 anchor_right = 1.0
-offset_bottom = 56.0
+offset_bottom = 110.0
 grow_horizontal = 2
 
-[node name="ScoreBoard" type="HBoxContainer" parent="TopBar" unique_id=328348980]
+[node name="ScoreBoard" type="VBoxContainer" parent="TopBar" unique_id=328348980]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-alignment = 1
+anchors_preset = 0
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 140.0
+offset_bottom = 102.0
+grow_horizontal = 1
+grow_vertical = 1
+alignment = 0
 
 [node name="TeamTimer" parent="TopBar" unique_id=580497220 instance=ExtResource("3_teamtimer")]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -88.0
+anchors_preset = 5
+anchor_left = 0.5
+anchor_top = 0.0
+anchor_right = 0.5
+anchor_bottom = 0.0
+offset_left = -40.0
 offset_top = 8.0
-offset_right = -8.0
+offset_right = 40.0
 offset_bottom = 88.0
-grow_horizontal = 0
+grow_horizontal = 2
+metadata/_edit_use_anchors_ = true
 
 [node name="WinnerMessage" type="Label" parent="." unique_id=2073104039]
 unique_name_in_owner = true

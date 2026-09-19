@@ -4,7 +4,7 @@ signal team_changed(teams: Dictionary)
 signal actor_registered(actor: Node)
 signal actor_unregistered(actor: Node)
 
-@export var swap_interval: float = 5.0
+@export var swap_interval: float = 10.0
 @export var team_count: int = 3
 
 var _teams: Dictionary = {}  # Node -> int
