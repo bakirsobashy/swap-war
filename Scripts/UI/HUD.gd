@@ -114,12 +114,11 @@ func _update_score_label(actor: Node) -> void:
 	var score := 0
 	if ScoreManager:
 		score = ScoreManager.get_score(actor)
-	var color_name := _team_color_name(team_id)
 	var display_name := actor.name
 	if _actor_name_indices.has(actor):
 		display_name = PLACEHOLDER_NAMES[_actor_name_indices[actor]]
-	label.text = "%s\n%s: %d" % [display_name, color_name, score]
-	label.modulate = _team_color(team_id)
+	label.text = "%s: %d" % [display_name, score]
+	label.add_theme_color_override("font_color", _team_color(team_id))
 
 func _update_team_timer() -> void:
 	if not TeamManager or not is_instance_valid(TeamManager._swap_timer):
