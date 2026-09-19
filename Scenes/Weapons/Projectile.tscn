@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://ct5q6v7gq3w7n"]
 
 [ext_resource type="Script" path="res://Scripts/Weapons/Projectile.gd" id="1_proj"]
-[ext_resource type="Texture2D" path="res://Assets/PNG/Default/effect_blast.png" id="2_blast"]
+[ext_resource type="Texture2D" path="res://Assets/PNG/Default/effect_shot.png" id="2_blast"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_proj"]
 radius = 6.0
