@@ -168,6 +168,12 @@ func _update_facing(state: PhysicsDirectBodyState2D) -> void:
 	var input_x := _get_move_input()
 	if input_x != 0.0:
 		facing_direction = input_x
+	elif _ai_controller and "facing_intent" in _ai_controller \
+			and _ai_controller.facing_intent != 0.0:
+		# The decision layer's intent outranks physics: an armed AI keeps its
+		# eyes on the enemy even while knockback velocity shoves it the other
+		# way (the old velocity-first fallback flipped facing on every hit).
+		facing_direction = sign(_ai_controller.facing_intent)
 	elif abs(state.linear_velocity.x) > 10.0:
 		facing_direction = sign(state.linear_velocity.x)
 

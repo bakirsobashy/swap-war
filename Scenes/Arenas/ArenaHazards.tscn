@@ -1,6 +1,10 @@
 [gd_scene format=4 uid="uid://bw0r32caikbyy"]
 
 [ext_resource type="PackedScene" uid="uid://basearena0001" path="res://Scenes/Arenas/ArenaBase.tscn" id="1_base"]
+[ext_resource type="Script" uid="uid://x6d0cb5wxn0r" path="res://Scripts/Components/HazardArea.gd" id="2_hazard"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_spikes"]
+size = Vector2(64, 32)
 
 [node name="ArenaHazards" unique_id=1660888452 instance=ExtResource("1_base")]
 
@@ -21,3 +25,20 @@ position = Vector2(380, -80)
 
 [node name="CollisionShape2D" parent="KillZone" index="0"]
 position = Vector2(0, 360)
+
+[node name="Hazards" type="Node2D" parent="World"]
+
+[node name="SpikeStrip" type="Area2D" parent="World/Hazards"]
+position = Vector2(320, 112)
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("2_hazard")
+damage = 15.0
+damage_interval = 0.5
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/Hazards/SpikeStrip"]
+shape = SubResource("RectangleShape2D_spikes")
+
+[node name="Visual" type="Polygon2D" parent="World/Hazards/SpikeStrip"]
+color = Color(0.9, 0.16, 0.12, 1)
+polygon = PackedVector2Array(-32, 16, -24, -16, -16, 16, -8, -16, 0, 16, 8, -16, 16, 16, 24, -16, 32, 16)

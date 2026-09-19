@@ -1,43 +1,84 @@
 class_name Sensors
 extends RefCounted
 
-const UNREACHABLE_TIMEOUT: float = 1.5
+## 2.0 — full-map perception on the baked graph. Locked decisions:
+##   - NO sight/seek radii: every actor and weapon on the map is known at all
+##     times; distance appears only inside scores (weapon preference), never
+##     as a knowledge filter (decision #11).
+##   - LOS survives ONLY as a ranged-firing gate — one ray against the solid
+##     world, never a knowledge gate.
+##
+## Environment (platform id, hazard state) comes from the baked NavGraph via
+## the controller, localizing with the same tiered contract the executor
+## uses, so the decision layer and the executor always agree on "which
+## platform am I on". Everything degrades gracefully with no graph (probe
+## mode): ids stay -1, hazard flags stay false.
+
+const FEET_DOWN := 31.0        # capsule bottom below the body origin (executor's convention)
+const NO_CELL := Vector2i(9999, 9999)
 
 var owner = null
 
+# --- targets (full-map scans, no radii) ----------------------------------------
 var nearest_enemy: Node2D = null
-var nearest_weapon: WeaponBase = null
+## Best weapon to fetch by score (NOT nearest): distance − ranged preference
+## bonus + a hazard penalty. Duck-typed WeaponBase — it may be freed between
+## ticks, so consumers must is_instance_valid() before use.
+var best_weapon = null
 var aim_direction: Vector2 = Vector2.RIGHT
-var is_grounded: bool = false
-var wall_ahead: bool = false
-var gap_ahead: bool = false
-var platform_above: bool = false
-var platform_below: bool = false
+
+# --- environment (from the baked graph) ----------------------------------------
+var current_platform_id: int = -1
+var enemy_platform_id: int = -1
+var weapon_platform_id: int = -1
+## Body is inside a hazard rect right now (standing on the spikes). Gates the
+## controller's top-priority escape override.
+var in_hazard: bool = false
+## ±1 toward the nearer edge of the containing hazard rect; 0 when safe.
+var hazard_escape_dir: float = 0.0
+## Solid-world-only ray to the enemy reaches it — a FIRE gate for ranged
+## weapons ("don't shoot the wall"), never a knowledge gate.
+var has_los_to_enemy: bool = false
 
 var _reaction_timer: float = 0.0
 var _target_switch_timer: float = 0.0
-var _unreachable_timer: float = 0.0
+var _aim_error_deg: float = 0.0          # re-rolled on every target refresh
 
 
 func _init(ai_controller) -> void:
 	owner = ai_controller
 
 
-## Reset all timers and targets. Called on team change, respawn, etc.
+## Full reset: respawn, fresh spawn.
 func invalidate_targets() -> void:
 	nearest_enemy = null
-	nearest_weapon = null
+	best_weapon = null
 	_reaction_timer = 0.0
 	_target_switch_timer = 0.0
-	_unreachable_timer = 0.0
+
+
+## Team-swap reaction window, step 1: forget the enemy NOW (it may be an
+## ally); step 2 is force_refresh_after() — re-acquisition happens after the
+## window, with no forced state transition anywhere.
+func invalidate_enemy() -> void:
+	nearest_enemy = null
+	_target_switch_timer = 0.0
+
+
+## Team-swap reaction window, step 2: schedule the next target refresh `sec`
+## seconds out. The reaction timer IS the delay mechanism — one clock, no
+## second timer to keep in sync.
+func force_refresh_after(sec: float) -> void:
+	_reaction_timer = maxf(sec, owner.reaction_time)
 
 
 ## Main update: perception + environment sensing.
 func update(delta: float) -> void:
-	# Cached targets can be freed between refresh cycles (weapon broke, fell off
-	# map, etc.). Clear stale references immediately so states never see them.
-	if nearest_weapon and not is_instance_valid(nearest_weapon):
-		nearest_weapon = null
+	# Cached targets can be freed between refresh cycles (weapon broke, fell
+	# off the map, etc.). Clear stale references immediately so states never
+	# see them.
+	if best_weapon and not is_instance_valid(best_weapon):
+		best_weapon = null
 	if nearest_enemy and not is_instance_valid(nearest_enemy):
 		nearest_enemy = null
 
@@ -48,30 +89,44 @@ func update(delta: float) -> void:
 		refresh_targets()
 		_reaction_timer = owner.reaction_time
 
+	_update_environment()
+	_update_los()
 	_update_aim()
-	_update_ground_state()
-	_update_navigation_rays()
-	_track_unreachable(delta)
 
 
-## Refresh weapon and enemy targets. Weapons are always nearest straight-line.
-## Enemies are sticky: only switch when allowed by the cooldown or current target invalid.
+## Target scans. The enemy is sticky (the switch cooldown paces churn); the
+## weapon is pure score — nearest, with a ranged bonus and a hazard penalty,
+## so a sword 50px away still beats a bow sitting in the spikes 40px away.
 func refresh_targets() -> void:
-	nearest_weapon = _find_nearest_weapon()
+	best_weapon = _find_best_weapon()
 
 	if not _is_valid_target(nearest_enemy) or _target_switch_timer <= 0.0:
 		var candidate := _find_nearest_enemy()
 		if candidate != nearest_enemy:
 			nearest_enemy = candidate
 			_target_switch_timer = owner.target_switch_cooldown
-			_unreachable_timer = 0.0
+
+	# Ranged aim scatter re-rolls per refresh — a bad roll holds fire for one
+	# reaction window (the attack state gates on the aim dot), then re-rolls.
+	_aim_error_deg = randf_range(-owner.aim_error_deg, owner.aim_error_deg)
+
+	var graph = owner.nav_graph()
+	if graph != null:
+		if nearest_enemy != null:
+			enemy_platform_id = graph.platform_below(nearest_enemy.global_position)
+		if best_weapon != null:
+			weapon_platform_id = graph.platform_below(best_weapon.global_position)
 
 
+## Unbiased nearest enemy, map-wide (locked decisions: no player bias, no
+## sight range — an enemy across the arena is as visible as one at 50px).
 func _find_nearest_enemy() -> Node2D:
 	var best: Node2D = null
-	var best_dist: float = owner.detection_radius
+	var best_dist: float = INF
 
 	for a in owner.actor.get_tree().get_nodes_in_group("actors"):
+		# The "actors" group also holds Health nodes (plain Node, not Node2D) —
+		# the cast filter neutralizes that double-add.
 		var other := a as Node2D
 		if not other or other == owner.actor:
 			continue
@@ -86,26 +141,28 @@ func _find_nearest_enemy() -> Node2D:
 	return best
 
 
-func _find_nearest_weapon() -> WeaponBase:
+## Best pickup by score, map-wide: distance − ranged preference bonus + a
+## hazard penalty when the weapon sits inside a hazard rect (spike-diving for
+## a sword is a last resort, not a tiebreak). Lowest score wins.
+func _find_best_weapon() -> WeaponBase:
+	var graph = owner.nav_graph()
 	var best: WeaponBase = null
-	var best_dist: float = owner.weapon_seek_radius
+	var best_score: float = INF
 
 	for w in owner.actor.get_tree().get_nodes_in_group("weapons"):
 		var weapon := w as WeaponBase
-		if not weapon:
-			continue
-		if not is_instance_valid(weapon):
+		if not weapon or not is_instance_valid(weapon):
 			continue
 		if weapon.is_held():
 			continue
 
-		var d: float = owner.actor.global_position.distance_to(weapon.global_position)
-
-		# Prefer ranged weapons at equal distance.
-		if weapon.is_ranged() and is_equal_approx(d, best_dist):
-			best = weapon
-		elif d < best_dist:
-			best_dist = d
+		var score: float = owner.actor.global_position.distance_to(weapon.global_position)
+		if weapon.is_ranged():
+			score -= owner.ranged_preference_bonus
+		if graph != null and graph.point_in_hazard(weapon.global_position):
+			score += 300.0
+		if score < best_score:
+			best_score = score
 			best = weapon
 
 	return best
@@ -116,7 +173,7 @@ func _is_valid_target(other: Node) -> bool:
 		return false
 
 	var health := other.get_node_or_null("Components/Health") as Health
-	if health and health._is_dead:
+	if health and health.is_dead():
 		return false
 
 	return not TeamMember.is_same_team(owner.actor, other)
@@ -127,37 +184,65 @@ func is_valid_target(other: Node) -> bool:
 	return _is_valid_target(other)
 
 
-func _track_unreachable(delta: float) -> void:
-	if not nearest_enemy:
-		_unreachable_timer = 0.0
+## Per-tick environment: which platform are we on, are we in a hazard. Same
+## localization the executor uses, so the layers never disagree.
+func _update_environment() -> void:
+	current_platform_id = -1
+	in_hazard = false
+	hazard_escape_dir = 0.0
+
+	var graph = owner.nav_graph()
+	if graph == null:
 		return
 
-	var dy: float = nearest_enemy.global_position.y - owner.actor.global_position.y
-	if abs(dy) > owner.layer_height_threshold:
-		_unreachable_timer += delta
-	else:
-		_unreachable_timer = 0.0
+	# Probe with the body origin AND just above the feet: the origin (31px
+	# above the surface) lands inside shallow hazard bands like the spike
+	# strip's [y_top−32, y_top); the feet point catches tall rects whose band
+	# starts below the origin. Either hit means "body in hazard".
+	var origin: Vector2 = owner.actor.global_position
+	var feet: Vector2 = origin + Vector2(0.0, FEET_DOWN - 4.0)
+	current_platform_id = graph.localize(origin + Vector2(0.0, FEET_DOWN),
+			bool(owner.actor.is_grounded()), _ground_cell())
+	if graph.point_in_hazard(origin) or graph.point_in_hazard(feet):
+		in_hazard = true
+		# Escape direction from whichever point tripped: the origin sits above
+		# shallow bands while the feet dip in (landing, mid-hop), so origin-only
+		# would return 0 here and leave the escape override dormant while the
+		# feet take spike damage.
+		hazard_escape_dir = graph.hazard_escape_dir(origin)
+		if hazard_escape_dir == 0.0:
+			hazard_escape_dir = graph.hazard_escape_dir(feet)
 
 
-func is_target_unreachable() -> bool:
-	return _unreachable_timer > UNREACHABLE_TIMEOUT
+## One ray, mask 1 (solid world only): weapons, actors and hazards never
+## block fire, so this is purely "is there terrain in the way".
+func _update_los() -> void:
+	has_los_to_enemy = false
+	if nearest_enemy == null or not is_instance_valid(nearest_enemy):
+		return
+
+	var from: Vector2 = owner.actor.global_position
+	var to: Vector2 = nearest_enemy.global_position
+	if from.distance_to(to) < 4.0:
+		has_los_to_enemy = true
+		return
+
+	var params := PhysicsRayQueryParameters2D.create(from, to, 1)
+	params.exclude = [owner.actor.get_rid()]
+	var hit: Dictionary = owner.actor.get_world_2d().direct_space_state.intersect_ray(params)
+	has_los_to_enemy = hit.is_empty()
 
 
-func reset_unreachable() -> void:
-	_unreachable_timer = 0.0
-
-
-## Aim toward the nearest enemy if present, otherwise forward.
+## Aim at the enemy with the per-refresh scatter roll, else forward.
+## Actor-Movement slerps the actual weapon aim onto this.
 func _update_aim() -> void:
-	var facing: float = _get_actor_facing()
+	var facing := _get_actor_facing()
 	if nearest_enemy and is_instance_valid(nearest_enemy):
 		var to_target: Vector2 = nearest_enemy.global_position - owner.actor.global_position
 		if to_target.length_squared() > 1.0:
-			aim_direction = to_target.normalized()
-		else:
-			aim_direction = Vector2(facing, 0.0)
-	else:
-		aim_direction = Vector2(facing, 0.0)
+			aim_direction = to_target.normalized().rotated(deg_to_rad(_aim_error_deg))
+			return
+	aim_direction = Vector2(facing, 0.0)
 
 
 func _get_actor_facing() -> float:
@@ -169,62 +254,14 @@ func _get_actor_facing() -> float:
 	return 1.0
 
 
-## Mirror the actor's contact-normal ground check.
-func _update_ground_state() -> void:
-	var state := PhysicsServer2D.body_get_direct_state(owner.actor.get_rid())
-	if not state:
-		is_grounded = false
-		return
-
-	var up := Vector2.UP
-	is_grounded = false
-	for i in range(state.get_contact_count()):
-		if state.get_contact_local_normal(i).dot(up) > 0.3:
-			is_grounded = true
-			return
-
-
-## Cast short rays in front and below the actor to detect walls, gaps, and platforms.
-func _update_navigation_rays() -> void:
-	var space: PhysicsDirectSpaceState2D = owner.actor.get_world_2d().direct_space_state
-	var pos: Vector2 = owner.actor.global_position
-	var dir: float = _get_actor_facing()
-	var radius: float = 19.0
-	var collision_mask: int = 1 | 4  # world (layer 1) + one-way platforms (layer 3)
-	# Note: keep literal values because RefCounted cannot easily preload CollisionConfig
-	# without a Node reference, and Sensors is not an autoload.
-
-	# Wall ahead.
-	var wall_origin: Vector2 = pos + Vector2(dir * radius, 0)
-	var wall_params := PhysicsRayQueryParameters2D.create(
-		wall_origin,
-		wall_origin + Vector2(dir * owner.wall_check_distance, 0),
-		collision_mask
-	)
-	wall_ahead = not space.intersect_ray(wall_params).is_empty()
-
-	# Gap ahead.
-	var gap_origin: Vector2 = pos + Vector2(dir * (radius + 8.0), 0)
-	var gap_params := PhysicsRayQueryParameters2D.create(
-		gap_origin,
-		gap_origin + Vector2(0, owner.edge_check_depth),
-		collision_mask
-	)
-	gap_ahead = space.intersect_ray(gap_params).is_empty()
-
-	# Platform above.
-	var up_origin: Vector2 = pos + Vector2(dir * 8.0, -radius)
-	var up_params := PhysicsRayQueryParameters2D.create(
-		up_origin,
-		up_origin + Vector2(dir * 40.0, -120.0),
-		collision_mask
-	)
-	platform_above = not space.intersect_ray(up_params).is_empty()
-
-	# Platform below.
-	var down_params := PhysicsRayQueryParameters2D.create(
-		pos,
-		pos + Vector2(0, 200),
-		collision_mask
-	)
-	platform_below = not space.intersect_ray(down_params).is_empty()
+## Ground cell from the actor's existing GroundCheck ray — the same sampling
+## Actor-Movement and the NavExecutor use, zero extra physics queries.
+func _ground_cell() -> Vector2i:
+	var ray = owner.actor.get_node_or_null("GroundCheck")
+	if ray == null or not ray.is_colliding():
+		return NO_CELL
+	var col = ray.get_collider()
+	if col == null or not col.has_method("local_to_map"):
+		return NO_CELL
+	var hit: Vector2 = ray.get_collision_point()
+	return col.local_to_map(col.to_local(hit))

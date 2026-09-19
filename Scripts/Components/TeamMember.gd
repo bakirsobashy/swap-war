@@ -37,9 +37,15 @@ func _flash_team_change() -> void:
 	body.modulate = Color.WHITE
 	var tree := get_tree()
 	if tree:
+		# Weak capture: a swap can fire just before the actor is freed (match
+		# end), and a strong capture of a freed sprite prints the engine's
+		# "Lambda capture ... was freed" warning. The WeakRef never dies, so
+		# the timer body just no-ops instead.
+		var body_ref: WeakRef = weakref(body)
 		tree.create_timer(0.15).timeout.connect(func() -> void:
-			if is_instance_valid(body):
-				body.modulate = original_mod
+			var sprite := body_ref.get_ref() as Sprite2D
+			if sprite:
+				sprite.modulate = original_mod
 		)
 
 func _update_visuals() -> void:

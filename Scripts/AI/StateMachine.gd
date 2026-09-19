@@ -15,10 +15,12 @@ func _init(ai_controller) -> void:
 	owner = ai_controller
 
 
-## Register a state under a name. The state receives back-references to this machine and its owner.
+## Register a state under a name. The state receives a back-reference to the
+## owner ONLY — never to this machine: State and StateMachine are both
+## RefCounted, and a State -> machine -> State cycle never gets collected
+## (the audit's per-respawn object leak).
 func register(name: String, state) -> void:
 	states[name] = state
-	state.machine = self
 	state.owner = owner
 
 
@@ -38,16 +40,8 @@ func transition_to(name: String) -> void:
 	current_state.enter()
 
 
-## Run the active state's _process logic.
-func update(delta: float) -> void:
-	if not current_state:
-		return
-	var next: String = current_state.update(delta)
-	if next:
-		transition_to(next)
-
-
-## Run the active state's _physics_process logic.
+## Run the active state's _physics_process logic. All decision code is
+## physics-ticked; the old _process mirror was dead weight and is gone.
 func physics_update(delta: float) -> void:
 	if not current_state:
 		return

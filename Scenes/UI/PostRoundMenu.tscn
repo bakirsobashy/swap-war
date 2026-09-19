@@ -1,61 +1,64 @@
-[gd_scene load_steps=2 format=3 uid="uid://b4m3x7q1p0str0und"]
+[gd_scene format=3 uid="uid://d2nvlraaoq5k0"]
 
-[ext_resource type="Script" path="res://Scripts/UI/PostRoundMenu.gd" id="1_post0"]
-[ext_resource type="Theme" path="res://Assets/ui/Themes/swap_war_theme.tres" id="2_theme"]
+[ext_resource type="Script" uid="uid://cbf3si13rc0wq" path="res://Scripts/UI/PostRoundMenu.gd" id="1_post0"]
+[ext_resource type="Theme" uid="uid://c6r67tty4fd5u" path="res://Assets/ui/Themes/new_theme.tres" id="2_jsuhs"]
 
-[node name="PostRoundMenu" type="CanvasLayer"]
+[node name="PostRoundMenu" type="CanvasLayer" unique_id=1021887279]
 process_mode = 3
-visible = false
-theme = ExtResource("2_theme")
 script = ExtResource("1_post0")
 
-[node name="Panel" type="PanelContainer" parent="."]
+[node name="Panel" type="PanelContainer" parent="." unique_id=512649063]
 unique_name_in_owner = true
 anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
 offset_left = -210.0
 offset_top = -200.0
 offset_right = 210.0
 offset_bottom = 200.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("2_jsuhs")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel" unique_id=2112470618]
 layout_mode = 2
 alignment = 1
 
-[node name="Title" type="Label" parent="Panel/VBoxContainer"]
+[node name="Title" type="Label" parent="Panel/VBoxContainer" unique_id=1879845164]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
 text = "MATCH OVER"
 horizontal_alignment = 1
 
-[node name="Scoreboard" type="Label" parent="Panel/VBoxContainer"]
+[node name="Scoreboard" type="Label" parent="Panel/VBoxContainer" unique_id=1094734425]
 unique_name_in_owner = true
-layout_mode = 2
 custom_minimum_size = Vector2(360, 120)
+layout_mode = 2
 theme_override_font_sizes/font_size = 18
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
 
-[node name="Spacer" type="Control" parent="Panel/VBoxContainer"]
-layout_mode = 2
+[node name="Spacer" type="Control" parent="Panel/VBoxContainer" unique_id=427739303]
 custom_minimum_size = Vector2(0, 16)
-
-[node name="PlayAgainBtn" type="Button" parent="Panel/VBoxContainer"]
-unique_name_in_owner = true
 layout_mode = 2
+
+[node name="PlayAgainBtn" type="Button" parent="Panel/VBoxContainer" unique_id=186799789]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(240, 56)
+layout_mode = 2
 text = "PLAY AGAIN"
 
-[node name="MainMenuBtn" type="Button" parent="Panel/VBoxContainer"]
+[node name="MainMenuBtn" type="Button" parent="Panel/VBoxContainer" unique_id=397539355]
 unique_name_in_owner = true
-layout_mode = 2
 custom_minimum_size = Vector2(240, 56)
+layout_mode = 2
 text = "MAIN MENU"
 
 [connection signal="pressed" from="Panel/VBoxContainer/PlayAgainBtn" to="." method="_on_play_again_pressed"]
-[connection signal="pressed" from="Panel/VBoxContainer/MainMenuBtn" to="." method="_on_main_menu_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/PlayAgainBtn" to="." method="_play_click"]
+[connection signal="pressed" from="Panel/VBoxContainer/MainMenuBtn" to="." method="_on_main_menu_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/MainMenuBtn" to="." method="_play_click"]

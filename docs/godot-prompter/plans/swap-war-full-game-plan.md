@@ -444,6 +444,14 @@ This plan locks scope, fixes the critical bugs, builds the missing shell, and th
 
 #### 4.3 AI Depth
 
+> **SUPERSEDED (AI 2.0 rewrite).** The AI has been fully rebuilt on **baked platform-graph
+> navigation** — see `Scripts/AI/` (NavGraph / NavBaker / NavAStar / NavExecutor) and the plan
+> in `.claude/plans/drifting-wiggling-reddy.md`. The `Pathfinder.gd` waypoint approach below
+> (and the file itself) is gone; multi-route stair navigation now comes from the auto-baked
+> graph + A*, and difficulty tuning lives in `Scripts/AI/AIDifficulty.gd` (one "normal"
+> profile, more are table additions). Items 3 (Patrol state), 4 (retreat uses navigation), and
+> 6 (`Health.is_dead()`) shipped with the rewrite in a different form. Kept below for history.
+
 **Files:**
 - `Scripts/Components/AIController.gd`
 - `Scripts/AI/Pathfinder.gd`

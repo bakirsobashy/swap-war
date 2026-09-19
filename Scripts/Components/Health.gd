@@ -47,15 +47,26 @@ func take_damage(amount: float, attacker: Node = null) -> void:
 	if current_health <= 0.0:
 		die()
 
+## Public dead-check for AI targeting and hazards — duck-typed callers (the
+## sensors, the state layer) read this instead of the private _is_dead.
+func is_dead() -> bool:
+	return _is_dead
+
 func _flash_hit() -> void:
 	var body := _actor.get_node_or_null("VisualBody/Sprite2D") as Sprite2D
 	if not body:
 		return
 	var original_mod := body.modulate
 	body.modulate = Color.WHITE
+	# Capture the sprite weakly: the actor can be freed before this timer
+	# fires (match end), and a strong capture of a freed object makes the
+	# engine print "Lambda capture ... was freed" — the guard still no-ops,
+	# the weakref just keeps the console clean.
+	var body_ref: WeakRef = weakref(body)
 	_actor.get_tree().create_timer(0.08).timeout.connect(func() -> void:
-		if is_instance_valid(body):
-			body.modulate = original_mod
+		var sprite := body_ref.get_ref() as Sprite2D
+		if sprite:
+			sprite.modulate = original_mod
 	)
 
 func _spawn_floating_number(amount: float) -> void:
@@ -101,9 +112,14 @@ func _spawn_hit_particles() -> void:
 	particles.emitting = true
 	particles.one_shot = true
 
+	# Weak capture — same reason as _flash_hit: the actor (and Effects) can
+	# be freed before this timer fires, and a strong capture of a freed
+	# object prints the "Lambda capture ... was freed" warning.
+	var particles_ref: WeakRef = weakref(particles)
 	_actor.get_tree().create_timer(particles.lifetime).timeout.connect(func() -> void:
-		if is_instance_valid(particles):
-			particles.queue_free()
+		var p := particles_ref.get_ref() as CPUParticles2D
+		if p:
+			p.queue_free()
 	)
 
 func _record_attacker(attacker: Node) -> void:
@@ -165,9 +181,11 @@ func _spawn_death_particles() -> void:
 	particles.color = _team_color()
 	effects.add_child(particles)
 	particles.emitting = true
+	var particles_ref: WeakRef = weakref(particles)
 	_actor.get_tree().create_timer(particles.lifetime).timeout.connect(func() -> void:
-		if is_instance_valid(particles):
-			particles.queue_free()
+		var p := particles_ref.get_ref() as CPUParticles2D
+		if p:
+			p.queue_free()
 	)
 
 func _team_color() -> Color:

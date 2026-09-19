@@ -1,6 +1,6 @@
 extends Node
 
-enum MatchState { PREPARE, PLAYING, POST_ROUND }
+enum MatchState { IDLE, PREPARE, PLAYING, POST_ROUND }
 
 const ActorScene := preload("res://Scenes/actor.tscn")
 const PauseMenuScene := preload("res://Scenes/UI/PauseMenu.tscn")
@@ -9,7 +9,11 @@ const PostRoundMenuScene := preload("res://Scenes/UI/PostRoundMenu.tscn")
 @export var prepare_countdown: float = 3.0
 @export var winner_message_duration: float = 5.0
 
-var _state: MatchState = MatchState.PREPARE
+## IDLE until an arena scene is actually set up: the autoload exists before
+## any scene does (main menu, probe mode), and a countdown ticking there both
+## corrupts the state (PLAYING "starts" with no match) and crashes on the null
+## current_scene when an arena is freed mid-countdown.
+var _state: MatchState = MatchState.IDLE
 var _match_timer: float = 0.0
 var _countdown_timer: float = 0.0
 var _spawned_actors: Array[Node] = []
@@ -48,6 +52,8 @@ func _setup_arena() -> void:
 
 func _process(delta: float) -> void:
 	match _state:
+		MatchState.IDLE:
+			pass
 		MatchState.PREPARE:
 			_countdown_timer -= delta
 			_update_countdown_display()
@@ -188,19 +194,28 @@ func _despawn_actors() -> void:
 			child.queue_free()
 
 func _show_countdown_display() -> void:
-	var hud := get_tree().current_scene.get_node_or_null("HUD") as HUD
+	var hud := _get_hud()
 	if hud:
 		hud.hide_winner()
 
+## Null-safe HUD lookup: on quit-to-menu during the countdown the old arena is
+## freed a frame or two before the replacement scene is added, so _process can
+## still tick while current_scene is null.
+func _get_hud() -> HUD:
+	var scene := get_tree().current_scene
+	if scene == null:
+		return null
+	return scene.get_node_or_null("HUD") as HUD
+
 func _update_countdown_display() -> void:
-	var hud := get_tree().current_scene.get_node_or_null("HUD") as HUD
+	var hud := _get_hud()
 	if hud:
 		var seconds := int(ceil(_countdown_timer))
 		hud.show_winner("START IN %d" % seconds)
 
 func _start_playing() -> void:
 	_state = MatchState.PLAYING
-	var hud := get_tree().current_scene.get_node_or_null("HUD") as HUD
+	var hud := _get_hud()
 	if hud:
 		hud.hide_winner()
 

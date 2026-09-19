@@ -193,7 +193,31 @@ func _on_body_entered(_body: Node) -> void:
 func _physics_process(_delta: float) -> void:
 	if not _holder:
 		return
+	if not is_instance_valid(_holder):
+		# Freed instances compare non-null in GDScript, so the check above
+		# passed: the holder left the tree without dropping (match restart
+		# frees armed actors mid-hold). Release before touching the freed
+		# socket — otherwise this errors every tick and the weapon stays
+		# "held" forever, an unpickable frozen phantom left on the field.
+		call_deferred("_release_from_lost_holder")
+		return
 	_update_follow_transform()
+
+
+## Release to normal ground state when the holder was freed without dropping.
+## Health.die drops properly; this is the abrupt-free path (restart, teardown).
+## Deferred from _physics_process so the physics-affecting state changes apply
+## outside any physics callback — same discipline as drop()'s _do_drop.
+func _release_from_lost_holder() -> void:
+	_holder = null
+	_socket = null
+	scale = Vector2.ONE
+	rotation = 0.0
+	gravity_scale = 1.0
+	collision_layer = GROUND_LAYER
+	collision_mask = GROUND_MASK
+	freeze = false
+	lock_rotation = false
 
 
 func _update_follow_transform() -> void:
