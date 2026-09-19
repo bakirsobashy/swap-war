@@ -88,7 +88,6 @@ func _start_match() -> void:
 	if ScoreManager:
 		ScoreManager.reset_scores()
 	if TeamManager:
-		TeamManager.team_count = 3
 		if TeamManager._swap_timer:
 			TeamManager._swap_timer.start()
 	_spawn_actors()
