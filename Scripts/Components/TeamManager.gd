@@ -5,7 +5,7 @@ signal actor_registered(actor: Node)
 signal actor_unregistered(actor: Node)
 
 @export var swap_interval: float = 10.0
-@export var team_count: int = 3
+@export var team_count: int = 4
 
 var _teams: Dictionary = {}  # Node -> int
 var _swap_timer: Timer = null
