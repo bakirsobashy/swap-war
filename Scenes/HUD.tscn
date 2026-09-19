@@ -2,9 +2,7 @@
 
 [ext_resource type="Script" uid="uid://d1d8qwqwhwb8s" path="res://Scripts/UI/HUD.gd" id="1_hud"]
 [ext_resource type="PackedScene" uid="uid://d1r8qvpi16ghr" path="res://Scenes/UI/TouchControls.tscn" id="2_tc"]
-
-[sub_resource type="LabelSettings" id="LabelSettings_gj1gv"]
-font_color = Color(1, 0, 1, 1)
+[ext_resource type="PackedScene" path="res://Scenes/UI/TeamTimer.tscn" id="3_teamtimer"]
 
 [node name="HUD" type="CanvasLayer" unique_id=1514791500]
 script = ExtResource("1_hud")
@@ -27,17 +25,17 @@ grow_horizontal = 2
 grow_vertical = 2
 alignment = 1
 
-[node name="TeamTimerLabel" type="Label" parent="TopBar" unique_id=580497220]
+[node name="TeamTimer" parent="TopBar" unique_id=580497220 instance=ExtResource("3_teamtimer")]
 unique_name_in_owner = true
 layout_mode = 1
-offset_left = 8.0
-offset_top = 16.0
-offset_right = 160.0
-offset_bottom = 48.0
-grow_horizontal = 2
-text = "Swap: 5.0"
-label_settings = SubResource("LabelSettings_gj1gv")
-horizontal_alignment = 2
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -88.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = 88.0
+grow_horizontal = 0
 
 [node name="WinnerMessage" type="Label" parent="." unique_id=2073104039]
 unique_name_in_owner = true

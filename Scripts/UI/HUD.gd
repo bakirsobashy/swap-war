@@ -2,7 +2,7 @@ class_name HUD
 extends CanvasLayer
 
 @onready var _score_board: HBoxContainer = %ScoreBoard
-@onready var _team_timer_label: Label = %TeamTimerLabel
+@onready var _team_timer: TeamTimer = %TeamTimer
 @onready var _winner_message: Label = %WinnerMessage
 @onready var _top_bar: Control = %TopBar
 
@@ -37,13 +37,10 @@ func _apply_responsive_layout() -> void:
 	var window_width := float(DisplayServer.window_get_size().x)
 	if window_width < 500.0:
 		_score_board.add_theme_font_size_override("font_size", 13)
-		_team_timer_label.add_theme_font_size_override("font_size", 13)
 	elif window_width < 800.0:
 		_score_board.add_theme_font_size_override("font_size", 16)
-		_team_timer_label.add_theme_font_size_override("font_size", 16)
 	else:
 		_score_board.remove_theme_font_size_override("font_size")
-		_team_timer_label.remove_theme_font_size_override("font_size")
 
 func _build_initial_ui() -> void:
 	for c in _score_board.get_children():
@@ -113,8 +110,10 @@ func _update_score_label(actor: Node) -> void:
 func _update_team_timer() -> void:
 	if not TeamManager or not is_instance_valid(TeamManager._swap_timer):
 		return
+	if not is_instance_valid(_team_timer):
+		return
 	var remaining := TeamManager._swap_timer.time_left
-	_team_timer_label.text = "Swap: %.1f" % remaining
+	_team_timer.update_timer(remaining, TeamManager.swap_interval)
 
 func _team_color(team_id: int) -> Color:
 	match team_id:
