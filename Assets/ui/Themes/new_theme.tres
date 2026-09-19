@@ -1,5 +1,6 @@
 [gd_resource type="Theme" format=3 uid="uid://c6r67tty4fd5u"]
 
+[ext_resource type="FontFile" uid="uid://beqlxh284dn5t" path="res://Assets/ui/Font/ScribbleShow-gw84E.ttf" id="1_3i33y"]
 [ext_resource type="Texture2D" uid="uid://bkooxlrb52wk4" path="res://Assets/ui/Drawing 2.png" id="1_hxola"]
 [ext_resource type="Texture2D" uid="uid://dqp0il0v5qfkk" path="res://Assets/ui/Drawing 2-2.png" id="2_hkpw1"]
 [ext_resource type="Texture2D" uid="uid://hrqvv46eu406" path="res://Assets/ui/new_atlas_texture.tres" id="3_64132"]
@@ -65,10 +66,12 @@ texture_margin_bottom = 10.0
 region_rect = Rect2(69, 423, 169, 161)
 
 [resource]
-Button/colors/font_color = Color(0, 0, 0, 1)
-Button/colors/font_hover_color = Color(0, 0, 0, 1)
-Button/colors/font_hover_pressed_color = Color(0, 0, 0, 1)
-Button/colors/font_pressed_color = Color(0, 0, 0, 1)
+Button/colors/font_disabled_color = Color(1, 1, 1, 1)
+Button/colors/font_hover_color = Color(1, 1, 1, 1)
+Button/colors/font_outline_color = Color(0, 0, 0, 1)
+Button/constants/outline_size = 7
+Button/font_sizes/font_size = 21
+Button/fonts/font = ExtResource("1_3i33y")
 Button/styles/disabled = SubResource("StyleBoxTexture_64132")
 Button/styles/hover = SubResource("StyleBoxTexture_hxola")
 Button/styles/hover_pressed = SubResource("StyleBoxTexture_6xawr")
@@ -77,7 +80,10 @@ Button/styles/pressed = SubResource("StyleBoxTexture_ik432")
 CheckBox/constants/icon_max_width = 22
 CheckBox/icons/checked = ExtResource("2_hkpw1")
 CheckBox/icons/unchecked = ExtResource("3_64132")
-Label/colors/font_color = Color(0, 0, 0, 1)
+Label/colors/font_color = Color(1, 1, 1, 1)
+Label/colors/font_outline_color = Color(0, 0, 0, 1)
+Label/constants/outline_size = 3
+Label/fonts/font = ExtResource("1_3i33y")
 PanelContainer/styles/panel = SubResource("StyleBoxTexture_3i33y")
 PopupMenu/colors/font_color = Color(0, 0, 0, 1)
 PopupMenu/styles/panel = SubResource("StyleBoxTexture_8e2ic")

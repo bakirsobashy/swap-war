@@ -1,20 +1,21 @@
 [gd_scene format=3 uid="uid://ct5q6v7gq3w7n"]
 
-[ext_resource type="Script" path="res://Scripts/Weapons/Projectile.gd" id="1_proj"]
-[ext_resource type="Texture2D" path="res://Assets/PNG/Default/effect_shot.png" id="2_blast"]
+[ext_resource type="Script" uid="uid://bik0xonla1lyb" path="res://Scripts/Weapons/Projectile.gd" id="1_proj"]
+[ext_resource type="Texture2D" uid="uid://3mnlkudvcrja" path="res://Assets/PNG/Default/effect_shot.png" id="2_blast"]
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_proj"]
-radius = 6.0
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ttr5y"]
+size = Vector2(20, 7)
 
-[node name="Projectile" type="Area2D"]
+[node name="Projectile" type="Area2D" unique_id=1467033057]
 collision_layer = 8
 collision_mask = 3
 script = ExtResource("1_proj")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1895148906]
 z_index = 20
 scale = Vector2(0.6, 0.6)
 texture = ExtResource("2_blast")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("CircleShape2D_proj")
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=407350577]
+position = Vector2(0, 0.5)
+shape = SubResource("RectangleShape2D_ttr5y")

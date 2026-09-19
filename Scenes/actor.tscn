@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://wf2wnrstdysj" path="res://Scripts/Actor-Movement.gd" id="1_7ei5c"]
 [ext_resource type="Script" uid="uid://i1jc224moi8w" path="res://Scenes/Actor_Body.gd" id="1_lfvdv"]
+[ext_resource type="Texture2D" uid="uid://3yjq18byg0pj" path="res://Assets/PNG/Default/character_roundYellow.png" id="4_ttr5y"]
 [ext_resource type="Script" uid="uid://cbrbt0jaxurum" path="res://Scripts/Components/WeaponHolder.gd" id="4_wholder"]
 [ext_resource type="Script" uid="uid://cgnkpv7hfem6j" path="res://Scripts/Components/Health.gd" id="5_health"]
 [ext_resource type="Script" uid="uid://my7ucja7hpxn" path="res://Scripts/Components/TeamMember.gd" id="6_team"]
@@ -16,7 +17,6 @@ radius = 19.0
 height = 62.0
 
 [node name="Actor" type="RigidBody2D" unique_id=304031720]
-scale = Vector2(11.671971, 11.671971)
 collision_layer = 2
 collision_mask = 5
 physics_material_override = SubResource("PhysicsMaterial_7ei5c")
@@ -33,6 +33,7 @@ position = Vector2(0, -55)
 script = ExtResource("1_lfvdv")
 
 [node name="Sprite2D" type="Sprite2D" parent="VisualBody" unique_id=533744129]
+texture = ExtResource("4_ttr5y")
 
 [node name="WeaponSocket" type="Marker2D" parent="." unique_id=1672751271]
 
