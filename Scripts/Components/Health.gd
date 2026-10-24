@@ -215,12 +215,7 @@ func _team_color() -> Color:
 	var team_member := _actor.get_node_or_null("Components/TeamMember") as TeamMember
 	if not team_member:
 		return Color.WHITE
-	match team_member.team_id:
-		0: return Color.GREEN
-		1: return Color.RED
-		2: return Color.PURPLE
-		3: return Color.YELLOW
-		_: return Color.WHITE
+	return TeamPalette.color(team_member.team_id)
 
 func _respawn() -> void:
 	var spawn_points_node = _actor.get_tree().current_scene.get_node_or_null("World/SpawnPoints")

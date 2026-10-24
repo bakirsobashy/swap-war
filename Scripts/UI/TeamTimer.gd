@@ -3,7 +3,7 @@ extends Control
 
 ## Visual team-swap countdown: digit sprites + a clockwise-emptying circle ring.
 
-@export var team_colors: Array[Color] = [Color.GREEN, Color.RED, Color.PURPLE, Color.YELLOW]
+@export var team_colors: Array[Color] = TeamPalette.COLORS
 @export var pulse_start_seconds: int = 3
 @export var tick_sound: AudioStream = preload("res://Assets/ui/Sounds/switch-b.ogg")
 

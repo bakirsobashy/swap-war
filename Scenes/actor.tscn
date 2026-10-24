@@ -8,6 +8,7 @@
 [ext_resource type="Script" uid="uid://my7ucja7hpxn" path="res://Scripts/Components/TeamMember.gd" id="6_team"]
 [ext_resource type="Script" uid="uid://cxtm3eepkr1ht" path="res://Scripts/Components/AIController.gd" id="7_ai"]
 [ext_resource type="PackedScene" uid="uid://b8eqm7g5v2k3p" path="res://Scenes/UI/HealthBar2D.tscn" id="8_hb"]
+[ext_resource type="Script" path="res://Scripts/UI/ActorMarker.gd" id="9_marker"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_7ei5c"]
 friction = 0.1
@@ -28,6 +29,10 @@ script = ExtResource("1_7ei5c")
 
 [node name="HealthBar2D" parent="." unique_id=788683536 instance=ExtResource("8_hb")]
 position = Vector2(0, -55)
+
+[node name="ActorMarker" type="Node2D" parent="."]
+position = Vector2(0, -68)
+script = ExtResource("9_marker")
 
 [node name="VisualBody" type="Node2D" parent="." unique_id=1990988547]
 script = ExtResource("1_lfvdv")

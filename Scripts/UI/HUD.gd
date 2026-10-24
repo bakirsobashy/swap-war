@@ -126,9 +126,4 @@ func _update_team_timer() -> void:
 	_team_timer.update_timer(remaining, TeamManager.swap_interval)
 
 func _team_color(team_id: int) -> Color:
-	match team_id:
-		0: return Color.GREEN
-		1: return Color.RED
-		2: return Color.PURPLE
-		3: return Color.YELLOW
-		_: return Color.WHITE
+	return TeamPalette.color(team_id)
