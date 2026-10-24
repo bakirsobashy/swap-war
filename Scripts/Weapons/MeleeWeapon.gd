@@ -24,6 +24,14 @@ func attack() -> void:
 	if AudioManager:
 		AudioManager.play_melee_attack()
 
+	# Damage only fired on contact BEGIN, so a swing at an enemy already
+	# touching the blade did nothing. Hit what the hitbox overlaps now; the
+	# per-victim cooldown in _on_body_entered still paces repeat hits.
+	var hit_box := get_node_or_null("HitBox") as Area2D
+	if hit_box:
+		for body in hit_box.get_overlapping_bodies():
+			_on_body_entered(body)
+
 
 func is_attacking() -> bool:
 	return _is_attacking
@@ -70,12 +78,14 @@ func _on_body_entered(body: Node) -> void:
 	if is_critical:
 		final_damage *= CRITICAL_MULTIPLIER
 
-	health.take_damage(final_damage, _holder)
+	# A blocked hit (dead / respawn-invulnerable target) costs nothing and
+	# pushes nobody — durability and knockback used to apply regardless.
+	if not health.take_damage(final_damage, _holder):
+		return
 	_apply_knockback(body)
-	_lose_durability(1)
-
 	if AudioManager:
 		AudioManager.play_hit()
+	_lose_durability(1)
 
 
 func _apply_knockback(body: Node) -> void:
@@ -89,4 +99,7 @@ func _apply_knockback(body: Node) -> void:
 	if dir.is_zero_approx():
 		dir = Vector2(_target_facing, 0.0)
 
-	other_body.apply_central_impulse(dir * _data.knockback)
+	if other_body.has_method("apply_knockback"):
+		other_body.apply_knockback(dir * _data.knockback)
+	else:
+		other_body.apply_central_impulse(dir * _data.knockback)

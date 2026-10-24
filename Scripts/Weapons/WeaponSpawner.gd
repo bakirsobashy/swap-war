@@ -29,12 +29,14 @@ const GUN_SCENES: Array[PackedScene] = [
 ]
 
 static var _active_weapon_count: int = 0
+static var _pending_spawns: int = 0
 
 var _wave_timer: float = 0.0
 
 
 func _ready() -> void:
 	_wave_timer = wave_interval
+	_pending_spawns = 0   # never carry a stale count into a new arena
 
 
 func _process(delta: float) -> void:
@@ -44,12 +46,26 @@ func _process(delta: float) -> void:
 		_spawn_wave()
 
 
+## Restart the wave clock (Play Again) so drops line up with the new round.
+func reset_waves() -> void:
+	_wave_timer = wave_interval
+
+
+## Drop a wave right now (match start) and restart the clock behind it.
+func spawn_opening_wave() -> void:
+	_wave_timer = wave_interval
+	_spawn_wave()
+
+
 static func can_spawn_weapon() -> bool:
-	return _active_weapon_count < MAX_ACTIVE_WEAPONS
+	# Pending = queued add_child calls not yet registered; counting them keeps
+	# one wave from overshooting the cap (the deferred add lagged the count).
+	return _active_weapon_count + _pending_spawns < MAX_ACTIVE_WEAPONS
 
 
 static func register_weapon() -> void:
 	_active_weapon_count += 1
+	_pending_spawns = maxi(_pending_spawns - 1, 0)
 
 
 static func unregister_weapon() -> void:
@@ -74,6 +90,7 @@ func spawn_weapon(at_global_position: Vector2) -> WeaponBase:
 
 	var root := get_tree().current_scene
 	if root:
+		_pending_spawns += 1
 		root.call_deferred("add_child", weapon)
 
 	return weapon

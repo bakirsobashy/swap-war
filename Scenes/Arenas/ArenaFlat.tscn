@@ -37,9 +37,6 @@ position = Vector2(-2, -474)
 [node name="SkyRight" parent="World/WeaponSpawnPoints" index="2"]
 position = Vector2(632, -443)
 
-[node name="StairWaypoints" parent="World" index="3"]
-visible = false
-
 [node name="LeftWall" parent="World/Boundaries" index="0"]
 position = Vector2(-1084, 0)
 

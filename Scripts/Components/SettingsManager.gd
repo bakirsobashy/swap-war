@@ -15,6 +15,16 @@ signal settings_loaded()
 
 # UI settings
 @export var touch_controls_mode: TouchControlsMode = TouchControlsMode.AUTO
+## Auto Attack (default off — manual is the default): melee weapons auto-swing
+## at the nearest hostile in reach (aiming at it, on PC too); ranged weapons
+## auto-fire while the touch aim stick is deflected (touch-only — PC aims
+## with the mouse). The manual ATTACK input always works alongside it.
+@export var auto_attack_enabled: bool = false
+## Custom touch-control layout: control name -> Vector3(nx, ny, size_mult)
+## (nx/ny normalized to canvas size at save time; mult 0.5-2.0 on top of the
+## automatic resolution scale). Empty = procedural layout. Applied per-control
+## by TouchControls._layout_buttons; edited by the in-menu TouchLayoutEditor.
+@export var touch_layout: Dictionary = {}
 
 # Match options (persisted as last-used)
 @export var ai_count: int = 3
@@ -35,11 +45,15 @@ func save_settings() -> void:
 	config.set_value("audio", "sfx_enabled", sfx_enabled)
 	config.set_value("audio", "music_enabled", music_enabled)
 	config.set_value("ui", "touch_controls_mode", touch_controls_mode)
+	config.set_value("ui", "auto_attack_enabled", auto_attack_enabled)
 	config.set_value("match", "ai_count", ai_count)
 	config.set_value("match", "win_mode", win_mode)
 	config.set_value("match", "score_target", score_target)
 	config.set_value("match", "match_duration_seconds", match_duration_seconds)
 	config.set_value("match", "selected_arena_path", selected_arena_path)
+	# Custom touch layout — one key per control (empty dict writes no section).
+	for key in touch_layout.keys():
+		config.set_value("touch_layout", key, touch_layout[key])
 	var err := config.save(CONFIG_PATH)
 	if err != OK:
 		push_warning("Failed to save settings: %d" % err)
@@ -55,11 +69,20 @@ func load_settings() -> void:
 	sfx_enabled = config.get_value("audio", "sfx_enabled", sfx_enabled)
 	music_enabled = config.get_value("audio", "music_enabled", music_enabled)
 	touch_controls_mode = config.get_value("ui", "touch_controls_mode", touch_controls_mode)
+	auto_attack_enabled = config.get_value("ui", "auto_attack_enabled", auto_attack_enabled)
 	ai_count = config.get_value("match", "ai_count", ai_count)
 	win_mode = config.get_value("match", "win_mode", win_mode)
 	score_target = config.get_value("match", "score_target", score_target)
 	match_duration_seconds = config.get_value("match", "match_duration_seconds", match_duration_seconds)
 	selected_arena_path = config.get_value("match", "selected_arena_path", selected_arena_path)
+	# Custom touch layout — filter to Vector3 so corrupt entries self-heal
+	# on the next save.
+	touch_layout.clear()
+	if config.has_section("touch_layout"):
+		for key in config.get_section_keys("touch_layout"):
+			var v: Variant = config.get_value("touch_layout", key, null)
+			if v is Vector3:
+				touch_layout[key] = v
 	if selected_arena_path.is_empty():
 		selected_arena_path = ArenaDatabase.DEFAULT_PATH
 
@@ -97,13 +120,21 @@ func set_touch_controls_mode(mode: TouchControlsMode) -> void:
 	save_settings()
 	setting_changed.emit()
 
-signal setting_changed()
+func set_auto_attack_enabled(enabled: bool) -> void:
+	auto_attack_enabled = enabled
+	save_settings()
+	setting_changed.emit()
 
-func get_win_mode_name() -> String:
-	match win_mode:
-		WinMode.SCORE_TARGET:
-			return "Score Target"
-		WinMode.TIMED_SCORE:
-			return "Timed Score"
-		_:
-			return "Unknown"
+## NOTE: no setting_changed here — it is wired to TouchControls'
+## _visibility_changed, and a layout value has nothing to do with visibility.
+## The layout is re-read by TouchControls._layout_buttons on demand (every
+## HUD _ready + viewport resize), like the audio/match setters that don't emit.
+func set_touch_layout(layout: Dictionary) -> void:
+	touch_layout = layout
+	save_settings()
+
+func clear_touch_layout() -> void:
+	touch_layout = {}
+	save_settings()
+
+signal setting_changed()

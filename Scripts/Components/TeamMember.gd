@@ -33,8 +33,13 @@ func _flash_team_change() -> void:
 	var body := actor.get_node_or_null("VisualBody/Sprite2D") as Sprite2D
 	if not body:
 		return
-	var original_mod := body.modulate
-	body.modulate = Color.WHITE
+	# Overbright so it reads on the team texture (WHITE is the sprite's normal
+	# modulate, so a WHITE flash was invisible). Restore to plain white keeping
+	# the invulnerability-flicker alpha: capturing the old colour would let an
+	# overlapping flash restore the flash itself.
+	var flash: Color = Color(2.2, 2.2, 2.2, 1.0)
+	flash.a = body.modulate.a
+	body.modulate = flash
 	var tree := get_tree()
 	if tree:
 		# Weak capture: a swap can fire just before the actor is freed (match
@@ -45,7 +50,7 @@ func _flash_team_change() -> void:
 		tree.create_timer(0.15).timeout.connect(func() -> void:
 			var sprite := body_ref.get_ref() as Sprite2D
 			if sprite:
-				sprite.modulate = original_mod
+				sprite.modulate = Color(1.0, 1.0, 1.0, sprite.modulate.a)
 		)
 
 func _update_visuals() -> void:
@@ -63,6 +68,10 @@ func _update_visuals() -> void:
 		body_sprite.texture = body_tex
 	if hand_sprite and hand_tex:
 		hand_sprite.texture = hand_tex
+
+	var health := actor.get_node_or_null("Components/Health")
+	if health and health.has_method("refresh_bar_color"):
+		health.refresh_bar_color()
 
 func _team_body_texture(team: int) -> Texture2D:
 	match team:

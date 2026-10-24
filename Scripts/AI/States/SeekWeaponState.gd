@@ -6,6 +6,7 @@ extends "res://Scripts/AI/State.gd"
 ## so a better opportunity can take over.
 
 const DIRECT_STEER_TIME := 1.2
+const UNREACHABLE_BAN := 8.0
 
 
 var _direct_steer_clock := 0.0
@@ -46,6 +47,10 @@ func physics_update(delta: float) -> String:
 	if rc != &"ok":
 		_direct_steer_clock += delta
 		if _direct_steer_clock > DIRECT_STEER_TIME:
+			# Unreachable: drop it from scoring for a while, or the hub picks
+			# the same weapon again and this loops forever.
+			owner.sensors.blacklist_weapon(weapon, UNREACHABLE_BAN)
+			owner.sensors.best_weapon = null
 			return "Idle"
 		# No route and no active goal — the state's write survives (the
 		# executor only overwrites inputs while a goal is running).

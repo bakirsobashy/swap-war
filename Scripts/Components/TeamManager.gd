@@ -49,21 +49,21 @@ func set_team(actor: Node, team_id: int) -> void:
 	if team_member:
 		team_member.team_id = team_id
 
-func get_actors_on_team(team_id: int) -> Array:
-	var result: Array = []
-	for actor in _teams.keys():
-		if _teams[actor] == team_id:
-			result.append(actor)
-	return result
-
 func randomize_teams() -> void:
 	var actors := _teams.keys()
 	if actors.is_empty():
 		return
 
+	var rolled: Array[int] = []
 	for actor in actors:
-		var new_team := randi() % team_count
-		set_team(actor, new_team)
+		rolled.append(randi() % team_count)
+	# Never let a swap leave everyone allied (plan 4.4.7): with 1 AI a quarter
+	# of independent rolls used to put both actors on one team for 10 s.
+	if actors.size() >= 2 and team_count >= 2 and rolled.count(rolled[0]) == rolled.size():
+		var i := randi() % rolled.size()
+		rolled[i] = (rolled[i] + 1 + randi() % (team_count - 1)) % team_count
+	for i in actors.size():
+		set_team(actors[i], rolled[i])
 
 	team_changed.emit(_teams.duplicate())
 	if AudioManager:

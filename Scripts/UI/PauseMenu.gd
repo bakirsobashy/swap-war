@@ -10,7 +10,9 @@ var _post_round_menu: CanvasLayer = null
 func _ready() -> void:
 	layer = 11
 	visible = false
-	process_mode = PROCESS_MODE_WHEN_PAUSED
+	# ALWAYS, not WHEN_PAUSED: a WHEN_PAUSED node gets no _input while the
+	# game runs, so Esc could never open the menu (only unpause it).
+	process_mode = PROCESS_MODE_ALWAYS
 	# Both PauseMenu and PostRoundMenu are added via call_deferred; wait one frame
 	# before looking up the sibling so it actually exists.
 	await get_tree().process_frame

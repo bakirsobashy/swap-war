@@ -2,7 +2,7 @@ extends SceneTree
 
 ## Headless probe for the navigation bake (plan step 1).
 ##
-## For each arena (Flat / Pit / Hazards + legacy arena.tscn):
+## For each arena (Flat / Pit / Hazards):
 ##   - prints the full platform/edge dump
 ##   - asserts layout-independent sanity (margins, kill filter, localization
 ##     round-trips) that stays valid when the placeholder arenas are repainted
@@ -24,7 +24,6 @@ func _run() -> void:
 	var baker = load("res://Scripts/AI/NavBaker.gd")
 
 	# --- per-arena sanity + snapshots -----------------------------------
-	await _probe_scene(baker, "res://Scenes/arena.tscn", false)
 	await _probe_scene(baker, "res://Scenes/Arenas/ArenaFlat.tscn", true)
 	await _probe_scene(baker, "res://Scenes/Arenas/ArenaPit.tscn", true)
 	await _probe_scene(baker, "res://Scenes/Arenas/ArenaHazards.tscn", true)
@@ -132,11 +131,23 @@ func _probe_scene(baker, path: String, with_snapshots: bool) -> void:
 	_sanity(graph, label)
 
 	if label == "ArenaFlat.tscn":
-		# 62px tile size honored: floor spans [-930, 930] at y_top 0 (15 cells
-		# of 62px; a 64px bake would read [-960, 960]).
-		var floor_p = _find_platform(graph, -930.0, 930.0, 0.0, "solid")
-		_check(floor_p != null, "Flat: floor [-930,930]@0 (62px honored)")
+		# 62px tile size honored: every platform edge lands on a 62px cell
+		# boundary (a 64px bake would read e.g. [-960, -448]). The repainted
+		# floor has two pits, so it bakes as three floor segments joined by
+		# jump_across edges over the gaps (snapshot re-derived after the
+		# "Refresh UI and arena presentation" arena repaint).
+		var seg_w = _find_platform(graph, -930.0, -434.0, 0.0, "solid")
+		var seg_m = _find_platform(graph, -248.0, 186.0, 0.0, "solid")
+		var seg_e = _find_platform(graph, 372.0, 930.0, 0.0, "solid")
+		_check(seg_w != null, "Flat: west floor segment [-930,-434]@0 (62px honored)")
+		_check(seg_m != null, "Flat: mid floor segment [-248,186]@0")
+		_check(seg_e != null, "Flat: east floor segment [372,930]@0 (62px honored)")
 		_check(int(graph.tile_size) == 62, "Flat: tile size read from TileSet (62)")
+		if seg_w != null and seg_m != null and seg_e != null:
+			_check(_find_edge(graph, seg_w.id, seg_m.id, "jump_across") != null,
+					"Flat: pits are crossable (west->mid jump_across)")
+			_check(_find_edge(graph, seg_m.id, seg_e.id, "jump_across") != null,
+					"Flat: pits are crossable (mid->east jump_across)")
 		# Sub-floor pillars are covered by the floor cells above them: nothing
 		# below floor level may appear as a platform.
 		var below_floor := 0
@@ -145,7 +156,8 @@ func _probe_scene(baker, path: String, with_snapshots: bool) -> void:
 				below_floor += 1
 		_check(below_floor == 0, "Flat: sub-floor pillars filtered out (%d leaked)" % below_floor)
 		# The two floating props are exit-only: nothing reaches them (rise 434
-		# is far past any jump), but they can drop to the floor (fall 434).
+		# is far past any jump), but each drops to whichever floor segment sits
+		# under it (fall 434).
 		for p in graph.platforms:
 			if absf(p.y_top - (-434.0)) >= 0.5:
 				continue
@@ -155,9 +167,11 @@ func _probe_scene(baker, path: String, with_snapshots: bool) -> void:
 					if e.to_id == p.id:
 						has_in = true
 			_check(not has_in, "Flat: floating prop P%d has no in-edges" % p.id)
-			if floor_p != null:
-				var drop = _find_edge(graph, p.id, floor_p.id, "drop_down")
-				_check(drop != null, "Flat: prop P%d walk_off drop to the floor" % p.id)
+			var drops_to_floor := false
+			for e in graph.edges_by_from.get(p.id, []):
+				if String(e.type) == "drop_down" and absf(e.dy - 434.0) < 1.0:
+					drops_to_floor = true
+			_check(drops_to_floor, "Flat: prop P%d walk_off drop to a floor segment" % p.id)
 		_check(absf(graph.kill_rect.position.y - 247.0) < 1.0,
 				"Flat: scaled KillZone shape -> kill top ~247 (global transform)")
 		_check(absf(graph.bounds_min_x - (-1052.0)) < 0.5 and absf(graph.bounds_max_x - 1052.0) < 0.5,

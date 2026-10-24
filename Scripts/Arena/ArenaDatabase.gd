@@ -31,14 +31,6 @@ static func get_arena_names() -> Array[String]:
 		names.append(entry["name"])
 	return names
 
-
-static func get_arena_path(name: String) -> String:
-	for entry in ARENAS:
-		if entry["name"] == name:
-			return entry["path"]
-	return DEFAULT_PATH
-
-
 static func get_arena_path_by_index(index: int) -> String:
 	if index < 0 or index >= ARENAS.size():
 		return DEFAULT_PATH
