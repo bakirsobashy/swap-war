@@ -1,0 +1,161 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Theme" path="res://scribble_ui/themes/scribble_theme_1280x720.tres" id="1_scribble_theme_1280x720"]
+[ext_resource type="Texture2D" path="res://scribble_ui/x1/decor/paper_lined.png" id="2_paper_lined"]
+[ext_resource type="Texture2D" path="res://scribble_ui/x1/icons/arrow_left.png" id="3_arrow_left"]
+[ext_resource type="Texture2D" path="res://scribble_ui/x1/hud/stars_3.png" id="4_stars_3"]
+[ext_resource type="Texture2D" path="res://scribble_ui/x1/hud/stars_2.png" id="5_stars_2"]
+[ext_resource type="Texture2D" path="res://scribble_ui/x1/hud/stars_0.png" id="6_stars_0"]
+[ext_resource type="Texture2D" path="res://scribble_ui/x1/icons/lock.png" id="7_lock"]
+
+[node name="LevelSelect" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1_scribble_theme_1280x720")
+
+[node name="Paper" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_paper_lined")
+expand_mode = 1
+stretch_mode = 1
+
+[node name="Back" type="Button" parent="."]
+layout_mode = 1
+offset_left = 40.0
+offset_top = 28.0
+offset_right = 96.0
+offset_bottom = 84.0
+theme_type_variation = &"IconButton"
+icon = ExtResource("3_arrow_left")
+tooltip_text = "Back"
+
+[node name="Title" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_top = 56.0
+offset_bottom = 56.0
+grow_horizontal = 2
+theme_type_variation = &"HeaderLabel"
+text = "LEVELS"
+horizontal_alignment = 1
+
+[node name="Grid" type="GridContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -160.0
+offset_top = -80.0
+offset_right = 160.0
+offset_bottom = 126.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/h_separation = 22
+theme_override_constants/v_separation = 22
+columns = 3
+
+[node name="Level1" type="Button" parent="Grid"]
+layout_mode = 2
+custom_minimum_size = Vector2(92.0, 92.0)
+theme_type_variation = &"LevelButton"
+text = "1"
+
+[node name="Stars" type="TextureRect" parent="Grid/Level1"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -32.0
+offset_top = -30.0
+offset_right = 32.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+texture = ExtResource("4_stars_3")
+
+[node name="Level2" type="Button" parent="Grid"]
+layout_mode = 2
+custom_minimum_size = Vector2(92.0, 92.0)
+theme_type_variation = &"LevelButton"
+text = "2"
+
+[node name="Stars" type="TextureRect" parent="Grid/Level2"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -32.0
+offset_top = -30.0
+offset_right = 32.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+texture = ExtResource("5_stars_2")
+
+[node name="Level3" type="Button" parent="Grid"]
+layout_mode = 2
+custom_minimum_size = Vector2(92.0, 92.0)
+theme_type_variation = &"LevelButtonCurrent"
+text = "3"
+
+[node name="Stars" type="TextureRect" parent="Grid/Level3"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -32.0
+offset_top = -30.0
+offset_right = 32.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+texture = ExtResource("6_stars_0")
+
+[node name="Level4" type="Button" parent="Grid"]
+layout_mode = 2
+custom_minimum_size = Vector2(92.0, 92.0)
+theme_type_variation = &"SquareButton"
+icon = ExtResource("7_lock")
+disabled = true
+tooltip_text = "Level 4 (locked)"
+icon_alignment = 1
+
+[node name="Level5" type="Button" parent="Grid"]
+layout_mode = 2
+custom_minimum_size = Vector2(92.0, 92.0)
+theme_type_variation = &"SquareButton"
+icon = ExtResource("7_lock")
+disabled = true
+tooltip_text = "Level 5 (locked)"
+icon_alignment = 1
+
+[node name="Level6" type="Button" parent="Grid"]
+layout_mode = 2
+custom_minimum_size = Vector2(92.0, 92.0)
+theme_type_variation = &"SquareButton"
+icon = ExtResource("7_lock")
+disabled = true
+tooltip_text = "Level 6 (locked)"
+icon_alignment = 1

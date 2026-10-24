@@ -1,0 +1,171 @@
+[gd_scene load_steps=13 format=3]
+
+[ext_resource type="Theme" path="res://scribble_ui/themes/scribble_theme_1920x1080.tres" id="1_scribble_theme_1920x1080"]
+[ext_resource type="Texture2D" path="res://scribble_ui/x1_5/decor/paper_lined.png" id="2_paper_lined"]
+[ext_resource type="Texture2D" path="res://scribble_ui/x1_5/decor/cloud.png" id="3_cloud"]
+[ext_resource type="Texture2D" path="res://scribble_ui/x1_5/decor/sparkle_star.png" id="4_sparkle_star"]
+[ext_resource type="Texture2D" path="res://scribble_ui/x1_5/decor/sparkle_cross.png" id="5_sparkle_cross"]
+[ext_resource type="Texture2D" path="res://scribble_ui/x1_5/decor/arrow_doodle.png" id="6_arrow_doodle"]
+[ext_resource type="Texture2D" path="res://scribble_ui/x1_5/icons/play.png" id="7_play"]
+[ext_resource type="Texture2D" path="res://scribble_ui/x1_5/icons/levels.png" id="8_levels"]
+[ext_resource type="Texture2D" path="res://scribble_ui/x1_5/icons/settings.png" id="9_settings"]
+[ext_resource type="Texture2D" path="res://scribble_ui/x1_5/icons/quit.png" id="10_quit"]
+[ext_resource type="Texture2D" path="res://scribble_ui/x1_5/icons/sound_on.png" id="11_sound_on"]
+[ext_resource type="Texture2D" path="res://scribble_ui/x1_5/icons/music_on.png" id="12_music_on"]
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1_scribble_theme_1920x1080")
+
+[node name="Paper" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_paper_lined")
+expand_mode = 1
+stretch_mode = 1
+
+[node name="MarginLine" type="ColorRect" parent="."]
+layout_mode = 1
+anchor_bottom = 1.0
+offset_left = 168.0
+offset_right = 171.0
+grow_vertical = 2
+color = Color(0.921569, 0.65098, 0.65098, 1)
+
+[node name="CloudLeft" type="TextureRect" parent="."]
+layout_mode = 1
+offset_left = 225.0
+offset_top = 294.0
+offset_right = 420.0
+offset_bottom = 384.0
+texture = ExtResource("3_cloud")
+
+[node name="CloudRight" type="TextureRect" parent="."]
+layout_mode = 1
+offset_left = 1515.0
+offset_top = 375.0
+offset_right = 1710.0
+offset_bottom = 465.0
+texture = ExtResource("3_cloud")
+
+[node name="SparkleStar" type="TextureRect" parent="."]
+layout_mode = 1
+offset_left = 348.0
+offset_top = 99.0
+offset_right = 408.0
+offset_bottom = 159.0
+texture = ExtResource("4_sparkle_star")
+pivot_offset = Vector2(30.0, 30.0)
+rotation = -0.21
+
+[node name="SparkleCross" type="TextureRect" parent="."]
+layout_mode = 1
+offset_left = 1512.0
+offset_top = 225.0
+offset_right = 1560.0
+offset_bottom = 273.0
+texture = ExtResource("5_sparkle_cross")
+pivot_offset = Vector2(24.0, 24.0)
+rotation = 0.24
+
+[node name="Title" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_top = 60.0
+offset_bottom = 60.0
+grow_horizontal = 2
+theme_type_variation = &"TitleLabel"
+text = "GAME TITLE"
+horizontal_alignment = 1
+
+[node name="StartHere" type="Label" parent="."]
+layout_mode = 1
+offset_left = 369.0
+offset_top = 375.0
+offset_right = 564.0
+offset_bottom = 435.0
+rotation = -0.122
+theme_override_font_sizes/font_size = 45
+text = "start here!"
+
+[node name="Arrow" type="TextureRect" parent="."]
+layout_mode = 1
+offset_left = 570.0
+offset_top = 354.0
+offset_right = 726.0
+offset_bottom = 450.0
+texture = ExtResource("6_arrow_doodle")
+
+[node name="Buttons" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -225.0
+offset_top = 348.0
+offset_right = 225.0
+offset_bottom = 831.0
+grow_horizontal = 2
+theme_override_constants/separation = 33
+
+[node name="Play" type="Button" parent="Buttons"]
+layout_mode = 2
+custom_minimum_size = Vector2(0.0, 96.0)
+theme_type_variation = &"PrimaryButton"
+text = "PLAY"
+icon = ExtResource("7_play")
+
+[node name="Levels" type="Button" parent="Buttons"]
+layout_mode = 2
+custom_minimum_size = Vector2(0.0, 96.0)
+theme_type_variation = &"ButtonAlt"
+text = "LEVELS"
+icon = ExtResource("8_levels")
+
+[node name="Settings" type="Button" parent="Buttons"]
+layout_mode = 2
+custom_minimum_size = Vector2(0.0, 96.0)
+text = "SETTINGS"
+icon = ExtResource("9_settings")
+
+[node name="Quit" type="Button" parent="Buttons"]
+layout_mode = 2
+custom_minimum_size = Vector2(0.0, 96.0)
+theme_type_variation = &"ButtonAlt"
+text = "QUIT"
+icon = ExtResource("10_quit")
+
+[node name="Corner" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -255.0
+offset_top = 42.0
+offset_right = -60.0
+offset_bottom = 126.0
+grow_horizontal = 0
+theme_override_constants/separation = 27
+
+[node name="Sound" type="Button" parent="Corner"]
+layout_mode = 2
+theme_type_variation = &"IconButton"
+icon = ExtResource("11_sound_on")
+tooltip_text = "Sound"
+
+[node name="Music" type="Button" parent="Corner"]
+layout_mode = 2
+theme_type_variation = &"IconButton"
+icon = ExtResource("12_music_on")
+tooltip_text = "Music"

@@ -25,13 +25,19 @@ const ACTION_DOWN: StringName = &"Move_Down"
 
 # Geometry in LOCAL px — the node's scale (set by TouchControls layout per
 # viewport) carries resolution, so every value below is resolution-free.
-const BASE_SPRITE_SCALE: float = 2.5   # 64px well texture -> 160px
-const BASE_RADIUS: float = 32.0 * BASE_SPRITE_SCALE      # 80
-const KNOB_SPRITE_SCALE: float = 1.0   # 64px knob at native size
-const KNOB_RADIUS: float = 32.0 * KNOB_SPRITE_SCALE      # 32
+## Well radius: the layout and the grab zone are built on this, so it stays 80
+## whatever art is drawn.
+const BASE_RADIUS: float = 80.0
+## Notebook Doodle touch art: the ink rings are centred on their textures,
+## ~99 px radius in stick_base.png (224 px) and ~45 px in stick_knob.png (112 px).
+const BASE_ART_RADIUS: float = 99.0
+const KNOB_ART_RADIUS: float = 45.0
+## Base and knob share one art scale so the kit's proportions survive.
+const ART_SCALE: float = BASE_RADIUS / BASE_ART_RADIUS        # ~0.81
+const KNOB_RADIUS: float = KNOB_ART_RADIUS * ART_SCALE        # ~36
 ## Knob edge reaches well edge at full deflection.
-const MAX_DEFLECTION: float = BASE_RADIUS - KNOB_RADIUS  # 48
-## Radial deadzone, fraction of MAX_DEFLECTION (12px). Replaces the InputMap
+const MAX_DEFLECTION: float = BASE_RADIUS - KNOB_RADIUS       # ~44
+## Radial deadzone, fraction of MAX_DEFLECTION (~11px). Replaces the InputMap
 ## deadzone, which Input.action_press injection bypasses.
 const DEADZONE_RATIO: float = 0.25
 ## Down-push = drop-through. Engage at 65% of travel, release at 50% — the
@@ -44,6 +50,12 @@ const DOWN_RELEASE_RATIO: float = 0.50
 const ACTIVATION_SLOP: float = 12.0
 
 @export var role: Role = Role.MOVE
+## Knob art at rest and while a finger holds the stick (the pressed art sits
+## sunk into its shadow). Unset = keep the scene's Knob texture.
+@export var knob_texture: Texture2D
+@export var knob_pressed_texture: Texture2D
+## Whole-stick opacity while untouched (the kit's idle fade); 1.0 while held.
+@export_range(0.0, 1.0, 0.05) var idle_opacity: float = 0.6
 
 @onready var _base: Sprite2D = $Base
 @onready var _knob: Sprite2D = $Knob
@@ -69,9 +81,14 @@ func _ready() -> void:
 	# Parent layer is PROCESS_MODE_ALWAYS; be explicit so the stick behaves
 	# the same if ever instanced elsewhere.
 	process_mode = PROCESS_MODE_ALWAYS
-	_base.scale = Vector2.ONE * BASE_SPRITE_SCALE
-	_knob.scale = Vector2.ONE * KNOB_SPRITE_SCALE
+	_base.scale = Vector2.ONE * ART_SCALE
+	_knob.scale = Vector2.ONE * ART_SCALE
 	_knob.position = Vector2.ZERO
+	if knob_texture:
+		_knob.texture = knob_texture
+	else:
+		knob_texture = _knob.texture
+	_set_held_look(false)
 
 func _exit_tree() -> void:
 	# Actions live in the global Input singleton — a freed stick must never
@@ -96,6 +113,7 @@ func _input(event: InputEvent) -> void:
 			if local.length() <= BASE_RADIUS + ACTIVATION_SLOP:
 				_touch_index = touch.index
 				is_held = true
+				_set_held_look(true)
 				_update_value(local)
 		elif not touch.pressed and touch.index == _touch_index:
 			release_stick()
@@ -161,7 +179,12 @@ func release_stick() -> void:
 	value = Vector2.ZERO
 	_down_engaged = false
 	_knob.position = Vector2.ZERO
+	_set_held_look(false)
 	if role == Role.MOVE:
 		for action in _owned_actions.keys():
 			Input.action_release(action)
 		_owned_actions.clear()
+
+func _set_held_look(held: bool) -> void:
+	modulate.a = 1.0 if held else idle_opacity
+	_knob.texture = knob_pressed_texture if held and knob_pressed_texture else knob_texture

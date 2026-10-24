@@ -13,7 +13,8 @@ $probes = @(
 	"nav_bake_probe", "nav_astar_probe", "nav_executor_probe",
 	"hazard_damage_probe", "decision_probe", "pickup_cooldown_probe",
 	"layout_probe", "touch_stick_probe", "auto_attack_probe",
-	"death_free_probe", "audit_regression_probe"
+	"touch_layout_editor_probe", "death_free_probe", "audit_regression_probe",
+	"menu_probe"
 )
 
 $root = Split-Path -Parent $PSScriptRoot

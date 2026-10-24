@@ -1,0 +1,137 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scripts/UI/TouchLayoutEditor.gd" id="1_editor"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/TouchControls.tscn" id="2_tc"]
+[ext_resource type="Theme" path="res://Assets/ui/Themes/menu_theme.tres" id="3_theme"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/decor/paper_lined.png" id="4_paper"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/arrow_left.png" id="5_back"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/restart.png" id="6_restart"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/custom/minus.png" id="7_minus"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/custom/plus.png" id="8_plus"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_selection"]
+bg_color = Color(1, 0.894118, 0.360784, 0.22)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.121569, 0.121569, 0.121569, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="TouchLayoutEditor" type="Control" unique_id=920000001]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("3_theme")
+script = ExtResource("1_editor")
+
+[node name="Background" type="TextureRect" parent="." unique_id=920000002]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("4_paper")
+expand_mode = 1
+stretch_mode = 1
+
+[node name="TouchControls" parent="." unique_id=920000004 instance=ExtResource("2_tc")]
+unique_name_in_owner = true
+editor_mode = true
+visible = false
+layer = 10
+
+[node name="OverlayLayer" type="CanvasLayer" parent="." unique_id=920000005]
+unique_name_in_owner = true
+visible = false
+layer = 11
+
+[node name="OverlayRoot" type="Control" parent="OverlayLayer" unique_id=920000006]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("3_theme")
+
+[node name="TopBar" type="HBoxContainer" parent="OverlayLayer/OverlayRoot" unique_id=920000007]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 20.0
+offset_top = 16.0
+offset_right = -20.0
+offset_bottom = 80.0
+grow_horizontal = 2
+theme_override_constants/separation = 22
+
+[node name="BackButton" type="Button" parent="OverlayLayer/OverlayRoot/TopBar" unique_id=920000008]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+tooltip_text = "Back"
+theme_type_variation = &"IconButton"
+icon = ExtResource("5_back")
+icon_alignment = 1
+
+[node name="ResetButton" type="Button" parent="OverlayLayer/OverlayRoot/TopBar" unique_id=920000009]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 64)
+layout_mode = 2
+theme_type_variation = &"ButtonAlt"
+text = "RESET"
+icon = ExtResource("6_restart")
+
+[node name="HintLabel" type="Label" parent="OverlayLayer/OverlayRoot/TopBar" unique_id=920000010]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_type_variation = &"HintLabel"
+theme_override_font_sizes/font_size = 24
+text = "tap a control to select it - drag to move, + / - to resize"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SelectionBox" type="Panel" parent="OverlayLayer/OverlayRoot" unique_id=920000011]
+unique_name_in_owner = true
+visible = false
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_selection")
+
+[node name="MinusButton" type="Button" parent="OverlayLayer/OverlayRoot" unique_id=920000012]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(72, 60)
+tooltip_text = "Smaller"
+theme_type_variation = &"SquareButton"
+icon = ExtResource("7_minus")
+icon_alignment = 1
+
+[node name="PlusButton" type="Button" parent="OverlayLayer/OverlayRoot" unique_id=920000013]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(72, 60)
+tooltip_text = "Bigger"
+theme_type_variation = &"SquareButton"
+icon = ExtResource("8_plus")
+icon_alignment = 1
+
+[connection signal="pressed" from="OverlayLayer/OverlayRoot/TopBar/BackButton" to="." method="_on_back_pressed"]
+[connection signal="pressed" from="OverlayLayer/OverlayRoot/TopBar/BackButton" to="." method="_play_click"]
+[connection signal="pressed" from="OverlayLayer/OverlayRoot/TopBar/ResetButton" to="." method="_on_reset_pressed"]
+[connection signal="pressed" from="OverlayLayer/OverlayRoot/TopBar/ResetButton" to="." method="_play_click"]
+[connection signal="pressed" from="OverlayLayer/OverlayRoot/MinusButton" to="." method="_on_minus_pressed"]
+[connection signal="pressed" from="OverlayLayer/OverlayRoot/MinusButton" to="." method="_play_click"]
+[connection signal="pressed" from="OverlayLayer/OverlayRoot/PlusButton" to="." method="_on_plus_pressed"]
+[connection signal="pressed" from="OverlayLayer/OverlayRoot/PlusButton" to="." method="_play_click"]
