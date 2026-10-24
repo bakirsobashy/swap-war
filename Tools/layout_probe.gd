@@ -20,6 +20,11 @@ func _init() -> void:
 	call_deferred("_run")
 
 func _run() -> void:
+	# Force the procedural layout even if the developer's own config carries a
+	# custom touch layout (direct property set — never persisted).
+	var settings = root.get_node_or_null("/root/SettingsManager")
+	if settings:
+		settings.touch_layout = {}
 	var hud_scene: PackedScene = load("res://Scenes/HUD.tscn")
 	_hud = hud_scene.instantiate()
 	root.add_child(_hud)
@@ -45,12 +50,18 @@ func _check_resolution(res: Vector2i) -> void:
 
 	var tc := _hud.get_node("TouchControls")
 	var rects: Dictionary = {}
-	# All touch controls are TouchScreenButtons (Node2D): rect = position +
-	# texture size * scale (TouchScreenButton draws with the texture's
-	# TOP-LEFT at the node position).
-	for name in ["PauseButton", "DropButton", "MoveLeft", "MoveRight", "MoveDown", "JumpButton", "AttackButton"]:
+	# TouchScreenButtons (Node2D): rect = position + texture size * scale
+	# (TouchScreenButton draws with the texture's TOP-LEFT at the node
+	# position). The two sticks are custom VirtualStick Node2D nodes: their
+	# get_touch_rect() covers the full grab radius (well + activation slop),
+	# so the overlap check tests the real touch zones. Sticks are fetched
+	# untyped (probe discipline: no game-class annotations).
+	for name in ["PauseButton", "DropButton", "JumpButton", "AttackButton"]:
 		var b: TouchScreenButton = tc.get_node("%" + name)
 		rects[name] = Rect2(b.position, b.texture_normal.get_size() * b.scale.abs())
+	for name in ["MoveStick", "AimStick"]:
+		var s = tc.get_node("%" + name)
+		rects[name] = s.get_touch_rect()
 
 	for name in rects:
 		var r: Rect2 = rects[name]

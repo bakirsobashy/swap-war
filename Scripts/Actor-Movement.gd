@@ -26,7 +26,26 @@ var aim_direction: Vector2 = Vector2.RIGHT
 const ONE_WAY_LAYER: int = 3
 const DROP_DURATION: float = 0.3
 
+## Hold the last aim-stick direction after the stick is released — a ranged
+## weapon keeps its firing lane while the thumb returns to jump. Flip this
+## single line to make aim fall back to facing on release instead.
+const TOUCH_AIM_HOLD_ON_RELEASE: bool = true
+
+## Auto-attack melee: swing at the nearest hostile within this center-to-
+## center reach. Contact reach = socket orbit 6 + follow_offset 24 + thrust
+## 32 ≈ 62 px in front, + enemy capsule r19 ≈ 81; the AI's own attack_range
+## precedent is 80 (AIDifficulty). 90 adds a tick of margin — and a miss
+## costs nothing (melee loses durability only on damaging hits).
+const AUTO_MELEE_REACH: float = 90.0
+
 var _drop_timer: float = 0.0
+
+## The arena's touch controls layer, resolved lazily. Kept untyped so the
+## duck-typed get_aim_stick_value() call needs no class_name dependency.
+var _touch_controls = null
+## Last aim direction the right stick produced (held on release when
+## TOUCH_AIM_HOLD_ON_RELEASE is on). Zero until the stick is first used.
+var _last_stick_aim: Vector2 = Vector2.ZERO
 
 ## Timestamps of the most recent REAL mouse and touch input. Emulated
 ## mouse-from-touch events are excluded (they carry the emulation device id),
@@ -145,7 +164,27 @@ func _update_drop_timer(delta: float) -> void:
 
 func _get_attack_input() -> bool:
 	if is_player:
-		return Input.is_action_just_pressed("Attack")
+		# Manual input always works, in both modes.
+		if Input.is_action_just_pressed("Attack"):
+			return true
+		if _auto_attack_enabled() and _weapon_holder \
+				and _weapon_holder.is_holding_weapon():
+			var weapon := _weapon_holder.current_weapon as WeaponBase
+			if weapon == null:
+				return false
+			if weapon.is_ranged():
+				# Ranged auto-fire is touch-only (scope): fires while the aim
+				# stick is deflected past its deadzone. PC ranged stays
+				# mouse + click. Held-true every tick is safe — weapons
+				# self-throttle their own cooldowns (the AI's held
+				# wants_attack is the same pattern).
+				var tc = _get_touch_controls()
+				return tc != null \
+					and tc.get_aim_stick_value().length_squared() > 0.0
+			# Melee: auto-swing while a hostile is in reach (PC and touch).
+			# Returning held-true is paced by MeleeWeapon's cooldown.
+			return _find_auto_attack_target() != null
+		return false
 	if _ai_controller and "wants_attack" in _ai_controller:
 		return _ai_controller.wants_attack
 	return false
@@ -203,13 +242,84 @@ func _is_holding_ranged_weapon() -> bool:
 		return false
 	return weapon.is_ranged()
 
+func _auto_attack_enabled() -> bool:
+	return SettingsManager != null and SettingsManager.auto_attack_enabled
+
+func _is_holding_melee_weapon() -> bool:
+	if not _weapon_holder:
+		return false
+	var weapon: WeaponBase = _weapon_holder.current_weapon
+	return weapon != null and not weapon.is_ranged()
+
+## Nearest hostile within AUTO_MELEE_REACH, for the auto-attack melee half.
+## Same "actors"-group discipline as the AI's sensors: the group is
+## double-added (the actor RigidBody2D AND its Health node), so the Node2D
+## cast filter neutralizes the Health nodes. No LOS check — matches AI melee,
+## which also swings within reach without a sight test.
+func _find_auto_attack_target() -> Node2D:
+	var best: Node2D = null
+	var best_dist: float = AUTO_MELEE_REACH
+	for a in get_tree().get_nodes_in_group("actors"):
+		var other := a as Node2D
+		if other == null or other == self:
+			continue
+		var health = other.get_node_or_null("Components/Health")
+		if health == null or health.is_dead():
+			continue
+		if TeamMember.is_same_team(self, other):
+			continue
+		var d := global_position.distance_to(other.global_position)
+		if d < best_dist:
+			best_dist = d
+			best = other
+	return best
+
+## True when the most recent pointing input was a REAL touch (emulated mouse
+## carries the emulation device id and never updates _last_mouse_msec).
+func _is_touch_input_recent() -> bool:
+	return DisplayServer.is_touchscreen_available() \
+		and _last_touch_msec >= _last_mouse_msec
+
+## "HUD/TouchControls" resolves in every playable arena (all inherit ArenaBase
+## which instances HUD; the legacy arena.tscn too). Null-safe for headless
+## probes where current_scene may be null — callers guard.
+func _get_touch_controls() -> Node:
+	if _touch_controls != null and is_instance_valid(_touch_controls) \
+			and _touch_controls.is_inside_tree():
+		return _touch_controls
+	_touch_controls = null
+	var scene := get_tree().current_scene
+	if scene != null:
+		_touch_controls = scene.get_node_or_null("HUD/TouchControls")
+	return _touch_controls
+
 func _get_target_aim() -> Vector2:
 	if is_player:
-		# Touch play has no mouse to aim with (mouse-from-touch emulation is
-		# disabled during gameplay so taps never fire the mouse-bound Attack
-		# action), so on a touchscreen the player aims along facing direction
-		# — like a classic button-driven mobile platformer.
-		if DisplayServer.is_touchscreen_available() and _last_touch_msec >= _last_mouse_msec:
+		# 1. Auto-attack melee lock: aim (and therefore face) at the target
+		#    so the swing connects — this outranks the stick, else auto-swings
+		#    would fire the wrong way while the stick is deflected.
+		if _auto_attack_enabled() and _is_holding_melee_weapon():
+			var auto_target := _find_auto_attack_target()
+			if auto_target:
+				var to_target: Vector2 = auto_target.global_position - global_position
+				if to_target.length() > 0.01:
+					return to_target.normalized()
+		# 2. Right aim stick: deflection steers aim AND facing (facing is
+		#    derived from aim in _update_aim — twin-stick play wants both).
+		var tc = _get_touch_controls()
+		if tc:
+			var stick_value: Vector2 = tc.get_aim_stick_value()
+			if stick_value.length_squared() > 0.0:
+				_last_stick_aim = stick_value.normalized()
+				return _last_stick_aim
+			if TOUCH_AIM_HOLD_ON_RELEASE and _last_stick_aim != Vector2.ZERO \
+					and _is_touch_input_recent():
+				return _last_stick_aim
+		# 3. Touch fallback: with no aim-stick input on a touchscreen the
+		#    player aims along facing — like a classic button-driven mobile
+		#    platformer (mouse-from-touch emulation is disabled during play
+		#    so taps never fire the mouse-bound Attack action).
+		if _is_touch_input_recent():
 			return Vector2(facing_direction, 0.0)
 		var mouse_pos := get_global_mouse_position()
 		return mouse_pos - global_position

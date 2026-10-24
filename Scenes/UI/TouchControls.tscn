@@ -2,16 +2,11 @@
 
 [ext_resource type="Script" uid="uid://ctrg6l82xt3to" path="res://Scripts/UI/TouchControls.gd" id="1_tc"]
 [ext_resource type="Texture2D" uid="uid://8lmc81n4us13" path="res://Assets/ui/PNG/Green/Default/button_round_flat.png" id="2_btn"]
-[ext_resource type="Texture2D" uid="uid://b7aj5s33u6ukt" path="res://Assets/ui/PNG/Green/Default/arrow_basic_w.png" id="3_left"]
-[ext_resource type="Texture2D" uid="uid://bu2xmm2nm6mqi" path="res://Assets/ui/PNG/Green/Default/arrow_basic_w_small.png" id="4_left_pressed"]
-[ext_resource type="Texture2D" uid="uid://yog1cmutffrf" path="res://Assets/ui/PNG/Green/Default/arrow_basic_e.png" id="5_right"]
-[ext_resource type="Texture2D" uid="uid://b8xvn2istcvds" path="res://Assets/ui/PNG/Green/Default/arrow_basic_e_small.png" id="6_right_pressed"]
 [ext_resource type="Texture2D" uid="uid://gclvavxm1i6c" path="res://Assets/ui/PNG/Green/Default/button_round_gloss.png" id="7_jump"]
 [ext_resource type="Texture2D" uid="uid://ckkxicuspfxi3" path="res://Assets/ui/PNG/Green/Default/button_round_depth_flat.png" id="8_jump_pressed"]
 [ext_resource type="Texture2D" uid="uid://rovaa15l8uus" path="res://Assets/ui/PNG/Red/Default/button_round_flat.png" id="9_attack"]
 [ext_resource type="Texture2D" uid="uid://db2xrn2tekden" path="res://Assets/ui/PNG/Red/Default/button_round_depth_flat.png" id="10_attack_pressed"]
-[ext_resource type="Texture2D" uid="uid://bqhyiihvkqic6" path="res://Assets/ui/PNG/Green/Default/arrow_basic_s.png" id="11_down"]
-[ext_resource type="Texture2D" uid="uid://de63qixrxraem" path="res://Assets/ui/PNG/Green/Default/arrow_basic_s_small.png" id="12_down_pressed"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/VirtualStick.tscn" id="13_stick"]
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_kl3t2"]
 load_path = "res://.godot/imported/Drawing 2.png-3cc7bf47eb404251615aa5f350a940f3.ctex"
@@ -27,23 +22,12 @@ script = ExtResource("1_tc")
 unique_name_in_owner = true
 texture_normal = SubResource("AtlasTexture_pause")
 
-[node name="MoveLeft" type="TouchScreenButton" parent="." unique_id=342283256]
+[node name="MoveStick" parent="." instance=ExtResource("13_stick") unique_id=812345681]
 unique_name_in_owner = true
-texture_normal = ExtResource("3_left")
-texture_pressed = ExtResource("4_left_pressed")
-action = "Move_Left"
 
-[node name="MoveRight" type="TouchScreenButton" parent="." unique_id=1494964119]
+[node name="AimStick" parent="." instance=ExtResource("13_stick") unique_id=812345682]
 unique_name_in_owner = true
-texture_normal = ExtResource("5_right")
-texture_pressed = ExtResource("6_right_pressed")
-action = "Move_Right"
-
-[node name="MoveDown" type="TouchScreenButton" parent="." unique_id=1062849442]
-unique_name_in_owner = true
-texture_normal = ExtResource("11_down")
-texture_pressed = ExtResource("12_down_pressed")
-action = "Move_Down"
+role = 1
 
 [node name="JumpButton" type="TouchScreenButton" parent="." unique_id=154475864]
 unique_name_in_owner = true
