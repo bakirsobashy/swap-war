@@ -2,16 +2,16 @@ class_name WeaponSpawner
 extends Node
 
 ## Number of weapons dropped in each sky wave.
-@export var wave_size: int = 3
+@export var wave_size: int = 4
 
 ## Seconds between spawn waves.
-@export var wave_interval: float = 10.0
+@export var wave_interval: float = 8.0
 
 ## Total weapon instances allowed at once (held + ground + dropped).
 const MAX_ACTIVE_WEAPONS: int = 10
 
 ## How many guns (held + ground) are allowed at once. Melee is unlimited.
-@export var max_active_guns: int = 2
+@export var max_active_guns: int = 3
 
 ## Relative chance to spawn a melee weapon vs a gun when there is room for guns.
 @export var melee_weight: float = 3.0

@@ -48,7 +48,7 @@ var _jump_grace: float = 0.0
 ## Knockback launch window: run-speed clamping (300 px/s) used to swallow
 ## every hit's impulse. While stunned the cap rises and friction is off.
 const KNOCKBACK_STUN: float = 0.3
-const KNOCKBACK_MAX_SPEED: float = 750.0
+const KNOCKBACK_MAX_SPEED: float = 600.0
 var _stun_timer: float = 0.0
 var _pending_knockback: Vector2 = Vector2.ZERO
 

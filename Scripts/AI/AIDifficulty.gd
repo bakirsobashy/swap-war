@@ -14,7 +14,7 @@ const PROFILES: Dictionary = {
 		"reaction_time": 0.25,             # sensor refresh cadence
 		"swap_reaction_time": 0.35,        # team-swap enemy re-acquire window
 		"target_switch_cooldown": 0.5,     # sticky-enemy switch pacing
-		"aim_error_deg": 10.0,             # ranged aim scatter, re-rolled per refresh
+		"aim_error_deg": 6.0,              # ranged aim scatter, re-rolled per refresh
 		"ranged_preference_bonus": 150.0,  # weapon score bonus for ranged picks
 		"retreat_health_ratio": 0.3,        # low-health retreat trigger
 		"jump_risk_weight": 1.0,           # A* jump-cost multiplier (caution)
