@@ -107,15 +107,15 @@ func _run() -> void:
 
 	# Countdown banner
 	var wm = hud.get_node("%WinnerMessage")
-	_check("countdown banner has no WINS!", wm.text.begins_with("START IN") and not wm.text.contains("WINS"),
+	_check("countdown banner has no WINS!", (wm.text.is_valid_int() or wm.text == "GO!") and not wm.text.contains("WINS"),
 			"'%s'" % wm.text)
 
 	# Health bars follow the team colour
 	await _frames(2)
 	var bad_bars := 0
 	for a in _actors(scene):
-		var fill = a.get_node("HealthBar2D/SubViewport/Fill")
-		if not fill.color.is_equal_approx(a.get_node("Components/Health")._team_color()):
+		var fill_color: Color = a.get_node("HealthBar2D").get_fill_color()
+		if not fill_color.is_equal_approx(a.get_node("Components/Health")._team_color()):
 			bad_bars += 1
 	_check("health bars match team colour", bad_bars == 0, "%d mismatched" % bad_bars)
 

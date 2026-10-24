@@ -1,23 +1,24 @@
 [gd_scene format=3 uid="uid://c2yam8n7v1k4q"]
 
 [ext_resource type="Script" uid="uid://bdy2p6c0vx7ds" path="res://Scripts/UI/FloatingNumber.gd" id="1_fn"]
-[ext_resource type="Theme" uid="uid://c6r67tty4fd5u" path="res://Assets/ui/Themes/new_theme.tres" id="2_554s3"]
+[ext_resource type="FontFile" path="res://Assets/ui/ui-2.0/scribble_ui/fonts/PatrickHand-Regular.ttf" id="2_font"]
 
-[sub_resource type="LabelSettings" id="LabelSettings_554s3"]
-font_size = 32
-outline_size = 3
-outline_color = Color(0, 0, 0, 1)
+[sub_resource type="LabelSettings" id="LabelSettings_dmg"]
+font = ExtResource("2_font")
+font_size = 44
+outline_size = 12
+outline_color = Color(0.121569, 0.121569, 0.121569, 1)
 
 [node name="FloatingNumber" type="Node2D" unique_id=2092589426]
 z_index = 100
 script = ExtResource("1_fn")
 
 [node name="Label" type="Label" parent="." unique_id=2135326544]
-offset_right = 40.0
-offset_bottom = 20.0
-theme = ExtResource("2_554s3")
-theme_override_font_sizes/font_size = 32
+offset_left = -50.0
+offset_top = -30.0
+offset_right = 50.0
+offset_bottom = 30.0
 text = "50"
-label_settings = SubResource("LabelSettings_554s3")
+label_settings = SubResource("LabelSettings_dmg")
 horizontal_alignment = 1
 vertical_alignment = 1

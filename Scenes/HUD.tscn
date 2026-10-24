@@ -1,58 +1,96 @@
 [gd_scene format=3 uid="uid://b3nq1gq7qvnwi"]
 
 [ext_resource type="Script" uid="uid://d1d8qwqwhwb8s" path="res://Scripts/UI/HUD.gd" id="1_hud"]
-[ext_resource type="Theme" uid="uid://c6r67tty4fd5u" path="res://Assets/ui/Themes/new_theme.tres" id="2_s3jbq"]
+[ext_resource type="Theme" path="res://Assets/ui/Themes/menu_theme.tres" id="2_theme"]
 [ext_resource type="PackedScene" uid="uid://d1r8qvpi16ghr" path="res://Scenes/UI/TouchControls.tscn" id="2_tc"]
 [ext_resource type="PackedScene" uid="uid://x3me4yg41ypk" path="res://Scenes/UI/TeamTimer.tscn" id="3_teamtimer"]
 
 [node name="HUD" type="CanvasLayer" unique_id=1514791500]
 script = ExtResource("1_hud")
 
-[node name="TopBar" type="Control" parent="." unique_id=998798779]
-unique_name_in_owner = true
+[node name="Root" type="Control" parent="." unique_id=930500001]
 layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("2_theme")
+
+[node name="TopBar" type="Control" parent="Root" unique_id=998798779]
+unique_name_in_owner = true
+layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_bottom = 110.0
 grow_horizontal = 2
+mouse_filter = 2
 
-[node name="ScoreBoard" type="VBoxContainer" parent="TopBar" unique_id=328348980]
-unique_name_in_owner = true
+[node name="ScoreCard" type="PanelContainer" parent="Root/TopBar" unique_id=930500002]
 layout_mode = 1
-offset_left = 8.0
-offset_top = 8.0
-offset_right = 140.0
-offset_bottom = 102.0
-theme = ExtResource("2_s3jbq")
+offset_left = 14.0
+offset_top = 12.0
+offset_right = 14.0
+offset_bottom = 12.0
+mouse_filter = 2
+theme_type_variation = &"CardPanel"
 
-[node name="TeamTimer" parent="TopBar" unique_id=580497220 instance=ExtResource("3_teamtimer")]
+[node name="ScoreBoard" type="VBoxContainer" parent="Root/TopBar/ScoreCard" unique_id=328348980]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 2
+
+[node name="TeamTimer" parent="Root/TopBar" unique_id=580497220 instance=ExtResource("3_teamtimer")]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -40.0
-offset_top = 8.0
-offset_right = 40.0
-offset_bottom = 88.0
+offset_left = -48.0
+offset_top = 6.0
+offset_right = 48.0
+offset_bottom = 102.0
 grow_horizontal = 2
-metadata/_edit_use_anchors_ = true
 
-[node name="WinnerMessage" type="Label" parent="." unique_id=2073104039]
+[node name="GoalChip" type="PanelContainer" parent="Root/TopBar" unique_id=930500003]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -22.0
+offset_top = 22.0
+offset_right = -22.0
+offset_bottom = 22.0
+grow_horizontal = 0
+mouse_filter = 2
+theme_type_variation = &"ChipPanel"
+
+[node name="GoalLabel" type="Label" parent="Root/TopBar/GoalChip" unique_id=930500004]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"ChipLabel"
+text = "first to 10"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="WinnerMessage" type="Label" parent="Root" unique_id=2073104039]
 unique_name_in_owner = true
 visible = false
+layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -200.0
 offset_top = -40.0
-offset_right = 200.0
-offset_bottom = 40.0
+offset_bottom = -40.0
 grow_horizontal = 2
 grow_vertical = 2
-text = "WINNER"
+theme_type_variation = &"BannerLabel"
+text = "3"
 horizontal_alignment = 1
 vertical_alignment = 1
 

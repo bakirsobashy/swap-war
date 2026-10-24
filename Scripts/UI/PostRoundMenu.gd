@@ -6,6 +6,7 @@ const WINNER_STAR := preload("res://Assets/ui/ui-2.0/scribble_ui/x1/hud/star_ful
 const REASON_TEXT := {
 	"Score Target": "first to the score target",
 	"Time Up": "time's up!",
+	"Sudden Death": "won in sudden death",
 }
 const ROW_HEIGHT := 46.0
 const SEPARATOR_COLOR := Color(0.811765, 0.878431, 0.941176, 1)

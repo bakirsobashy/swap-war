@@ -145,6 +145,12 @@ func _release_sticks() -> void:
 	if _aim_stick:
 		_aim_stick.release_stick()
 
+## Whether touch controls are in use at all (settings + device), ignoring the
+## AUTO-mode idle hide — the HUD reserves the pause slot on this, so its goal
+## chip doesn't jump every time the controls fade out.
+func uses_touch_controls() -> bool:
+	return _should_show_touch_controls()
+
 func _should_show_touch_controls() -> bool:
 	if editor_mode:
 		return true

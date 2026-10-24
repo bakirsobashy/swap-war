@@ -6,6 +6,9 @@ extends SceneTree
 ##   - every control/touch button rect lies inside the visible canvas rect
 ##   - no two buttons overlap
 ##   - the scoreboard (simulated 4-player labels) fits the viewport width
+##   - the goal chip (top right) is on-canvas and clear of the swap timer, the
+##     scoreboard card and — while touch controls are in use — the pause button;
+##     every resolution runs with touch controls ALWAYS and HIDDEN (corner slot)
 
 const RESOLUTIONS: Array[Vector2i] = [
 	Vector2i(400, 800),
@@ -36,15 +39,20 @@ func _run() -> void:
 		label.text = "Actor%d\nGreen: 12" % i
 		score_board.add_child(label)
 
-	for res in RESOLUTIONS:
-		root.size = res
-		await process_frame
-		await process_frame
-		_check_resolution(res)
+	var tc = _hud.get_node("TouchControls")
+	for mode in [1, 2]:    # SettingsManager.TouchControlsMode ALWAYS, HIDDEN
+		if settings:
+			settings.touch_controls_mode = mode    # direct set, never persisted
+		tc._visibility_changed()
+		for res in RESOLUTIONS:
+			root.size = res
+			await process_frame
+			await process_frame
+			_check_resolution(res)
 	quit(1 if _fails > 0 else 0)
 
 func _check_resolution(res: Vector2i) -> void:
-	print("=== %dx%d ===" % [res.x, res.y])
+	print("=== %dx%d (touch %s) ===" % [res.x, res.y, "on" if _hud.get_node("TouchControls").uses_touch_controls() else "off"])
 	var canvas: Rect2 = root.get_visible_rect()
 	var canvas_size := canvas.size
 
@@ -95,4 +103,20 @@ func _check_resolution(res: Vector2i) -> void:
 			_fails += 1
 		if pause_rect.intersects(label_rect, true):
 			print("OVERLAP FAIL: PauseButton <-> %s  %s %s" % [child.name, pause_rect, label_rect])
+			_fails += 1
+
+	# Goal chip: on-canvas, clear of the timer and the scoreboard card, and of
+	# the pause button whenever touch controls are in use.
+	var chip_rect: Rect2 = _hud.get_node("%GoalChip").get_global_rect()
+	var card_rect: Rect2 = score_board.get_parent().get_global_rect()
+	var chip_ok := canvas.encloses(chip_rect) and chip_rect.size.x > 0.0
+	print("GoalChip rect=%s inside=%s" % [chip_rect, "PASS" if chip_ok else "FAIL"])
+	if not chip_ok:
+		_fails += 1
+	var chip_blockers := {"TeamTimer": timer_rect, "ScoreCard": card_rect}
+	if tc.uses_touch_controls():
+		chip_blockers["PauseButton"] = pause_rect
+	for blocker in chip_blockers:
+		if chip_rect.intersects(chip_blockers[blocker], true):
+			print("OVERLAP FAIL: GoalChip <-> %s  %s %s" % [blocker, chip_rect, chip_blockers[blocker]])
 			_fails += 1

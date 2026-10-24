@@ -7,6 +7,8 @@ const PauseMenuScene := preload("res://Scenes/UI/PauseMenu.tscn")
 const PostRoundMenuScene := preload("res://Scenes/UI/PostRoundMenu.tscn")
 
 @export var prepare_countdown: float = 3.0
+## How long the "GO!" banner stays up after the countdown.
+const GO_BANNER_SECONDS := 0.8
 
 ## IDLE until an arena scene is actually set up: the autoload exists before
 ## any scene does (main menu, probe mode), and a countdown ticking there both
@@ -255,14 +257,15 @@ func _get_hud() -> HUD:
 func _update_countdown_display() -> void:
 	var hud := _get_hud()
 	if hud:
-		var seconds := int(ceil(_countdown_timer))
-		hud.show_message("START IN %d" % seconds)
+		# "3 · 2 · 1 · GO!" — show_message only re-pops when the digit changes.
+		hud.show_message(str(int(ceil(_countdown_timer))))
 
 func _start_playing() -> void:
 	_state = MatchState.PLAYING
 	var hud := _get_hud()
 	if hud:
-		hud.hide_winner()
+		hud.show_message("GO!")
+		get_tree().create_timer(GO_BANNER_SECONDS).timeout.connect(_hide_go_banner)
 	# Opening drop at "GO": nobody can attack unarmed, so without it the
 	# first sky wave (~7 s in) was dead time.
 	var scene := get_tree().current_scene
@@ -288,6 +291,21 @@ func _end_match_by_time() -> void:
 	_state = MatchState.POST_ROUND
 	_win_reason = "Time Up"
 	_show_post_round(leaders[0] if leaders.size() == 1 else null)
+
+func _hide_go_banner() -> void:
+	var hud := _get_hud()
+	if hud and _state == MatchState.PLAYING and not _sudden_death:
+		hud.hide_winner()
+
+## HUD goal chip: seconds left in a timed match (counts during PREPARE too).
+func get_match_time_left() -> float:
+	return maxf(_match_timer, 0.0)
+
+func is_timed_match() -> bool:
+	return _win_mode == SettingsManager.WinMode.TIMED_SCORE
+
+func is_sudden_death() -> bool:
+	return _sudden_death
 
 func _hide_sudden_death_banner() -> void:
 	var hud := _get_hud()

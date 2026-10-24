@@ -14,7 +14,7 @@ extends Node2D
 
 const ARROW_SIZE := Vector2(26.0, 18.0)     # player arrow (width, height)
 const CHIP_SIZE := Vector2(16.0, 11.0)      # AI preview chip
-const OUTLINE_COLOR := Color(0.12, 0.12, 0.16, 1.0)
+const OUTLINE_COLOR := TeamPalette.INK
 const OUTLINE_WIDTH := 3.0
 const ARROW_FILL := Color.WHITE
 const BOB_AMPLITUDE := 3.0
