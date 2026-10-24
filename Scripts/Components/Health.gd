@@ -188,6 +188,12 @@ func _spawn_death_particles() -> void:
 			p.queue_free()
 	)
 
+## Re-tint the floating bar to the current team (TeamMember calls this on
+## every team change — the bar used to stay at its spawn-time green).
+func refresh_bar_color() -> void:
+	if _health_bar:
+		_health_bar.set_color(_team_color())
+
 func _team_color() -> Color:
 	var team_member := _actor.get_node_or_null("Components/TeamMember") as TeamMember
 	if not team_member:
@@ -210,6 +216,10 @@ func _respawn() -> void:
 		chosen = (spawn_points.pick_random() as Marker2D).global_position
 
 	_actor.global_position = chosen
+	# The body kept its death velocity while disabled (a KillZone fall
+	# respawned at ~900 px/s downward) — start the new life at rest.
+	_actor.linear_velocity = Vector2.ZERO
+	_actor.angular_velocity = 0.0
 	current_health = max_health
 	_is_dead = false
 

@@ -86,12 +86,12 @@ func _check_resolution(res: Vector2i) -> void:
 
 	# The swap timer (top-left) and pause button (top-right) must not sit on
 	# top of the centered score labels.
-	var timer_rect: Rect2 = _hud.get_node("%TeamTimerLabel").get_global_rect()
+	var timer_rect: Rect2 = _hud.get_node("%TeamTimer").get_global_rect()
 	var pause_rect: Rect2 = rects["PauseButton"]
 	for child in score_board.get_children():
 		var label_rect: Rect2 = child.get_global_rect()
 		if timer_rect.intersects(label_rect, true):
-			print("OVERLAP FAIL: TeamTimerLabel <-> %s  %s %s" % [child.name, timer_rect, label_rect])
+			print("OVERLAP FAIL: TeamTimer <-> %s  %s %s" % [child.name, timer_rect, label_rect])
 			_fails += 1
 		if pause_rect.intersects(label_rect, true):
 			print("OVERLAP FAIL: PauseButton <-> %s  %s %s" % [child.name, pause_rect, label_rect])

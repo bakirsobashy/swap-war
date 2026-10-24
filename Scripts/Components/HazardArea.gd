@@ -76,10 +76,12 @@ func _physics_process(delta: float) -> void:
 		if health == null:
 			continue
 		_cooldowns[id] = damage_interval
+		# No attacker: environment damage must not overwrite the enemy who
+		# knocked the victim in (the hazard used to take — and score — the kill).
 		if instant_kill:
-			health.take_damage(health.max_health, self)
+			health.take_damage(health.max_health, null)
 		else:
-			health.take_damage(damage, self)
+			health.take_damage(damage, null)
 		if body is RigidBody2D and not knockback_impulse.is_zero_approx():
 			body.apply_central_impulse(knockback_impulse)
 

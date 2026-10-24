@@ -63,6 +63,9 @@ func _on_actor_died(victim: Node) -> void:
 	var killer := _find_last_attacker(victim)
 	if not killer:
 		return
+	# Only registered actors score — never hazards, projectiles or other nodes.
+	if not _scores.has(killer):
+		return
 	if killer == victim:
 		return
 	if _is_same_team(killer, victim):

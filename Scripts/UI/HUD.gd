@@ -99,6 +99,13 @@ func show_winner(winner_name: String) -> void:
 		_winner_message.text = "%s WINS!" % winner_name
 	_winner_message.visible = true
 
+## Plain banner text (countdown etc.) — show_winner appends " WINS!".
+func show_message(text: String) -> void:
+	if not is_instance_valid(_winner_message):
+		return
+	_winner_message.text = text
+	_winner_message.visible = true
+
 func hide_winner() -> void:
 	if not is_instance_valid(_winner_message):
 		return

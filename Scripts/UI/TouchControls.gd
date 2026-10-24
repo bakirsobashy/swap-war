@@ -65,6 +65,7 @@ func _enter_editor_mode() -> void:
 	_aim_stick.capture_enabled = false
 	_jump_button.action = &""       # blanked: a press anywhere cannot inject Jump
 	_attack_button.action = &""     # same for Attack
+	_drop_button.action = &""       # and Drop
 	get_viewport().size_changed.connect(_layout_buttons)
 	_layout_buttons()
 	# No SettingsManager connects (a settings flip in the menu must not pop
@@ -304,13 +305,11 @@ func _on_drop_button_pressed() -> void:
 	# Editor instances never inject gameplay input.
 	if editor_mode:
 		return
-	# Ignore gameplay inputs while the game is paused.
+	# The button's own `action` presses AND releases Drop_Weapon. Parsing a
+	# press here without a release left the action held forever, so only
+	# the first DROP (and no later E key press) ever registered.
 	if get_tree().paused:
 		return
-	var ev := InputEventAction.new()
-	ev.action = "Drop_Weapon"
-	ev.pressed = true
-	Input.parse_input_event(ev)
 	if AudioManager:
 		AudioManager.play_ui_touch()
 
@@ -328,5 +327,9 @@ func _on_pause_button_pressed() -> void:
 		ev.action = "Pause"
 		ev.pressed = true
 		Input.parse_input_event(ev)
+		var up := InputEventAction.new()   # release, or Pause stays held
+		up.action = "Pause"
+		up.pressed = false
+		Input.parse_input_event(up)
 	if AudioManager:
 		AudioManager.play_ui_click()

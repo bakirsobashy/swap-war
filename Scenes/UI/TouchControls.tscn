@@ -45,6 +45,7 @@ action = "Attack"
 unique_name_in_owner = true
 texture_normal = ExtResource("2_btn")
 texture_pressed = ExtResource("8_jump_pressed")
+action = "Drop_Weapon"
 
 [node name="Label" type="Label" parent="DropButton" unique_id=323266709]
 offset_right = 64.0

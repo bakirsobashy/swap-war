@@ -64,6 +64,10 @@ func _update_visuals() -> void:
 	if hand_sprite and hand_tex:
 		hand_sprite.texture = hand_tex
 
+	var health := actor.get_node_or_null("Components/Health")
+	if health and health.has_method("refresh_bar_color"):
+		health.refresh_bar_color()
+
 func _team_body_texture(team: int) -> Texture2D:
 	match team:
 		0:

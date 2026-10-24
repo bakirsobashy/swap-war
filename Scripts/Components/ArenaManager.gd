@@ -210,7 +210,7 @@ func _update_countdown_display() -> void:
 	var hud := _get_hud()
 	if hud:
 		var seconds := int(ceil(_countdown_timer))
-		hud.show_winner("START IN %d" % seconds)
+		hud.show_message("START IN %d" % seconds)
 
 func _start_playing() -> void:
 	_state = MatchState.PLAYING

@@ -30,6 +30,11 @@ func _physics_process(delta: float) -> void:
 
 
 func _on_body_entered(body: Node) -> void:
+	# The shooter can be freed mid-flight (Play Again despawns actors); a
+	# freed source can't be team-checked or credited, so the shot just ends.
+	if not is_instance_valid(_source):
+		queue_free()
+		return
 	if body == _source:
 		return
 
