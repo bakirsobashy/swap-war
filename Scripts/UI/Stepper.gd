@@ -1,3 +1,8 @@
+@tool
+## @tool on purpose: without it the editor (and therefore the exporter,
+## which loads and re-saves every scene) builds this node with a placeholder
+## script that drops the scene's `items` overrides, so exported builds
+## (web) showed blank Opponents / Win Mode / Touch steppers.
 class_name Stepper
 extends HBoxContainer
 
@@ -31,7 +36,7 @@ func set_selected_no_signal(index: int) -> void:
 	selected = index
 
 func _step(delta: int) -> void:
-	if items.is_empty():
+	if items.is_empty() or Engine.is_editor_hint():
 		return
 	var target := selected + delta
 	if wrap_around:
