@@ -1,33 +1,34 @@
 [gd_scene format=3 uid="uid://d1r8qvpi16ghr"]
 
 [ext_resource type="Script" uid="uid://ctrg6l82xt3to" path="res://Scripts/UI/TouchControls.gd" id="1_tc"]
-[ext_resource type="Texture2D" uid="uid://8lmc81n4us13" path="res://Assets/ui/PNG/Green/Default/button_round_flat.png" id="2_btn"]
-[ext_resource type="Texture2D" uid="uid://gclvavxm1i6c" path="res://Assets/ui/PNG/Green/Default/button_round_gloss.png" id="7_jump"]
-[ext_resource type="Texture2D" uid="uid://ckkxicuspfxi3" path="res://Assets/ui/PNG/Green/Default/button_round_depth_flat.png" id="8_jump_pressed"]
-[ext_resource type="Texture2D" uid="uid://rovaa15l8uus" path="res://Assets/ui/PNG/Red/Default/button_round_flat.png" id="9_attack"]
-[ext_resource type="Texture2D" uid="uid://db2xrn2tekden" path="res://Assets/ui/PNG/Red/Default/button_round_depth_flat.png" id="10_attack_pressed"]
-[ext_resource type="PackedScene" path="res://Scenes/UI/VirtualStick.tscn" id="13_stick"]
-
-[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_kl3t2"]
-load_path = "res://.godot/imported/Drawing 2.png-3cc7bf47eb404251615aa5f350a940f3.ctex"
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_pause"]
-atlas = SubResource("CompressedTexture2D_kl3t2")
-region = Rect2(183.56097, 88.09385, 137.0943, 68.04858)
+[ext_resource type="PackedScene" path="res://Scenes/UI/VirtualStick.tscn" id="2_stick"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/custom/touch_pause_normal.png" id="3_pause"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/custom/touch_pause_pressed.png" id="4_pause_pressed"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/custom/stick_knob_aim.png" id="5_aim_knob"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/custom/stick_knob_aim_pressed.png" id="6_aim_knob_pressed"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/touch/jump_normal.png" id="7_jump"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/touch/jump_pressed.png" id="8_jump_pressed"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/touch/attack_normal.png" id="9_attack"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/touch/attack_pressed.png" id="10_attack_pressed"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/touch/drop_normal.png" id="11_drop"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/touch/drop_pressed.png" id="12_drop_pressed"]
 
 [node name="TouchControls" type="CanvasLayer" unique_id=1255594760]
 script = ExtResource("1_tc")
 
 [node name="PauseButton" type="TouchScreenButton" parent="." unique_id=694284120]
 unique_name_in_owner = true
-texture_normal = SubResource("AtlasTexture_pause")
+texture_normal = ExtResource("3_pause")
+texture_pressed = ExtResource("4_pause_pressed")
 
-[node name="MoveStick" parent="." instance=ExtResource("13_stick") unique_id=812345681]
+[node name="MoveStick" parent="." unique_id=812345681 instance=ExtResource("2_stick")]
 unique_name_in_owner = true
 
-[node name="AimStick" parent="." instance=ExtResource("13_stick") unique_id=812345682]
+[node name="AimStick" parent="." unique_id=812345682 instance=ExtResource("2_stick")]
 unique_name_in_owner = true
 role = 1
+knob_texture = ExtResource("5_aim_knob")
+knob_pressed_texture = ExtResource("6_aim_knob_pressed")
 
 [node name="JumpButton" type="TouchScreenButton" parent="." unique_id=154475864]
 unique_name_in_owner = true
@@ -43,16 +44,9 @@ action = "Attack"
 
 [node name="DropButton" type="TouchScreenButton" parent="." unique_id=2115960343]
 unique_name_in_owner = true
-texture_normal = ExtResource("2_btn")
-texture_pressed = ExtResource("8_jump_pressed")
+texture_normal = ExtResource("11_drop")
+texture_pressed = ExtResource("12_drop_pressed")
 action = "Drop_Weapon"
-
-[node name="Label" type="Label" parent="DropButton" unique_id=323266709]
-offset_right = 64.0
-offset_bottom = 64.0
-text = "DROP"
-horizontal_alignment = 1
-vertical_alignment = 1
 
 [connection signal="pressed" from="PauseButton" to="." method="_on_pause_button_pressed"]
 [connection signal="pressed" from="DropButton" to="." method="_on_drop_button_pressed"]

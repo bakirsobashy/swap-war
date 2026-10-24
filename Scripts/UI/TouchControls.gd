@@ -24,6 +24,17 @@ const SIZE_MULT_MAX: float = 2.0
 ## Rects stay this far inside the canvas — layout_probe asserts
 ## canvas.encloses(rect.grow(0.5)), so >= 1.0 keeps custom layouts passing it.
 const CANVAS_MARGIN: float = 1.0
+## The Notebook Doodle touch art is drawn for 720p at its native size (jump
+## 148 px), too tall to stack above the aim stick, so buttons draw at this
+## fraction of it. Folded into node.scale (= layout scale * saved mult * art
+## scale) so the full-resolution textures stay crisp at large layout scales.
+## Sticks scale their own art (VirtualStick.ART_SCALE) and are 1.0 here.
+const BUTTON_ART_SCALE := {
+	"JumpButton": 0.65,
+	"AttackButton": 0.65,
+	"DropButton": 0.65,
+	"PauseButton": 0.85,
+}
 
 ## VirtualStick referenced through a preload path (never its class_name) so
 ## headless `-s` probes can load this script before the class registry is
@@ -166,12 +177,8 @@ func _layout_buttons() -> void:
 	var btn_scale: float = get_layout_scale()
 	var gap: float = GAP * btn_scale
 
-	_move_stick.scale = Vector2.ONE * btn_scale
-	_aim_stick.scale = Vector2.ONE * btn_scale
-	_jump_button.scale = Vector2.ONE * btn_scale
-	_attack_button.scale = Vector2.ONE * btn_scale
-	_drop_button.scale = Vector2.ONE * btn_scale
-	_pause_button.scale = Vector2.ONE * btn_scale
+	for name in CONTROL_NAMES:
+		get_control_node(name).scale = Vector2.ONE * (btn_scale * get_art_scale(name))
 
 	# TouchScreenButton draws with the texture's TOP-LEFT at the node position
 	# (verified against engine source), so button positions are top-left
@@ -198,9 +205,9 @@ func _layout_buttons() -> void:
 	# tap on the stack never lands inside the stick's grab zone.
 	var right_edge: float = _aim_stick.position.x + stick_radius
 	var grab_radius: float = _aim_stick.get_activation_radius()
-	var size_attack: Vector2 = _texture_size(_attack_button) * btn_scale
-	var size_jump: Vector2 = _texture_size(_jump_button) * btn_scale
-	var size_drop: Vector2 = _texture_size(_drop_button) * btn_scale
+	var size_attack: Vector2 = _scaled_size(_attack_button)
+	var size_jump: Vector2 = _scaled_size(_jump_button)
+	var size_drop: Vector2 = _scaled_size(_drop_button)
 	var stack_bottom: float = _aim_stick.position.y - grab_radius - gap
 	_attack_button.position = Vector2(
 		right_edge - size_attack.x,
@@ -214,13 +221,9 @@ func _layout_buttons() -> void:
 		right_edge - size_drop.x,
 		_jump_button.position.y - gap - size_drop.y
 	)
-	var drop_label := _drop_button.get_node_or_null("Label") as Control
-	if drop_label:
-		drop_label.position = Vector2.ZERO
-		drop_label.size = _texture_size(_drop_button)
 
 	# Pause: top-right corner.
-	var size_pause: Vector2 = _texture_size(_pause_button) * btn_scale
+	var size_pause: Vector2 = _scaled_size(_pause_button)
 	_pause_button.position = Vector2(
 		canvas_size.x - insets.z - side_margin - size_pause.x,
 		insets.y + side_margin
@@ -236,6 +239,10 @@ func get_layout_scale() -> float:
 ## The six touch controls (CONTROL_NAMES, exposed for editor + probes).
 func get_control_names() -> Array[String]:
 	return CONTROL_NAMES
+
+## Per-control art scale folded into node.scale (BUTTON_ART_SCALE; sticks 1.0).
+func get_art_scale(name: String) -> float:
+	return BUTTON_ART_SCALE.get(name, 1.0)
 
 func get_control_node(name: String) -> Node2D:
 	match name:
@@ -274,27 +281,23 @@ func _apply_saved_entry(name: String, entry: Vector3, canvas_size: Vector2, btn_
 	var node := get_control_node(name)
 	if node == null:
 		return
-	node.scale = Vector2.ONE * (btn_scale * clampf(entry.z, SIZE_MULT_MIN, SIZE_MULT_MAX))
+	node.scale = Vector2.ONE * (btn_scale * clampf(entry.z, SIZE_MULT_MIN, SIZE_MULT_MAX) * get_art_scale(name))
 	var pos := Vector2(entry.x, entry.y) * canvas_size
-	var btn: TouchScreenButton = null
 	if node is VirtualStickScript:
 		# Sticks: pos is the center — keep the whole grab radius on-canvas.
 		var r: float = (node as VirtualStickScript).get_activation_radius()
 		pos.x = clampf(pos.x, CANVAS_MARGIN, maxf(canvas_size.x - r - CANVAS_MARGIN, CANVAS_MARGIN))
 		pos.y = clampf(pos.y, CANVAS_MARGIN, maxf(canvas_size.y - r - CANVAS_MARGIN, CANVAS_MARGIN))
 	else:
-		btn = node as TouchScreenButton
 		# NEW scale (set above) drives the clamp size.
-		var size := _texture_size(btn) * absf(btn.scale.x)
+		var size := _scaled_size(node as TouchScreenButton)
 		pos.x = clampf(pos.x, CANVAS_MARGIN, maxf(canvas_size.x - size.x - CANVAS_MARGIN, CANVAS_MARGIN))
 		pos.y = clampf(pos.y, CANVAS_MARGIN, maxf(canvas_size.y - size.y - CANVAS_MARGIN, CANVAS_MARGIN))
 	node.position = pos
-	if name == "DropButton" and btn != null:
-		# Label must re-cover the texture at the new scale.
-		var drop_label := btn.get_node_or_null("Label") as Control
-		if drop_label:
-			drop_label.position = Vector2.ZERO
-			drop_label.size = _texture_size(btn)
+
+## On-canvas size of a button: texture x its applied node scale.
+func _scaled_size(button: TouchScreenButton) -> Vector2:
+	return _texture_size(button) * button.scale.abs()
 
 func _texture_size(button: TouchScreenButton) -> Vector2:
 	if button.texture_normal == null:

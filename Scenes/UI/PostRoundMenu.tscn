@@ -1,64 +1,124 @@
 [gd_scene format=3 uid="uid://d2nvlraaoq5k0"]
 
 [ext_resource type="Script" uid="uid://cbf3si13rc0wq" path="res://Scripts/UI/PostRoundMenu.gd" id="1_post0"]
-[ext_resource type="Theme" uid="uid://c6r67tty4fd5u" path="res://Assets/ui/Themes/new_theme.tres" id="2_jsuhs"]
+[ext_resource type="Theme" path="res://Assets/ui/Themes/menu_theme.tres" id="2_theme"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/decor/sparkle_star.png" id="3_sparkle_star"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/decor/sparkle_cross.png" id="4_sparkle_cross"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/restart.png" id="5_restart"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/home.png" id="6_home"]
 
 [node name="PostRoundMenu" type="CanvasLayer" unique_id=1021887279]
 process_mode = 3
 script = ExtResource("1_post0")
 
-[node name="Panel" type="PanelContainer" parent="." unique_id=512649063]
-unique_name_in_owner = true
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -210.0
-offset_top = -200.0
-offset_right = 210.0
-offset_bottom = 200.0
+[node name="Root" type="Control" parent="." unique_id=930300001]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource("2_jsuhs")
+mouse_filter = 2
+theme = ExtResource("2_theme")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Panel" unique_id=2112470618]
+[node name="Dim" type="ColorRect" parent="Root" unique_id=930300002]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.121569, 0.121569, 0.121569, 0.4)
+
+[node name="Center" type="CenterContainer" parent="Root" unique_id=930300003]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="Root/Center" unique_id=512649063]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(560, 0)
 layout_mode = 2
-alignment = 1
 
-[node name="Title" type="Label" parent="Panel/VBoxContainer" unique_id=1879845164]
+[node name="VBox" type="VBoxContainer" parent="Root/Center/Panel" unique_id=2112470618]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Header" type="HBoxContainer" parent="Root/Center/Panel/VBox" unique_id=930300004]
+layout_mode = 2
+
+[node name="SparkleLeft" type="TextureRect" parent="Root/Center/Panel/VBox/Header" unique_id=930300005]
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("3_sparkle_star")
+stretch_mode = 3
+
+[node name="Title" type="Label" parent="Root/Center/Panel/VBox/Header" unique_id=1879845164]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 32
+size_flags_horizontal = 6
+theme_type_variation = &"HeaderLabel"
 text = "MATCH OVER"
 horizontal_alignment = 1
 
-[node name="Scoreboard" type="Label" parent="Panel/VBoxContainer" unique_id=1094734425]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(360, 120)
+[node name="SparkleRight" type="TextureRect" parent="Root/Center/Panel/VBox/Header" unique_id=930300006]
+custom_minimum_size = Vector2(40, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("4_sparkle_cross")
+stretch_mode = 3
+
+[node name="Reason" type="Label" parent="Root/Center/Panel/VBox" unique_id=930300007]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HintLabel"
+theme_override_font_sizes/font_size = 24
 horizontal_alignment = 1
-vertical_alignment = 1
-autowrap_mode = 3
 
-[node name="Spacer" type="Control" parent="Panel/VBoxContainer" unique_id=427739303]
-custom_minimum_size = Vector2(0, 16)
-layout_mode = 2
-
-[node name="PlayAgainBtn" type="Button" parent="Panel/VBoxContainer" unique_id=186799789]
+[node name="Scoreboard" type="VBoxContainer" parent="Root/Center/Panel/VBox" unique_id=1094734425]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(240, 56)
+custom_minimum_size = Vector2(420, 0)
 layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 0
+
+[node name="Spacer" type="Control" parent="Root/Center/Panel/VBox" unique_id=427739303]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Buttons" type="VBoxContainer" parent="Root/Center/Panel/VBox" unique_id=930300008]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 22
+
+[node name="PlayAgainBtn" type="Button" parent="Root/Center/Panel/VBox/Buttons" unique_id=186799789]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(320, 64)
+layout_mode = 2
+theme_type_variation = &"ButtonAlt"
 text = "PLAY AGAIN"
+icon = ExtResource("5_restart")
 
-[node name="MainMenuBtn" type="Button" parent="Panel/VBoxContainer" unique_id=397539355]
+[node name="MainMenuBtn" type="Button" parent="Root/Center/Panel/VBox/Buttons" unique_id=397539355]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(240, 56)
+custom_minimum_size = Vector2(320, 64)
 layout_mode = 2
 text = "MAIN MENU"
+icon = ExtResource("6_home")
 
-[connection signal="pressed" from="Panel/VBoxContainer/PlayAgainBtn" to="." method="_on_play_again_pressed"]
-[connection signal="pressed" from="Panel/VBoxContainer/PlayAgainBtn" to="." method="_play_click"]
-[connection signal="pressed" from="Panel/VBoxContainer/MainMenuBtn" to="." method="_on_main_menu_pressed"]
-[connection signal="pressed" from="Panel/VBoxContainer/MainMenuBtn" to="." method="_play_click"]
+[node name="BottomSpacer" type="Control" parent="Root/Center/Panel/VBox" unique_id=930300009]
+custom_minimum_size = Vector2(0, 4)
+layout_mode = 2
+mouse_filter = 2
+
+[connection signal="pressed" from="Root/Center/Panel/VBox/Buttons/PlayAgainBtn" to="." method="_on_play_again_pressed"]
+[connection signal="pressed" from="Root/Center/Panel/VBox/Buttons/PlayAgainBtn" to="." method="_play_click"]
+[connection signal="pressed" from="Root/Center/Panel/VBox/Buttons/MainMenuBtn" to="." method="_on_main_menu_pressed"]
+[connection signal="pressed" from="Root/Center/Panel/VBox/Buttons/MainMenuBtn" to="." method="_play_click"]

@@ -1,0 +1,419 @@
+{
+ "image": "scribble_ui_sheet_x1.png",
+ "frames": {
+  "panel/panel": {
+   "x": 0,
+   "y": 0,
+   "w": 176,
+   "h": 178
+  },
+  "buttons/square_disabled": {
+   "x": 180,
+   "y": 0,
+   "w": 110,
+   "h": 112
+  },
+  "buttons/square_focus": {
+   "x": 294,
+   "y": 0,
+   "w": 110,
+   "h": 112
+  },
+  "buttons/square_hover": {
+   "x": 408,
+   "y": 0,
+   "w": 110,
+   "h": 112
+  },
+  "buttons/square_normal": {
+   "x": 522,
+   "y": 0,
+   "w": 110,
+   "h": 112
+  },
+  "buttons/square_pressed": {
+   "x": 636,
+   "y": 0,
+   "w": 110,
+   "h": 112
+  },
+  "buttons/square_primary": {
+   "x": 750,
+   "y": 0,
+   "w": 110,
+   "h": 112
+  },
+  "panel/title_highlight": {
+   "x": 864,
+   "y": 0,
+   "w": 304,
+   "h": 104
+  },
+  "buttons/button_alt_disabled": {
+   "x": 0,
+   "y": 182,
+   "w": 318,
+   "h": 84
+  },
+  "buttons/button_alt_focus": {
+   "x": 322,
+   "y": 182,
+   "w": 318,
+   "h": 84
+  },
+  "buttons/button_alt_hover": {
+   "x": 644,
+   "y": 182,
+   "w": 318,
+   "h": 84
+  },
+  "buttons/button_alt_normal": {
+   "x": 966,
+   "y": 182,
+   "w": 318,
+   "h": 84
+  },
+  "buttons/button_alt_pressed": {
+   "x": 0,
+   "y": 270,
+   "w": 318,
+   "h": 84
+  },
+  "buttons/button_alt_primary": {
+   "x": 322,
+   "y": 270,
+   "w": 318,
+   "h": 84
+  },
+  "buttons/button_disabled": {
+   "x": 644,
+   "y": 270,
+   "w": 318,
+   "h": 84
+  },
+  "buttons/button_focus": {
+   "x": 966,
+   "y": 270,
+   "w": 318,
+   "h": 84
+  },
+  "buttons/button_hover": {
+   "x": 0,
+   "y": 358,
+   "w": 318,
+   "h": 84
+  },
+  "buttons/button_normal": {
+   "x": 322,
+   "y": 358,
+   "w": 318,
+   "h": 84
+  },
+  "buttons/button_pressed": {
+   "x": 644,
+   "y": 358,
+   "w": 318,
+   "h": 84
+  },
+  "buttons/button_primary": {
+   "x": 966,
+   "y": 358,
+   "w": 318,
+   "h": 84
+  },
+  "buttons/round_disabled": {
+   "x": 1288,
+   "y": 358,
+   "w": 74,
+   "h": 76
+  },
+  "buttons/round_focus": {
+   "x": 0,
+   "y": 446,
+   "w": 74,
+   "h": 76
+  },
+  "buttons/round_hover": {
+   "x": 78,
+   "y": 446,
+   "w": 74,
+   "h": 76
+  },
+  "buttons/round_normal": {
+   "x": 156,
+   "y": 446,
+   "w": 74,
+   "h": 76
+  },
+  "buttons/round_pressed": {
+   "x": 234,
+   "y": 446,
+   "w": 74,
+   "h": 76
+  },
+  "buttons/round_primary": {
+   "x": 312,
+   "y": 446,
+   "w": 74,
+   "h": 76
+  },
+  "decor/arrow_doodle": {
+   "x": 390,
+   "y": 446,
+   "w": 104,
+   "h": 64
+  },
+  "decor/cloud": {
+   "x": 498,
+   "y": 446,
+   "w": 130,
+   "h": 60
+  },
+  "hud/coin": {
+   "x": 632,
+   "y": 446,
+   "w": 48,
+   "h": 48
+  },
+  "hud/heart_empty": {
+   "x": 684,
+   "y": 446,
+   "w": 48,
+   "h": 48
+  },
+  "hud/heart_full": {
+   "x": 736,
+   "y": 446,
+   "w": 48,
+   "h": 48
+  },
+  "hud/star_empty": {
+   "x": 788,
+   "y": 446,
+   "w": 48,
+   "h": 48
+  },
+  "hud/star_full": {
+   "x": 840,
+   "y": 446,
+   "w": 48,
+   "h": 48
+  },
+  "controls/switch_off": {
+   "x": 892,
+   "y": 446,
+   "w": 84,
+   "h": 46
+  },
+  "controls/switch_off_disabled": {
+   "x": 980,
+   "y": 446,
+   "w": 84,
+   "h": 46
+  },
+  "controls/switch_on": {
+   "x": 1068,
+   "y": 446,
+   "w": 84,
+   "h": 46
+  },
+  "controls/switch_on_disabled": {
+   "x": 1156,
+   "y": 446,
+   "w": 84,
+   "h": 46
+  },
+  "controls/slider_grabber": {
+   "x": 1244,
+   "y": 446,
+   "w": 38,
+   "h": 40
+  },
+  "controls/slider_grabber_disabled": {
+   "x": 1286,
+   "y": 446,
+   "w": 38,
+   "h": 40
+  },
+  "controls/slider_grabber_hover": {
+   "x": 1328,
+   "y": 446,
+   "w": 38,
+   "h": 40
+  },
+  "decor/paper_lined": {
+   "x": 0,
+   "y": 526,
+   "w": 64,
+   "h": 40
+  },
+  "decor/sparkle_star": {
+   "x": 68,
+   "y": 526,
+   "w": 40,
+   "h": 40
+  },
+  "controls/checkbox_off": {
+   "x": 112,
+   "y": 526,
+   "w": 34,
+   "h": 34
+  },
+  "controls/checkbox_on": {
+   "x": 150,
+   "y": 526,
+   "w": 34,
+   "h": 34
+  },
+  "decor/sparkle_cross": {
+   "x": 188,
+   "y": 526,
+   "w": 32,
+   "h": 32
+  },
+  "icons/arrow_left": {
+   "x": 224,
+   "y": 526,
+   "w": 32,
+   "h": 32
+  },
+  "icons/arrow_right": {
+   "x": 260,
+   "y": 526,
+   "w": 32,
+   "h": 32
+  },
+  "icons/check": {
+   "x": 296,
+   "y": 526,
+   "w": 32,
+   "h": 32
+  },
+  "icons/close": {
+   "x": 332,
+   "y": 526,
+   "w": 32,
+   "h": 32
+  },
+  "icons/home": {
+   "x": 368,
+   "y": 526,
+   "w": 32,
+   "h": 32
+  },
+  "icons/levels": {
+   "x": 404,
+   "y": 526,
+   "w": 32,
+   "h": 32
+  },
+  "icons/lock": {
+   "x": 440,
+   "y": 526,
+   "w": 32,
+   "h": 32
+  },
+  "icons/music_off": {
+   "x": 476,
+   "y": 526,
+   "w": 32,
+   "h": 32
+  },
+  "icons/music_on": {
+   "x": 512,
+   "y": 526,
+   "w": 32,
+   "h": 32
+  },
+  "icons/pause": {
+   "x": 548,
+   "y": 526,
+   "w": 32,
+   "h": 32
+  },
+  "icons/play": {
+   "x": 584,
+   "y": 526,
+   "w": 32,
+   "h": 32
+  },
+  "icons/quit": {
+   "x": 620,
+   "y": 526,
+   "w": 32,
+   "h": 32
+  },
+  "icons/restart": {
+   "x": 656,
+   "y": 526,
+   "w": 32,
+   "h": 32
+  },
+  "icons/settings": {
+   "x": 692,
+   "y": 526,
+   "w": 32,
+   "h": 32
+  },
+  "icons/sound_off": {
+   "x": 728,
+   "y": 526,
+   "w": 32,
+   "h": 32
+  },
+  "icons/sound_on": {
+   "x": 764,
+   "y": 526,
+   "w": 32,
+   "h": 32
+  },
+  "controls/slider_fill": {
+   "x": 800,
+   "y": 526,
+   "w": 64,
+   "h": 20
+  },
+  "controls/slider_track": {
+   "x": 868,
+   "y": 526,
+   "w": 64,
+   "h": 20
+  },
+  "hud/star_small_empty": {
+   "x": 936,
+   "y": 526,
+   "w": 20,
+   "h": 20
+  },
+  "hud/star_small_full": {
+   "x": 960,
+   "y": 526,
+   "w": 20,
+   "h": 20
+  },
+  "hud/stars_0": {
+   "x": 984,
+   "y": 526,
+   "w": 64,
+   "h": 20
+  },
+  "hud/stars_1": {
+   "x": 1052,
+   "y": 526,
+   "w": 64,
+   "h": 20
+  },
+  "hud/stars_2": {
+   "x": 1120,
+   "y": 526,
+   "w": 64,
+   "h": 20
+  },
+  "hud/stars_3": {
+   "x": 1188,
+   "y": 526,
+   "w": 64,
+   "h": 20
+  }
+ }
+}

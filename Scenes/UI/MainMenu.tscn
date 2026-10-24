@@ -1,420 +1,916 @@
 [gd_scene format=3 uid="uid://b4m3x7q1main0"]
 
 [ext_resource type="Script" uid="uid://euc6e166pilj" path="res://Scripts/UI/MainMenu.gd" id="1_main0"]
-[ext_resource type="Texture2D" uid="uid://cg3cbaffdr0j5" path="res://Assets/ui/PNG/backgrounds/IMG_0882.PNG" id="2_t6w0q"]
-[ext_resource type="Theme" uid="uid://sw4pw4rth3m3" path="res://Assets/ui/Themes/swap_war_theme.tres" id="2_theme"]
-[ext_resource type="Theme" uid="uid://c6r67tty4fd5u" path="res://Assets/ui/Themes/new_theme.tres" id="3_k8um8"]
-[ext_resource type="Texture2D" uid="uid://kmdb4qgie4c1" path="res://Assets/ui/Drawing 2-3.png" id="5_k8um8"]
+[ext_resource type="Theme" path="res://Assets/ui/Themes/menu_theme.tres" id="2_theme"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/TouchLayoutEditor.tscn" id="4_editor"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/Stepper.tscn" id="5_stepper"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/decor/paper_lined.png" id="6_paper"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/decor/cloud.png" id="7_cloud"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/decor/sparkle_star.png" id="8_sparkle_star"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/decor/sparkle_cross.png" id="9_sparkle_cross"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/decor/arrow_doodle.png" id="10_arrow"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/play.png" id="11_play"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/levels.png" id="12_levels"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/settings.png" id="13_settings"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/quit.png" id="14_quit"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/sound_on.png" id="15_sound_on"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/music_on.png" id="16_music_on"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/arrow_left.png" id="17_back"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/hud/star_small_full.png" id="18_star_small"]
 
 [node name="MainMenu" type="CanvasLayer" unique_id=553296457]
 script = ExtResource("1_main0")
 
-[node name="TextureRect" type="TextureRect" parent="." unique_id=1857810767]
+[node name="Root" type="Control" parent="." unique_id=930100001]
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -504.0
-offset_top = -486.0
-offset_right = 504.0
-offset_bottom = 486.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("2_t6w0q")
+mouse_filter = 2
+theme = ExtResource("2_theme")
 
-[node name="MainPanel" type="PanelContainer" parent="." unique_id=1092478875]
+[node name="Paper" type="TextureRect" parent="Root" unique_id=930100002]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_paper")
+expand_mode = 1
+stretch_mode = 1
+
+[node name="MarginLine" type="ColorRect" parent="Root" unique_id=930100003]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 100.0
+offset_right = 102.0
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.921569, 0.65098, 0.65098, 1)
+
+[node name="MainPanel" type="Control" parent="Root" unique_id=1092478875]
 unique_name_in_owner = true
-anchors_preset = 8
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="CloudLeft" type="TextureRect" parent="Root/MainPanel" unique_id=930100010]
+layout_mode = 1
+anchors_preset = 5
 anchor_left = 0.5
-anchor_top = 0.5
 anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -180.0
-offset_top = -210.0
-offset_right = 180.0
+offset_left = -448.0
+offset_top = 150.0
+offset_right = -318.0
 offset_bottom = 210.0
 grow_horizontal = 2
-grow_vertical = 2
-theme = ExtResource("3_k8um8")
+mouse_filter = 2
+texture = ExtResource("7_cloud")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MainPanel" unique_id=226741147]
-layout_mode = 2
-size_flags_horizontal = 4
-alignment = 1
+[node name="CloudRight" type="TextureRect" parent="Root/MainPanel" unique_id=930100011]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = 314.0
+offset_top = 300.0
+offset_right = 444.0
+offset_bottom = 360.0
+grow_horizontal = 2
+mouse_filter = 2
+texture = ExtResource("7_cloud")
 
-[node name="Title" type="Label" parent="MainPanel/VBoxContainer" unique_id=320615669]
-layout_mode = 2
-theme_override_font_sizes/font_size = 42
+[node name="SparkleStar" type="TextureRect" parent="Root/MainPanel" unique_id=930100012]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -326.0
+offset_top = 58.0
+offset_right = -286.0
+offset_bottom = 98.0
+grow_horizontal = 2
+rotation = -0.21
+pivot_offset = Vector2(20, 20)
+mouse_filter = 2
+texture = ExtResource("8_sparkle_star")
+
+[node name="SparkleCross" type="TextureRect" parent="Root/MainPanel" unique_id=930100013]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = 304.0
+offset_top = 150.0
+offset_right = 336.0
+offset_bottom = 182.0
+grow_horizontal = 2
+rotation = 0.24
+pivot_offset = Vector2(16, 16)
+mouse_filter = 2
+texture = ExtResource("9_sparkle_cross")
+
+[node name="Arrow" type="TextureRect" parent="Root/MainPanel" unique_id=930100014]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -276.0
+offset_top = 230.0
+offset_right = -172.0
+offset_bottom = 294.0
+grow_horizontal = 2
+mouse_filter = 2
+texture = ExtResource("10_arrow")
+
+[node name="StartHere" type="Label" parent="Root/MainPanel" unique_id=930100015]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -414.0
+offset_top = 246.0
+offset_right = -284.0
+offset_bottom = 286.0
+grow_horizontal = 2
+rotation = -0.122
+theme_override_font_sizes/font_size = 26
+text = "start here!"
+
+[node name="Title" type="Label" parent="Root/MainPanel" unique_id=320615669]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_top = 36.0
+offset_bottom = 36.0
+grow_horizontal = 2
+theme_type_variation = &"TitleLabel"
 text = "SWAP-WAR"
 horizontal_alignment = 1
 
-[node name="Spacer" type="Control" parent="MainPanel/VBoxContainer" unique_id=277819709]
-custom_minimum_size = Vector2(0, 12)
-layout_mode = 2
-theme = ExtResource("2_theme")
+[node name="Tagline" type="Label" parent="Root/MainPanel" unique_id=930100016]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_top = 162.0
+offset_bottom = 162.0
+grow_horizontal = 2
+theme_type_variation = &"HintLabel"
+theme_override_font_sizes/font_size = 24
+text = "teams re-shuffle every 10 seconds. trust no one."
+horizontal_alignment = 1
 
-[node name="PlayBtn" type="Button" parent="MainPanel/VBoxContainer" unique_id=1454923022]
+[node name="Buttons" type="VBoxContainer" parent="Root/MainPanel" unique_id=226741147]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -160.0
+offset_top = 228.0
+offset_right = 160.0
+offset_bottom = 550.0
+grow_horizontal = 2
+theme_override_constants/separation = 22
+
+[node name="PlayBtn" type="Button" parent="Root/MainPanel/Buttons" unique_id=1454923022]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(240, 56)
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
 text = "PLAY"
+icon = ExtResource("11_play")
 
-[node name="HowToPlayBtn" type="Button" parent="MainPanel/VBoxContainer" unique_id=1714799643]
+[node name="HowToPlayBtn" type="Button" parent="Root/MainPanel/Buttons" unique_id=1714799643]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(240, 56)
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
+theme_type_variation = &"ButtonAlt"
 text = "HOW TO PLAY"
+icon = ExtResource("12_levels")
 
-[node name="SettingsBtn" type="Button" parent="MainPanel/VBoxContainer" unique_id=1284864197]
+[node name="SettingsBtn" type="Button" parent="Root/MainPanel/Buttons" unique_id=1284864197]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(240, 56)
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
 text = "SETTINGS"
+icon = ExtResource("13_settings")
 
-[node name="QuitBtn" type="Button" parent="MainPanel/VBoxContainer" unique_id=567504605]
+[node name="QuitBtn" type="Button" parent="Root/MainPanel/Buttons" unique_id=567504605]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(240, 56)
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
+theme_type_variation = &"ButtonAlt"
 text = "QUIT"
+icon = ExtResource("14_quit")
 
-[node name="TextureButton" type="TextureButton" parent="MainPanel/VBoxContainer" unique_id=1055166277]
-layout_mode = 2
-texture_normal = ExtResource("5_k8um8")
-ignore_texture_size = true
-stretch_mode = 0
+[node name="Corner" type="HBoxContainer" parent="Root/MainPanel" unique_id=930100017]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -176.0
+offset_top = 24.0
+offset_right = -32.0
+offset_bottom = 80.0
+grow_horizontal = 0
+theme_override_constants/separation = 18
+alignment = 2
 
-[node name="OptionsPanel" type="PanelContainer" parent="." unique_id=79168547]
+[node name="CornerSound" type="Button" parent="Root/MainPanel/Corner" unique_id=930100018]
 unique_name_in_owner = true
-visible = false
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -210.0
-offset_top = -230.0
-offset_right = 210.0
-offset_bottom = 230.0
+layout_mode = 2
+tooltip_text = "Sound"
+theme_type_variation = &"IconButton"
+icon = ExtResource("15_sound_on")
+icon_alignment = 1
+
+[node name="CornerMusic" type="Button" parent="Root/MainPanel/Corner" unique_id=930100019]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Music"
+theme_type_variation = &"IconButton"
+icon = ExtResource("16_music_on")
+icon_alignment = 1
+
+[node name="Center" type="CenterContainer" parent="Root" unique_id=930100020]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource("3_k8um8")
+mouse_filter = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="OptionsPanel" unique_id=2085536041]
+[node name="OptionsPanel" type="PanelContainer" parent="Root/Center" unique_id=79168547]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(640, 0)
 layout_mode = 2
-size_flags_horizontal = 4
-alignment = 1
 
-[node name="Title" type="Label" parent="OptionsPanel/VBoxContainer" unique_id=1597051037]
+[node name="VBox" type="VBoxContainer" parent="Root/Center/OptionsPanel" unique_id=2085536041]
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
+theme_override_constants/separation = 14
+
+[node name="Header" type="HBoxContainer" parent="Root/Center/OptionsPanel/VBox" unique_id=930100030]
+layout_mode = 2
+
+[node name="OptionsBackBtn" type="Button" parent="Root/Center/OptionsPanel/VBox/Header" unique_id=405614396]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 0
+tooltip_text = "Back"
+theme_type_variation = &"IconButton"
+icon = ExtResource("17_back")
+icon_alignment = 1
+
+[node name="Title" type="Label" parent="Root/Center/OptionsPanel/VBox/Header" unique_id=1597051037]
+layout_mode = 2
+size_flags_horizontal = 6
+theme_type_variation = &"HeaderLabel"
 text = "MATCH OPTIONS"
 horizontal_alignment = 1
 
-[node name="Spacer" type="Control" parent="OptionsPanel/VBoxContainer" unique_id=1537778134]
-custom_minimum_size = Vector2(0, 8)
+[node name="HeaderSpacer" type="Control" parent="Root/Center/OptionsPanel/VBox/Header" unique_id=930100031]
+custom_minimum_size = Vector2(56, 0)
 layout_mode = 2
+mouse_filter = 2
 
-[node name="AIBox" type="HBoxContainer" parent="OptionsPanel/VBoxContainer" unique_id=1439807844]
+[node name="Rows" type="GridContainer" parent="Root/Center/OptionsPanel/VBox" unique_id=930100032]
 layout_mode = 2
-alignment = 1
+theme_override_constants/h_separation = 28
+theme_override_constants/v_separation = 12
+columns = 2
 
-[node name="AILabel" type="Label" parent="OptionsPanel/VBoxContainer/AIBox" unique_id=1922386991]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(140, 0)
+[node name="AILabel" type="Label" parent="Root/Center/OptionsPanel/VBox/Rows" unique_id=1922386991]
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "AI Count: 3"
+theme_type_variation = &"RowLabel"
+text = "Opponents"
+vertical_alignment = 1
 
-[node name="AISlider" type="HSlider" parent="OptionsPanel/VBoxContainer/AIBox" unique_id=23746510]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(160, 40)
-layout_mode = 2
-max_value = 3.0
-value = 3.0
-
-[node name="ModeBox" type="HBoxContainer" parent="OptionsPanel/VBoxContainer" unique_id=741043189]
-layout_mode = 2
-alignment = 1
-
-[node name="ModeLabel" type="Label" parent="OptionsPanel/VBoxContainer/ModeBox" unique_id=610058224]
-custom_minimum_size = Vector2(100, 0)
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "Win Mode"
-
-[node name="ModeOption" type="OptionButton" parent="OptionsPanel/VBoxContainer/ModeBox" unique_id=1982050594]
+[node name="AIStepper" parent="Root/Center/OptionsPanel/VBox/Rows" unique_id=23746510 instance=ExtResource("5_stepper")]
 unique_name_in_owner = true
 layout_mode = 2
-selected = 0
-item_count = 2
-popup/item_0/text = "Score Target"
-popup/item_0/id = 0
-popup/item_1/text = "Timed Score"
-popup/item_1/id = 1
+size_flags_horizontal = 3
+items = PackedStringArray("1 bot", "2 bots", "3 bots")
 
-[node name="ArenaBox" type="HBoxContainer" parent="OptionsPanel/VBoxContainer" unique_id=741043190]
+[node name="ArenaLabel" type="Label" parent="Root/Center/OptionsPanel/VBox/Rows" unique_id=610058225]
 layout_mode = 2
-alignment = 1
-
-[node name="ArenaLabel" type="Label" parent="OptionsPanel/VBoxContainer/ArenaBox" unique_id=610058225]
-custom_minimum_size = Vector2(100, 0)
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
+theme_type_variation = &"RowLabel"
 text = "Arena"
+vertical_alignment = 1
 
-[node name="ArenaOption" type="OptionButton" parent="OptionsPanel/VBoxContainer/ArenaBox" unique_id=1982050595]
+[node name="ArenaStepper" parent="Root/Center/OptionsPanel/VBox/Rows" unique_id=1982050595 instance=ExtResource("5_stepper")]
 unique_name_in_owner = true
 layout_mode = 2
-selected = 0
-item_count = 3
-popup/item_0/text = "Flat Arena"
-popup/item_0/id = 0
-popup/item_1/text = "Pit Arena"
-popup/item_1/id = 1
-popup/item_2/text = "Hazard Arena"
-popup/item_2/id = 2
+size_flags_horizontal = 3
 
-[node name="ScoreBox" type="HBoxContainer" parent="OptionsPanel/VBoxContainer" unique_id=553293638]
+[node name="ModeLabel" type="Label" parent="Root/Center/OptionsPanel/VBox/Rows" unique_id=610058224]
 layout_mode = 2
-alignment = 1
+theme_type_variation = &"RowLabel"
+text = "Win Mode"
+vertical_alignment = 1
 
-[node name="ScoreLabel" type="Label" parent="OptionsPanel/VBoxContainer/ScoreBox" unique_id=1749979896]
+[node name="ModeStepper" parent="Root/Center/OptionsPanel/VBox/Rows" unique_id=1982050594 instance=ExtResource("5_stepper")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "Target: 10"
+size_flags_horizontal = 3
+items = PackedStringArray("Score Target", "Timed Score")
 
-[node name="ScoreSlider" type="HSlider" parent="OptionsPanel/VBoxContainer/ScoreBox" unique_id=728793455]
+[node name="ScoreLabel" type="Label" parent="Root/Center/OptionsPanel/VBox/Rows" unique_id=1749979896]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(160, 40)
 layout_mode = 2
+theme_type_variation = &"RowLabel"
+text = "Score Target"
+vertical_alignment = 1
+
+[node name="ScoreRow" type="HBoxContainer" parent="Root/Center/OptionsPanel/VBox/Rows" unique_id=553293638]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="ScoreSlider" type="HSlider" parent="Root/Center/OptionsPanel/VBox/Rows/ScoreRow" unique_id=728793455]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 40)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
 min_value = 3.0
 max_value = 30.0
 value = 10.0
 
-[node name="DurationBox" type="HBoxContainer" parent="OptionsPanel/VBoxContainer" unique_id=1963809657]
-layout_mode = 2
-alignment = 1
-
-[node name="DurationLabel" type="Label" parent="OptionsPanel/VBoxContainer/DurationBox" unique_id=1040248656]
+[node name="ScoreValue" type="Label" parent="Root/Center/OptionsPanel/VBox/Rows/ScoreRow" unique_id=930100033]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(140, 0)
+custom_minimum_size = Vector2(64, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "Duration: 120 s"
+theme_type_variation = &"ValueLabel"
+text = "10"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="DurationSlider" type="HSlider" parent="OptionsPanel/VBoxContainer/DurationBox" unique_id=1195230371]
+[node name="DurationLabel" type="Label" parent="Root/Center/OptionsPanel/VBox/Rows" unique_id=1040248656]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(160, 40)
 layout_mode = 2
+theme_type_variation = &"RowLabel"
+text = "Time Limit"
+vertical_alignment = 1
+
+[node name="DurationRow" type="HBoxContainer" parent="Root/Center/OptionsPanel/VBox/Rows" unique_id=1963809657]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="DurationSlider" type="HSlider" parent="Root/Center/OptionsPanel/VBox/Rows/DurationRow" unique_id=1195230371]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 40)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
 min_value = 30.0
 max_value = 300.0
 step = 10.0
 value = 120.0
 
-[node name="Spacer2" type="Control" parent="OptionsPanel/VBoxContainer" unique_id=931343967]
-custom_minimum_size = Vector2(0, 16)
-layout_mode = 2
-
-[node name="StartMatchBtn" type="Button" parent="OptionsPanel/VBoxContainer" unique_id=1416052378]
+[node name="DurationValue" type="Label" parent="Root/Center/OptionsPanel/VBox/Rows/DurationRow" unique_id=930100034]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(240, 56)
+custom_minimum_size = Vector2(64, 0)
 layout_mode = 2
+theme_type_variation = &"ValueLabel"
+text = "2:00"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Spacer" type="Control" parent="Root/Center/OptionsPanel/VBox" unique_id=1537778134]
+custom_minimum_size = Vector2(0, 4)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="StartMatchBtn" type="Button" parent="Root/Center/OptionsPanel/VBox" unique_id=1416052378]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(340, 64)
+layout_mode = 2
+size_flags_horizontal = 4
 text = "START MATCH"
+icon = ExtResource("11_play")
 
-[node name="OptionsBackBtn" type="Button" parent="OptionsPanel/VBoxContainer" unique_id=405614396]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(240, 56)
+[node name="BottomSpacer" type="Control" parent="Root/Center/OptionsPanel/VBox" unique_id=930100035]
+custom_minimum_size = Vector2(0, 8)
 layout_mode = 2
-text = "BACK"
+mouse_filter = 2
 
-[node name="HelpPanel" type="PanelContainer" parent="." unique_id=1390669815]
+[node name="HelpPanel" type="PanelContainer" parent="Root/Center" unique_id=1390669815]
 unique_name_in_owner = true
 visible = false
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -230.0
-offset_top = -259.0
-offset_right = 230.0
-offset_bottom = 176.0
-grow_horizontal = 2
-grow_vertical = 2
-theme = ExtResource("3_k8um8")
-
-[node name="VBoxContainer" type="VBoxContainer" parent="HelpPanel" unique_id=142187405]
+custom_minimum_size = Vector2(940, 0)
 layout_mode = 2
 
-[node name="Title" type="Label" parent="HelpPanel/VBoxContainer" unique_id=1542522448]
+[node name="VBox" type="VBoxContainer" parent="Root/Center/HelpPanel" unique_id=142187405]
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
+theme_override_constants/separation = 12
+
+[node name="Header" type="HBoxContainer" parent="Root/Center/HelpPanel/VBox" unique_id=930100040]
+layout_mode = 2
+
+[node name="HelpBackBtn" type="Button" parent="Root/Center/HelpPanel/VBox/Header" unique_id=522378241]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 0
+tooltip_text = "Back"
+theme_type_variation = &"IconButton"
+icon = ExtResource("17_back")
+icon_alignment = 1
+
+[node name="Title" type="Label" parent="Root/Center/HelpPanel/VBox/Header" unique_id=1542522448]
+layout_mode = 2
+size_flags_horizontal = 6
+theme_type_variation = &"HeaderLabel"
 text = "HOW TO PLAY"
 horizontal_alignment = 1
 
-[node name="HelpText" type="Label" parent="HelpPanel/VBoxContainer" unique_id=238410603]
+[node name="HeaderSpacer" type="Control" parent="Root/Center/HelpPanel/VBox/Header" unique_id=930100041]
+custom_minimum_size = Vector2(56, 0)
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
-text = "Move: A / D or Left / Right arrows
-Jump: Space, W, or Up arrow
-Attack: J or Right Ctrl
-Pause: Escape
+mouse_filter = 2
 
-Pick up weapons by walking over them.
-Weapons break with use — grab a new one!
+[node name="Columns" type="HBoxContainer" parent="Root/Center/HelpPanel/VBox" unique_id=930100042]
+layout_mode = 2
+theme_override_constants/separation = 28
 
-TEAMS swap every 10-15 seconds.
-Same color = allies (no damage).
-Different color = enemies (score on kill).
+[node name="Controls" type="VBoxContainer" parent="Root/Center/HelpPanel/VBox/Columns" unique_id=930100043]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
 
-Win by reaching the score target or having the most kills when time runs out."
+[node name="ControlsHeader" type="Label" parent="Root/Center/HelpPanel/VBox/Columns/Controls" unique_id=930100044]
+layout_mode = 2
+theme_type_variation = &"SubHeaderLabel"
+text = "controls"
+
+[node name="Keys" type="GridContainer" parent="Root/Center/HelpPanel/VBox/Columns/Controls" unique_id=930100045]
+layout_mode = 2
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 2
+columns = 2
+
+[node name="K1" type="Label" parent="Root/Center/HelpPanel/VBox/Columns/Controls/Keys" unique_id=930100046]
+custom_minimum_size = Vector2(124, 0)
+layout_mode = 2
+theme_type_variation = &"KeyLabel"
+text = "A / D"
+
+[node name="V1" type="Label" parent="Root/Center/HelpPanel/VBox/Columns/Controls/Keys" unique_id=930100047]
+layout_mode = 2
+theme_type_variation = &"HintLabel"
+text = "move"
+
+[node name="K2" type="Label" parent="Root/Center/HelpPanel/VBox/Columns/Controls/Keys" unique_id=930100048]
+layout_mode = 2
+theme_type_variation = &"KeyLabel"
+text = "Space / W / Up"
+
+[node name="V2" type="Label" parent="Root/Center/HelpPanel/VBox/Columns/Controls/Keys" unique_id=930100049]
+layout_mode = 2
+theme_type_variation = &"HintLabel"
+text = "jump"
+
+[node name="K3" type="Label" parent="Root/Center/HelpPanel/VBox/Columns/Controls/Keys" unique_id=930100050]
+layout_mode = 2
+theme_type_variation = &"KeyLabel"
+text = "S / Down"
+
+[node name="V3" type="Label" parent="Root/Center/HelpPanel/VBox/Columns/Controls/Keys" unique_id=930100051]
+layout_mode = 2
+theme_type_variation = &"HintLabel"
+text = "drop through platforms"
+
+[node name="K4" type="Label" parent="Root/Center/HelpPanel/VBox/Columns/Controls/Keys" unique_id=930100052]
+layout_mode = 2
+theme_type_variation = &"KeyLabel"
+text = "Left mouse"
+
+[node name="V4" type="Label" parent="Root/Center/HelpPanel/VBox/Columns/Controls/Keys" unique_id=930100053]
+layout_mode = 2
+theme_type_variation = &"HintLabel"
+text = "attack (aim with the mouse)"
+
+[node name="K5" type="Label" parent="Root/Center/HelpPanel/VBox/Columns/Controls/Keys" unique_id=930100054]
+layout_mode = 2
+theme_type_variation = &"KeyLabel"
+text = "E"
+
+[node name="V5" type="Label" parent="Root/Center/HelpPanel/VBox/Columns/Controls/Keys" unique_id=930100055]
+layout_mode = 2
+theme_type_variation = &"HintLabel"
+text = "drop weapon"
+
+[node name="K6" type="Label" parent="Root/Center/HelpPanel/VBox/Columns/Controls/Keys" unique_id=930100056]
+layout_mode = 2
+theme_type_variation = &"KeyLabel"
+text = "Esc"
+
+[node name="V6" type="Label" parent="Root/Center/HelpPanel/VBox/Columns/Controls/Keys" unique_id=930100057]
+layout_mode = 2
+theme_type_variation = &"HintLabel"
+text = "pause"
+
+[node name="TouchHeader" type="Label" parent="Root/Center/HelpPanel/VBox/Columns/Controls" unique_id=930100058]
+layout_mode = 2
+theme_type_variation = &"SubHeaderLabel"
+theme_override_font_sizes/font_size = 24
+text = "touch"
+
+[node name="TouchKeys" type="GridContainer" parent="Root/Center/HelpPanel/VBox/Columns/Controls" unique_id=930100059]
+layout_mode = 2
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 2
+columns = 2
+
+[node name="K1" type="Label" parent="Root/Center/HelpPanel/VBox/Columns/Controls/TouchKeys" unique_id=930100060]
+custom_minimum_size = Vector2(124, 0)
+layout_mode = 2
+theme_type_variation = &"KeyLabel"
+text = "left stick"
+
+[node name="V1" type="Label" parent="Root/Center/HelpPanel/VBox/Columns/Controls/TouchKeys" unique_id=930100061]
+layout_mode = 2
+theme_type_variation = &"HintLabel"
+text = "move (push down to drop)"
+
+[node name="K2" type="Label" parent="Root/Center/HelpPanel/VBox/Columns/Controls/TouchKeys" unique_id=930100062]
+layout_mode = 2
+theme_type_variation = &"KeyLabel"
+text = "right stick"
+
+[node name="V2" type="Label" parent="Root/Center/HelpPanel/VBox/Columns/Controls/TouchKeys" unique_id=930100063]
+layout_mode = 2
+theme_type_variation = &"HintLabel"
+text = "aim"
+
+[node name="K3" type="Label" parent="Root/Center/HelpPanel/VBox/Columns/Controls/TouchKeys" unique_id=930100064]
+layout_mode = 2
+theme_type_variation = &"KeyLabel"
+text = "Auto Attack"
+
+[node name="V3" type="Label" parent="Root/Center/HelpPanel/VBox/Columns/Controls/TouchKeys" unique_id=930100065]
+layout_mode = 2
+theme_type_variation = &"HintLabel"
+text = "auto swing / fire (Settings)"
+
+[node name="Divider" type="ColorRect" parent="Root/Center/HelpPanel/VBox/Columns" unique_id=930100066]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 2
+mouse_filter = 2
+color = Color(0.811765, 0.878431, 0.941176, 1)
+
+[node name="Rules" type="VBoxContainer" parent="Root/Center/HelpPanel/VBox/Columns" unique_id=930100067]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="RulesHeader" type="Label" parent="Root/Center/HelpPanel/VBox/Columns/Rules" unique_id=930100068]
+layout_mode = 2
+theme_type_variation = &"SubHeaderLabel"
+text = "rules"
+
+[node name="R1" type="HBoxContainer" parent="Root/Center/HelpPanel/VBox/Columns/Rules" unique_id=930100069]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Bullet" type="TextureRect" parent="Root/Center/HelpPanel/VBox/Columns/Rules/R1" unique_id=930100070]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("18_star_small")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="Label" parent="Root/Center/HelpPanel/VBox/Columns/Rules/R1" unique_id=930100071]
+layout_mode = 2
+theme_type_variation = &"KeyLabel"
+text = "TEAMS SWAP every 10 seconds!"
+
+[node name="R2" type="HBoxContainer" parent="Root/Center/HelpPanel/VBox/Columns/Rules" unique_id=930100072]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Bullet" type="TextureRect" parent="Root/Center/HelpPanel/VBox/Columns/Rules/R2" unique_id=930100073]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("9_sparkle_cross")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="Label" parent="Root/Center/HelpPanel/VBox/Columns/Rules/R2" unique_id=930100074]
+layout_mode = 2
+theme_type_variation = &"HintLabel"
+text = "same color = allies (no damage)"
+
+[node name="R3" type="HBoxContainer" parent="Root/Center/HelpPanel/VBox/Columns/Rules" unique_id=930100075]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Bullet" type="TextureRect" parent="Root/Center/HelpPanel/VBox/Columns/Rules/R3" unique_id=930100076]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("9_sparkle_cross")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="Label" parent="Root/Center/HelpPanel/VBox/Columns/Rules/R3" unique_id=930100077]
+layout_mode = 2
+theme_type_variation = &"HintLabel"
+text = "different color = enemies"
+
+[node name="R4" type="HBoxContainer" parent="Root/Center/HelpPanel/VBox/Columns/Rules" unique_id=930100078]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Bullet" type="TextureRect" parent="Root/Center/HelpPanel/VBox/Columns/Rules/R4" unique_id=930100079]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("9_sparkle_cross")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="Label" parent="Root/Center/HelpPanel/VBox/Columns/Rules/R4" unique_id=930100080]
+layout_mode = 2
+theme_type_variation = &"HintLabel"
+text = "kill an enemy to score"
+
+[node name="R5" type="HBoxContainer" parent="Root/Center/HelpPanel/VBox/Columns/Rules" unique_id=930100081]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Bullet" type="TextureRect" parent="Root/Center/HelpPanel/VBox/Columns/Rules/R5" unique_id=930100082]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("9_sparkle_cross")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="Label" parent="Root/Center/HelpPanel/VBox/Columns/Rules/R5" unique_id=930100083]
+layout_mode = 2
+theme_type_variation = &"HintLabel"
+text = "walk over weapons to pick them up"
+
+[node name="R6" type="HBoxContainer" parent="Root/Center/HelpPanel/VBox/Columns/Rules" unique_id=930100084]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Bullet" type="TextureRect" parent="Root/Center/HelpPanel/VBox/Columns/Rules/R6" unique_id=930100085]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("9_sparkle_cross")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="Label" parent="Root/Center/HelpPanel/VBox/Columns/Rules/R6" unique_id=930100086]
+layout_mode = 2
+theme_type_variation = &"HintLabel"
+text = "weapons break with use - grab another!"
+
+[node name="R7" type="HBoxContainer" parent="Root/Center/HelpPanel/VBox/Columns/Rules" unique_id=930100087]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Bullet" type="TextureRect" parent="Root/Center/HelpPanel/VBox/Columns/Rules/R7" unique_id=930100088]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+size_flags_vertical = 0
+mouse_filter = 2
+texture = ExtResource("9_sparkle_cross")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="Label" parent="Root/Center/HelpPanel/VBox/Columns/Rules/R7" unique_id=930100089]
+custom_minimum_size = Vector2(340, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"HintLabel"
+text = "win: reach the score target, or have the most kills when time runs out"
 autowrap_mode = 3
 
-[node name="Spacer" type="Control" parent="HelpPanel/VBoxContainer" unique_id=1158831901]
-custom_minimum_size = Vector2(0, 16)
+[node name="BottomSpacer" type="Control" parent="Root/Center/HelpPanel/VBox" unique_id=1158831901]
+custom_minimum_size = Vector2(0, 4)
 layout_mode = 2
+mouse_filter = 2
 
-[node name="HelpBackBtn" type="Button" parent="HelpPanel/VBoxContainer" unique_id=522378241]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(240, 56)
-layout_mode = 2
-text = "BACK"
-
-[node name="SettingsPanel" type="PanelContainer" parent="." unique_id=1285881015]
+[node name="SettingsPanel" type="PanelContainer" parent="Root/Center" unique_id=1285881015]
 unique_name_in_owner = true
 visible = false
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -210.0
-offset_top = -220.0
-offset_right = 210.0
-offset_bottom = 220.0
-grow_horizontal = 2
-grow_vertical = 2
-theme = ExtResource("3_k8um8")
-
-[node name="VBoxContainer" type="VBoxContainer" parent="SettingsPanel" unique_id=332680952]
+custom_minimum_size = Vector2(640, 0)
 layout_mode = 2
-size_flags_horizontal = 4
-alignment = 1
 
-[node name="Title" type="Label" parent="SettingsPanel/VBoxContainer" unique_id=2060730652]
+[node name="VBox" type="VBoxContainer" parent="Root/Center/SettingsPanel" unique_id=332680952]
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
+theme_override_constants/separation = 14
+
+[node name="Header" type="HBoxContainer" parent="Root/Center/SettingsPanel/VBox" unique_id=930100090]
+layout_mode = 2
+
+[node name="SettingsBackBtn" type="Button" parent="Root/Center/SettingsPanel/VBox/Header" unique_id=918368014]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 0
+tooltip_text = "Back"
+theme_type_variation = &"IconButton"
+icon = ExtResource("17_back")
+icon_alignment = 1
+
+[node name="Title" type="Label" parent="Root/Center/SettingsPanel/VBox/Header" unique_id=2060730652]
+layout_mode = 2
+size_flags_horizontal = 6
+theme_type_variation = &"HeaderLabel"
 text = "SETTINGS"
 horizontal_alignment = 1
 
-[node name="Spacer" type="Control" parent="SettingsPanel/VBoxContainer" unique_id=570540419]
-custom_minimum_size = Vector2(0, 8)
+[node name="HeaderSpacer" type="Control" parent="Root/Center/SettingsPanel/VBox/Header" unique_id=930100091]
+custom_minimum_size = Vector2(56, 0)
 layout_mode = 2
+mouse_filter = 2
 
-[node name="SFXBox" type="HBoxContainer" parent="SettingsPanel/VBoxContainer" unique_id=1235945840]
+[node name="Rows" type="GridContainer" parent="Root/Center/SettingsPanel/VBox" unique_id=930100092]
 layout_mode = 2
+theme_override_constants/h_separation = 28
+theme_override_constants/v_separation = 12
+columns = 2
 
-[node name="SFXLabel" type="Label" parent="SettingsPanel/VBoxContainer/SFXBox" unique_id=1881925599]
-custom_minimum_size = Vector2(100, 0)
+[node name="SFXLabel" type="Label" parent="Root/Center/SettingsPanel/VBox/Rows" unique_id=1881925599]
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "SFX Vol"
+theme_type_variation = &"RowLabel"
+text = "Sound"
+vertical_alignment = 1
 
-[node name="SFXSlider" type="HSlider" parent="SettingsPanel/VBoxContainer/SFXBox" unique_id=4705233]
+[node name="SFXRow" type="HBoxContainer" parent="Root/Center/SettingsPanel/VBox/Rows" unique_id=1235945840]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 18
+
+[node name="SFXToggle" type="Button" parent="Root/Center/SettingsPanel/VBox/Rows/SFXRow" unique_id=464119754]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(160, 40)
 layout_mode = 2
+size_flags_vertical = 4
+tooltip_text = "Sound on / off"
+theme_type_variation = &"IconButton"
+icon = ExtResource("15_sound_on")
+icon_alignment = 1
+
+[node name="SFXSlider" type="HSlider" parent="Root/Center/SettingsPanel/VBox/Rows/SFXRow" unique_id=4705233]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(250, 40)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
 min_value = -30.0
 max_value = 0.0
 value = -6.0
 
-[node name="SFXCheck" type="CheckBox" parent="SettingsPanel/VBoxContainer/SFXBox" unique_id=464119754]
+[node name="MusicLabel" type="Label" parent="Root/Center/SettingsPanel/VBox/Rows" unique_id=2126004285]
+layout_mode = 2
+theme_type_variation = &"RowLabel"
+text = "Music"
+vertical_alignment = 1
+
+[node name="MusicRow" type="HBoxContainer" parent="Root/Center/SettingsPanel/VBox/Rows" unique_id=1637190524]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 18
+
+[node name="MusicToggle" type="Button" parent="Root/Center/SettingsPanel/VBox/Rows/MusicRow" unique_id=1665859288]
 unique_name_in_owner = true
 layout_mode = 2
-keep_pressed_outside = true
-flat = true
+size_flags_vertical = 4
+tooltip_text = "Music on / off"
+theme_type_variation = &"IconButton"
+icon = ExtResource("16_music_on")
 icon_alignment = 1
-expand_icon = true
 
-[node name="MusicBox" type="HBoxContainer" parent="SettingsPanel/VBoxContainer" unique_id=1637190524]
-layout_mode = 2
-
-[node name="MusicLabel" type="Label" parent="SettingsPanel/VBoxContainer/MusicBox" unique_id=2126004285]
-custom_minimum_size = Vector2(100, 0)
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "Music Vol"
-
-[node name="MusicSlider" type="HSlider" parent="SettingsPanel/VBoxContainer/MusicBox" unique_id=944025182]
+[node name="MusicSlider" type="HSlider" parent="Root/Center/SettingsPanel/VBox/Rows/MusicRow" unique_id=944025182]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(160, 40)
+custom_minimum_size = Vector2(250, 40)
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
 min_value = -30.0
 max_value = 0.0
 value = -12.0
 
-[node name="MusicCheck" type="CheckBox" parent="SettingsPanel/VBoxContainer/MusicBox" unique_id=1665859288]
-unique_name_in_owner = true
+[node name="TouchLabel" type="Label" parent="Root/Center/SettingsPanel/VBox/Rows" unique_id=1848945941]
 layout_mode = 2
-text = "
-"
-flat = true
-
-[node name="TouchBox" type="HBoxContainer" parent="SettingsPanel/VBoxContainer" unique_id=1207730366]
-layout_mode = 2
-
-[node name="TouchLabel" type="Label" parent="SettingsPanel/VBoxContainer/TouchBox" unique_id=1848945941]
-custom_minimum_size = Vector2(140, 0)
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
+theme_type_variation = &"RowLabel"
 text = "Touch Controls"
+vertical_alignment = 1
 
-[node name="TouchOption" type="OptionButton" parent="SettingsPanel/VBoxContainer/TouchBox" unique_id=1419333573]
+[node name="TouchStepper" parent="Root/Center/SettingsPanel/VBox/Rows" unique_id=1419333573 instance=ExtResource("5_stepper")]
 unique_name_in_owner = true
 layout_mode = 2
-selected = 0
-item_count = 3
-popup/item_0/text = "Auto"
-popup/item_0/id = 0
-popup/item_1/text = "Always"
-popup/item_1/id = 1
-popup/item_2/text = "Hidden"
-popup/item_2/id = 2
+size_flags_horizontal = 3
+items = PackedStringArray("Auto", "Always", "Hidden")
 
-[node name="Spacer2" type="Control" parent="SettingsPanel/VBoxContainer" unique_id=809856035]
-custom_minimum_size = Vector2(0, 16)
+[node name="AutoAttackLabel" type="Label" parent="Root/Center/SettingsPanel/VBox/Rows" unique_id=812345684]
 layout_mode = 2
+theme_type_variation = &"RowLabel"
+text = "Auto Attack"
+vertical_alignment = 1
 
-[node name="SettingsBackBtn" type="Button" parent="SettingsPanel/VBoxContainer" unique_id=918368014]
+[node name="AutoAttackRow" type="HBoxContainer" parent="Root/Center/SettingsPanel/VBox/Rows" unique_id=812345683]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="AutoAttackCheck" type="CheckButton" parent="Root/Center/SettingsPanel/VBox/Rows/AutoAttackRow" unique_id=812345685]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(240, 56)
 layout_mode = 2
-text = "BACK"
+size_flags_vertical = 4
 
-[connection signal="pressed" from="MainPanel/VBoxContainer/PlayBtn" to="." method="_on_play_pressed"]
-[connection signal="pressed" from="MainPanel/VBoxContainer/PlayBtn" to="." method="_play_click"]
-[connection signal="pressed" from="MainPanel/VBoxContainer/HowToPlayBtn" to="." method="_on_how_to_play_pressed"]
-[connection signal="pressed" from="MainPanel/VBoxContainer/HowToPlayBtn" to="." method="_play_click"]
-[connection signal="pressed" from="MainPanel/VBoxContainer/SettingsBtn" to="." method="_on_settings_pressed"]
-[connection signal="pressed" from="MainPanel/VBoxContainer/SettingsBtn" to="." method="_play_click"]
-[connection signal="pressed" from="MainPanel/VBoxContainer/QuitBtn" to="." method="_on_quit_pressed"]
-[connection signal="pressed" from="MainPanel/VBoxContainer/QuitBtn" to="." method="_play_click"]
-[connection signal="value_changed" from="OptionsPanel/VBoxContainer/AIBox/AISlider" to="." method="_on_ai_slider_changed"]
-[connection signal="item_selected" from="OptionsPanel/VBoxContainer/ModeBox/ModeOption" to="." method="_on_mode_option_changed"]
-[connection signal="item_selected" from="OptionsPanel/VBoxContainer/ArenaBox/ArenaOption" to="." method="_on_arena_option_changed"]
-[connection signal="value_changed" from="OptionsPanel/VBoxContainer/ScoreBox/ScoreSlider" to="." method="_on_score_slider_changed"]
-[connection signal="value_changed" from="OptionsPanel/VBoxContainer/DurationBox/DurationSlider" to="." method="_on_duration_slider_changed"]
-[connection signal="pressed" from="OptionsPanel/VBoxContainer/StartMatchBtn" to="." method="_on_start_match_pressed"]
-[connection signal="pressed" from="OptionsPanel/VBoxContainer/StartMatchBtn" to="." method="_play_click"]
-[connection signal="pressed" from="OptionsPanel/VBoxContainer/OptionsBackBtn" to="." method="_on_back_pressed"]
-[connection signal="pressed" from="OptionsPanel/VBoxContainer/OptionsBackBtn" to="." method="_play_click"]
-[connection signal="pressed" from="HelpPanel/VBoxContainer/HelpBackBtn" to="." method="_on_back_pressed"]
-[connection signal="pressed" from="HelpPanel/VBoxContainer/HelpBackBtn" to="." method="_play_click"]
-[connection signal="value_changed" from="SettingsPanel/VBoxContainer/SFXBox/SFXSlider" to="." method="_on_sfx_volume_changed"]
-[connection signal="toggled" from="SettingsPanel/VBoxContainer/SFXBox/SFXCheck" to="." method="_on_sfx_toggled"]
-[connection signal="value_changed" from="SettingsPanel/VBoxContainer/MusicBox/MusicSlider" to="." method="_on_music_volume_changed"]
-[connection signal="toggled" from="SettingsPanel/VBoxContainer/MusicBox/MusicCheck" to="." method="_on_music_toggled"]
-[connection signal="item_selected" from="SettingsPanel/VBoxContainer/TouchBox/TouchOption" to="." method="_on_touch_mode_changed"]
-[connection signal="pressed" from="SettingsPanel/VBoxContainer/SettingsBackBtn" to="." method="_on_back_pressed"]
-[connection signal="pressed" from="SettingsPanel/VBoxContainer/SettingsBackBtn" to="." method="_play_click"]
+[node name="AutoAttackHint" type="Label" parent="Root/Center/SettingsPanel/VBox/Rows/AutoAttackRow" unique_id=930100093]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"HintLabel"
+text = "swings & fires for you"
+vertical_alignment = 1
+
+[node name="Spacer" type="Control" parent="Root/Center/SettingsPanel/VBox" unique_id=570540419]
+custom_minimum_size = Vector2(0, 4)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="CustomizeTouchBtn" type="Button" parent="Root/Center/SettingsPanel/VBox" unique_id=910000001]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(400, 64)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "EDIT TOUCH LAYOUT"
+icon = ExtResource("13_settings")
+
+[node name="BottomSpacer" type="Control" parent="Root/Center/SettingsPanel/VBox" unique_id=809856035]
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="TouchLayoutEditor" parent="." unique_id=910000002 instance=ExtResource("4_editor")]
+unique_name_in_owner = true
+layout_mode = 3
+
+[connection signal="pressed" from="Root/MainPanel/Buttons/PlayBtn" to="." method="_on_play_pressed"]
+[connection signal="pressed" from="Root/MainPanel/Buttons/PlayBtn" to="." method="_play_click"]
+[connection signal="pressed" from="Root/MainPanel/Buttons/HowToPlayBtn" to="." method="_on_how_to_play_pressed"]
+[connection signal="pressed" from="Root/MainPanel/Buttons/HowToPlayBtn" to="." method="_play_click"]
+[connection signal="pressed" from="Root/MainPanel/Buttons/SettingsBtn" to="." method="_on_settings_pressed"]
+[connection signal="pressed" from="Root/MainPanel/Buttons/SettingsBtn" to="." method="_play_click"]
+[connection signal="pressed" from="Root/MainPanel/Buttons/QuitBtn" to="." method="_on_quit_pressed"]
+[connection signal="pressed" from="Root/MainPanel/Buttons/QuitBtn" to="." method="_play_click"]
+[connection signal="pressed" from="Root/MainPanel/Corner/CornerSound" to="." method="_on_sfx_toggle_pressed"]
+[connection signal="pressed" from="Root/MainPanel/Corner/CornerSound" to="." method="_play_click"]
+[connection signal="pressed" from="Root/MainPanel/Corner/CornerMusic" to="." method="_on_music_toggle_pressed"]
+[connection signal="pressed" from="Root/MainPanel/Corner/CornerMusic" to="." method="_play_click"]
+[connection signal="pressed" from="Root/Center/OptionsPanel/VBox/Header/OptionsBackBtn" to="." method="_on_back_pressed"]
+[connection signal="pressed" from="Root/Center/OptionsPanel/VBox/Header/OptionsBackBtn" to="." method="_play_click"]
+[connection signal="item_selected" from="Root/Center/OptionsPanel/VBox/Rows/AIStepper" to="." method="_on_ai_stepper_changed"]
+[connection signal="item_selected" from="Root/Center/OptionsPanel/VBox/Rows/ArenaStepper" to="." method="_on_arena_option_changed"]
+[connection signal="item_selected" from="Root/Center/OptionsPanel/VBox/Rows/ModeStepper" to="." method="_on_mode_option_changed"]
+[connection signal="value_changed" from="Root/Center/OptionsPanel/VBox/Rows/ScoreRow/ScoreSlider" to="." method="_on_score_slider_changed"]
+[connection signal="value_changed" from="Root/Center/OptionsPanel/VBox/Rows/DurationRow/DurationSlider" to="." method="_on_duration_slider_changed"]
+[connection signal="pressed" from="Root/Center/OptionsPanel/VBox/StartMatchBtn" to="." method="_on_start_match_pressed"]
+[connection signal="pressed" from="Root/Center/OptionsPanel/VBox/StartMatchBtn" to="." method="_play_click"]
+[connection signal="pressed" from="Root/Center/HelpPanel/VBox/Header/HelpBackBtn" to="." method="_on_back_pressed"]
+[connection signal="pressed" from="Root/Center/HelpPanel/VBox/Header/HelpBackBtn" to="." method="_play_click"]
+[connection signal="pressed" from="Root/Center/SettingsPanel/VBox/Header/SettingsBackBtn" to="." method="_on_back_pressed"]
+[connection signal="pressed" from="Root/Center/SettingsPanel/VBox/Header/SettingsBackBtn" to="." method="_play_click"]
+[connection signal="pressed" from="Root/Center/SettingsPanel/VBox/Rows/SFXRow/SFXToggle" to="." method="_on_sfx_toggle_pressed"]
+[connection signal="pressed" from="Root/Center/SettingsPanel/VBox/Rows/SFXRow/SFXToggle" to="." method="_play_click"]
+[connection signal="value_changed" from="Root/Center/SettingsPanel/VBox/Rows/SFXRow/SFXSlider" to="." method="_on_sfx_volume_changed"]
+[connection signal="pressed" from="Root/Center/SettingsPanel/VBox/Rows/MusicRow/MusicToggle" to="." method="_on_music_toggle_pressed"]
+[connection signal="pressed" from="Root/Center/SettingsPanel/VBox/Rows/MusicRow/MusicToggle" to="." method="_play_click"]
+[connection signal="value_changed" from="Root/Center/SettingsPanel/VBox/Rows/MusicRow/MusicSlider" to="." method="_on_music_volume_changed"]
+[connection signal="item_selected" from="Root/Center/SettingsPanel/VBox/Rows/TouchStepper" to="." method="_on_touch_mode_changed"]
+[connection signal="toggled" from="Root/Center/SettingsPanel/VBox/Rows/AutoAttackRow/AutoAttackCheck" to="." method="_on_auto_attack_toggled"]
+[connection signal="toggled" from="Root/Center/SettingsPanel/VBox/Rows/AutoAttackRow/AutoAttackCheck" to="." method="_play_click" unbinds=1]
+[connection signal="pressed" from="Root/Center/SettingsPanel/VBox/CustomizeTouchBtn" to="." method="_on_customize_touch_pressed"]
+[connection signal="pressed" from="Root/Center/SettingsPanel/VBox/CustomizeTouchBtn" to="." method="_play_click"]
+[connection signal="close_requested" from="TouchLayoutEditor" to="." method="_on_touch_editor_closed"]

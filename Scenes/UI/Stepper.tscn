@@ -1,0 +1,37 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scripts/UI/Stepper.gd" id="1_stepper"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/arrow_left.png" id="2_left"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/arrow_right.png" id="3_right"]
+
+[node name="Stepper" type="HBoxContainer"]
+custom_minimum_size = Vector2(300, 52)
+theme_override_constants/separation = 10
+script = ExtResource("1_stepper")
+
+[node name="Prev" type="Button" parent="."]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+size_flags_vertical = 4
+tooltip_text = "Previous"
+theme_type_variation = &"IconButton"
+icon = ExtResource("2_left")
+icon_alignment = 1
+expand_icon = true
+
+[node name="Value" type="Label" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"ValueLabel"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Next" type="Button" parent="."]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+size_flags_vertical = 4
+tooltip_text = "Next"
+theme_type_variation = &"IconButton"
+icon = ExtResource("3_right")
+icon_alignment = 1
+expand_icon = true

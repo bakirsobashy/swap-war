@@ -1,0 +1,181 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Theme" path="res://scribble_ui/themes/scribble_theme_2560x1440.tres" id="1_scribble_theme_2560x1440"]
+[ext_resource type="Texture2D" path="res://scribble_ui/x2/decor/paper_lined.png" id="2_paper_lined"]
+[ext_resource type="Texture2D" path="res://scribble_ui/x2/hud/heart_full.png" id="3_heart_full"]
+[ext_resource type="Texture2D" path="res://scribble_ui/x2/hud/heart_empty.png" id="4_heart_empty"]
+[ext_resource type="Texture2D" path="res://scribble_ui/x2/hud/coin.png" id="5_coin"]
+[ext_resource type="Texture2D" path="res://scribble_ui/x2/hud/star_full.png" id="6_star_full"]
+[ext_resource type="Texture2D" path="res://scribble_ui/x2/icons/close.png" id="7_close"]
+[ext_resource type="Texture2D" path="res://scribble_ui/x2/icons/play.png" id="8_play"]
+[ext_resource type="Texture2D" path="res://scribble_ui/x2/icons/restart.png" id="9_restart"]
+[ext_resource type="Texture2D" path="res://scribble_ui/x2/icons/home.png" id="10_home"]
+
+[node name="PauseMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1_scribble_theme_2560x1440")
+
+[node name="Paper" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_paper_lined")
+expand_mode = 1
+stretch_mode = 1
+
+[node name="HUD" type="VBoxContainer" parent="."]
+layout_mode = 1
+offset_left = 80.0
+offset_top = 56.0
+offset_right = 680.0
+offset_bottom = 256.0
+theme_override_constants/separation = 16
+
+[node name="Hearts" type="HBoxContainer" parent="HUD"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Heart1" type="TextureRect" parent="HUD/Hearts"]
+layout_mode = 2
+texture = ExtResource("3_heart_full")
+
+[node name="Heart2" type="TextureRect" parent="HUD/Hearts"]
+layout_mode = 2
+texture = ExtResource("3_heart_full")
+
+[node name="Heart3" type="TextureRect" parent="HUD/Hearts"]
+layout_mode = 2
+texture = ExtResource("4_heart_empty")
+
+[node name="Counters" type="HBoxContainer" parent="HUD"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Coin" type="TextureRect" parent="HUD/Counters"]
+layout_mode = 2
+texture = ExtResource("5_coin")
+
+[node name="CoinCount" type="Label" parent="HUD/Counters"]
+layout_mode = 2
+text = "× 24"
+theme_override_font_sizes/font_size = 68
+
+[node name="Gap" type="Control" parent="HUD/Counters"]
+custom_minimum_size = Vector2(28.0, 0)
+layout_mode = 2
+
+[node name="Star" type="TextureRect" parent="HUD/Counters"]
+layout_mode = 2
+texture = ExtResource("6_star_full")
+
+[node name="StarCount" type="Label" parent="HUD/Counters"]
+layout_mode = 2
+text = "2 / 3"
+theme_override_font_sizes/font_size = 68
+
+[node name="Dim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.121569, 0.121569, 0.121569, 0.35)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="Center"]
+custom_minimum_size = Vector2(800.0, 0)
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Center/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 36
+
+[node name="Header" type="HBoxContainer" parent="Center/Panel/VBox"]
+layout_mode = 2
+
+[node name="Spacer" type="Control" parent="Center/Panel/VBox/Header"]
+custom_minimum_size = Vector2(112.0, 0)
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Center/Panel/VBox/Header"]
+layout_mode = 2
+text = "PAUSED"
+size_flags_horizontal = 6
+theme_type_variation = &"HeaderLabel"
+horizontal_alignment = 1
+
+[node name="Close" type="Button" parent="Center/Panel/VBox/Header"]
+layout_mode = 2
+theme_type_variation = &"IconButton"
+icon = ExtResource("7_close")
+size_flags_vertical = 0
+tooltip_text = "Close"
+
+[node name="MusicRow" type="HBoxContainer" parent="Center/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="MusicLabel" type="Label" parent="Center/Panel/VBox/MusicRow"]
+layout_mode = 2
+text = "music"
+custom_minimum_size = Vector2(152.0, 0)
+
+[node name="MusicSlider" type="HSlider" parent="Center/Panel/VBox/MusicRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+value = 70.0
+
+[node name="SoundRow" type="HBoxContainer" parent="Center/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="SoundLabel" type="Label" parent="Center/Panel/VBox/SoundRow"]
+layout_mode = 2
+text = "sound"
+custom_minimum_size = Vector2(152.0, 0)
+
+[node name="SoundToggle" type="CheckButton" parent="Center/Panel/VBox/SoundRow"]
+layout_mode = 2
+button_pressed = true
+
+[node name="Buttons" type="VBoxContainer" parent="Center/Panel/VBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 32
+
+[node name="Resume" type="Button" parent="Center/Panel/VBox/Buttons"]
+layout_mode = 2
+custom_minimum_size = Vector2(540.0, 128.0)
+theme_type_variation = &"PrimaryButton"
+text = "RESUME"
+icon = ExtResource("8_play")
+
+[node name="Restart" type="Button" parent="Center/Panel/VBox/Buttons"]
+layout_mode = 2
+custom_minimum_size = Vector2(540.0, 128.0)
+theme_type_variation = &"ButtonAlt"
+text = "RESTART"
+icon = ExtResource("9_restart")
+
+[node name="Home" type="Button" parent="Center/Panel/VBox/Buttons"]
+layout_mode = 2
+custom_minimum_size = Vector2(540.0, 128.0)
+text = "HOME"
+icon = ExtResource("10_home")

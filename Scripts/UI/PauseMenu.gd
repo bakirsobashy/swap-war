@@ -4,6 +4,7 @@ extends CanvasLayer
 const MainMenuScene := "res://Scenes/UI/MainMenu.tscn"
 
 @onready var panel: PanelContainer = %Panel
+@onready var resume_btn: Button = %ResumeBtn
 
 var _post_round_menu: CanvasLayer = null
 
@@ -23,6 +24,10 @@ func _input(event: InputEvent) -> void:
 		if _post_round_menu and _post_round_menu.visible:
 			return
 		_toggle_pause()
+
+func _unhandled_input(event: InputEvent) -> void:
+	if visible:
+		MenuFocus.focus_on_nav(event, resume_btn)
 
 func _toggle_pause() -> void:
 	if get_tree().paused and not visible:
