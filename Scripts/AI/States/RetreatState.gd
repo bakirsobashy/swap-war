@@ -12,11 +12,16 @@ const HAZARD_PENALTY := 100.0    # score penalty for hazardous refuge platforms
 const THREAT_DISTANCE_WEIGHT := 0.5
 const SAFE_HOLD_TIME := 0.6      # both exit conditions must hold this long
 const GRAB_RANGE := 80.0         # a weapon this close gets picked up mid-flight
+## Nothing heals, so the health exit can never fire for a low-HP AI: give up
+## fleeing after this long and fight for RETREAT_LOCKOUT before fleeing again.
+const MAX_RETREAT_TIME := 5.0
+const RETREAT_LOCKOUT := 6.0
 
 
 var _rescore_clock := 0.0
 var _safe_clock := 0.0
 var _have_refuge := false
+var _retreat_clock := 0.0
 
 
 func get_name() -> String:
@@ -27,6 +32,7 @@ func enter() -> void:
 	_rescore_clock = 0.0
 	_safe_clock = 0.0
 	_have_refuge = false
+	_retreat_clock = 0.0
 
 
 func physics_update(delta: float) -> String:
@@ -35,6 +41,14 @@ func physics_update(delta: float) -> String:
 		return "Idle"
 
 	var dist: float = owner.actor.global_position.distance_to(threat.global_position)
+
+	# Armed and out of road: turn and fight (the unarmed AI keeps evading —
+	# it has no attack at all).
+	_retreat_clock += delta
+	if owner.is_armed() and _retreat_clock >= MAX_RETREAT_TIME:
+		owner.retreat_lockout = RETREAT_LOCKOUT
+		owner.nav_cancel()
+		return "Idle"
 
 	_cover_fire(dist)
 

@@ -40,6 +40,18 @@ const AUTO_MELEE_REACH: float = 90.0
 
 var _drop_timer: float = 0.0
 
+## Ground contacts linger a tick or two after liftoff; reading them as a
+## landing played the land sound right after every jump (plan 2.1.5).
+const JUMP_GROUND_GRACE: float = 0.1
+var _jump_grace: float = 0.0
+
+## Knockback launch window: run-speed clamping (300 px/s) used to swallow
+## every hit's impulse. While stunned the cap rises and friction is off.
+const KNOCKBACK_STUN: float = 0.3
+const KNOCKBACK_MAX_SPEED: float = 750.0
+var _stun_timer: float = 0.0
+var _pending_knockback: Vector2 = Vector2.ZERO
+
 ## The arena's touch controls layer, resolved lazily. Kept untyped so the
 ## duck-typed get_aim_stick_value() call needs no class_name dependency.
 var _touch_controls = null
@@ -66,6 +78,13 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
 	# Capture previous grounded state before this frame's ground check,
 	# so landing detection can compare air -> ground across physics steps.
 	_was_grounded = _is_grounded
+	if _jump_grace > 0.0:
+		_jump_grace -= state.step
+	if _stun_timer > 0.0:
+		_stun_timer -= state.step
+	if _pending_knockback != Vector2.ZERO:
+		state.apply_central_impulse(_pending_knockback)
+		_pending_knockback = Vector2.ZERO
 	_update_ground_state(state)
 	_apply_run_force(state)
 	_apply_jump(state)
@@ -83,7 +102,16 @@ func _process(delta: float) -> void:
 	_update_visuals()
 
 func _update_ground_state(state: PhysicsDirectBodyState2D) -> void:
+	if _jump_grace > 0.0:
+		_is_grounded = false
+		return
 	_is_grounded = _check_grounded_by_contacts(state)
+
+## Weapon / projectile knockback entry point: queues the impulse for the next
+## _integrate_forces and opens the stun window that lifts the speed cap.
+func apply_knockback(impulse: Vector2) -> void:
+	_pending_knockback += impulse
+	_stun_timer = KNOCKBACK_STUN
 
 func _check_grounded_by_contacts(state: PhysicsDirectBodyState2D) -> bool:
 	# Use the passed physics body state so this is safe inside _integrate_forces.
@@ -313,13 +341,20 @@ func _get_target_aim() -> Vector2:
 				_last_stick_aim = stick_value.normalized()
 				return _last_stick_aim
 			if TOUCH_AIM_HOLD_ON_RELEASE and _last_stick_aim != Vector2.ZERO \
-					and _is_touch_input_recent():
+					and _is_touch_input_recent() and _is_holding_ranged_weapon():
+				# Held aim only for guns (keeps the firing lane); with melee or
+				# bare hands it made you walk backwards forever.
 				return _last_stick_aim
 		# 3. Touch fallback: with no aim-stick input on a touchscreen the
 		#    player aims along facing — like a classic button-driven mobile
 		#    platformer (mouse-from-touch emulation is disabled during play
 		#    so taps never fire the mouse-bound Attack action).
+		# Facing follows the move stick here — _update_facing skips the player,
+		# so returning the current facing froze it (phones faced right forever).
 		if _is_touch_input_recent():
+			var move_x := _get_move_input()
+			if move_x != 0.0:
+				return Vector2(signf(move_x), 0.0)
 			return Vector2(facing_direction, 0.0)
 		var mouse_pos := get_global_mouse_position()
 		return mouse_pos - global_position
@@ -351,6 +386,7 @@ func _apply_jump(state: PhysicsDirectBodyState2D) -> void:
 	if _get_jump_input() and _is_grounded:
 		state.apply_central_impulse(Vector2(0.0, -jump_impulse))
 		_is_grounded = false
+		_jump_grace = JUMP_GROUND_GRACE
 		if AudioManager:
 			AudioManager.play_jump()
 	elif not _was_grounded and _is_grounded:
@@ -380,6 +416,8 @@ func _get_drop_weapon_input() -> bool:
 	return false
 
 func _apply_friction(state: PhysicsDirectBodyState2D) -> void:
+	if _stun_timer > 0.0:
+		return   # let the knockback carry
 	var input_x := _get_move_input()
 	if input_x != 0.0:
 		return
@@ -391,6 +429,7 @@ func _apply_friction(state: PhysicsDirectBodyState2D) -> void:
 
 func _cap_speeds(state: PhysicsDirectBodyState2D) -> void:
 	var vel := state.linear_velocity
-	if abs(vel.x) > max_run_speed:
-		vel.x = sign(vel.x) * max_run_speed
+	var cap := KNOCKBACK_MAX_SPEED if _stun_timer > 0.0 else max_run_speed
+	if abs(vel.x) > cap:
+		vel.x = sign(vel.x) * cap
 		state.linear_velocity = vel

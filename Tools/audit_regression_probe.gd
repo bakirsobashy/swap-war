@@ -124,14 +124,42 @@ func _run() -> void:
 	tm._register_existing_actors()
 	await _frames(2)
 	var extra: int = tm._teams.size() - before_regs
-	_known("Health nodes register as actors on direct arena runs", extra > 0, "+%d registrations" % extra)
-	for k in tm._teams.keys().duplicate():
-		if String(k.name) == "Health":
-			tm.unregister_actor(k)
-	await _frames(2)
+	_check("only actor bodies register as actors (direct-run path)", extra == 0, "+%d registrations" % extra)
+
+	# Display names: the player is YOU, AIs get real names (no @RigidBody2D@N)
+	var names: Array = []
+	for a in _actors(scene):
+		names.append(String(a.name))
+	var named_ok: bool = String(player.name) == "YOU"
+	for n in names:
+		if n.begins_with("@"):
+			named_ok = false
+	_check("actors carry display names", named_ok, "%s" % [names])
+
+	# Two-team guarantee: with 2 actors no roll may put both on one team
+	var pair: Array = [player, ais[0]]
+	var saved_teams: Dictionary = tm._teams.duplicate()
+	var saved_sfx = audio.sfx_enabled
+	audio.sfx_enabled = false
+	tm._teams.clear()
+	for a in pair:
+		tm._teams[a] = 0
+	var same := 0
+	for i in 200:
+		tm.randomize_teams()
+		if tm.get_team(pair[0]) == tm.get_team(pair[1]):
+			same += 1
+	tm._teams = saved_teams
+	for a in saved_teams.keys():
+		tm.set_team(a, saved_teams[a])
+	audio.sfx_enabled = saved_sfx
+	_check("a swap never leaves everyone allied", same == 0, "%d/200 rolls all-same-team" % same)
 
 	await create_timer(3.6).timeout
 	_check("countdown reaches PLAYING", am._state == 2, "state=%d" % am._state)
+	await _physics(4)
+	_check("weapons drop at GO", get_nodes_in_group("weapons").size() > 0,
+			"%d weapons at match start" % get_nodes_in_group("weapons").size())
 
 	# Esc pauses and unpauses during play
 	_key(KEY_ESCAPE, true)
@@ -151,6 +179,20 @@ func _run() -> void:
 		await _frames(2)
 
 	tm._swap_timer.stop()
+	# Quiet arena from here on: the GO wave arms the AIs at once, and live
+	# fights cost durability, steal kills and shove test actors around.
+	# Scenarios that need an AI brain switch that one AI back on.
+	for o in ais:
+		o.get_node("AIController").is_ai = false
+		o.get_node("AIController").move_direction = 0.0
+		o.get_node("AIController").wants_attack = false
+	for a in _actors(scene):
+		var wh = a.get_node("WeaponHolder")
+		if wh.current_weapon != null:
+			wh.drop_weapon(false)
+	for w in get_nodes_in_group("weapons"):
+		w.queue_free()
+	await create_timer(1.0).timeout
 
 	# Touch DROP works repeatedly; Drop_Weapon never stays held
 	var holder = player.get_node("WeaponHolder")
@@ -216,7 +258,7 @@ func _run() -> void:
 	sword._recent_hits.clear()
 	sword._on_body_entered(b1)
 	await _physics(1)
-	_known("hits on invulnerable targets cost durability", sword.current_durability < dur,
+	_check("hits on invulnerable targets cost nothing", sword.current_durability == dur,
 			"durability %d -> %d" % [dur, sword.current_durability])
 	bh._invulnerability_timer = 0.0
 
@@ -225,44 +267,64 @@ func _run() -> void:
 	c1.freeze = true
 	a1.freeze = true
 	await _physics(2)
-	c1.global_position = a1.global_position + Vector2(70.0 * a1.facing_direction, 0.0)
+	# Put the enemy where the blade actually points (with its brain off the
+	# AI's aim is stale, so facing_direction is not a reliable guide).
+	var blade_dir: Vector2 = (sword.global_position - a1.global_position).normalized()
+	c1.global_position = a1.global_position + blade_dir * 70.0
 	await _physics(40)
+	var touching: bool = sword.get_node("HitBox").get_overlapping_bodies().has(c1)
+	_check("swing test setup: enemy is touching the blade", touching, "dir=%s" % blade_dir)
 	var hp_mid: float = ch.current_health
 	for i in 4:
 		sword._attack_cooldown_timer = 0.0
 		sword.attack()
 		await _physics(40)
-	_known("swings never re-hit an overlapping enemy", is_equal_approx(ch.current_health, hp_mid),
+	_check("swings hit an enemy already touching the blade", ch.current_health < hp_mid or ch.is_dead(),
 			"hp %.0f -> %.0f over 4 swings" % [hp_mid, ch.current_health])
 	c1.freeze = false
 	a1.freeze = false
 	a1.get_node("WeaponHolder").drop_weapon(false)
 
-	# Landing sound right after a jump
+	# Landing sound right after a jump: the takeoff tick used to read as a
+	# landing (ground contacts linger). Assert on the PLAYER's own ground
+	# state — land sounds from other actors would make an audio check noisy.
 	for o in ais:
 		o.get_node("AIController").is_ai = false
-	await create_timer(1.0).timeout
-	var land_clips: Array = audio._land_variants.duplicate()
-	if audio.land_sound:
-		land_clips.append(audio.land_sound)
-	var seen: Dictionary = {}
-	for n in audio.get_children():
-		seen[n.get_instance_id()] = true
+	var ph = player.get_node("Components/Health")
+	while ph.is_dead():
+		await physics_frame
+	var settle := 0
+	while (not player.is_grounded() or absf(player.linear_velocity.y) > 5.0) and settle < 300:
+		await physics_frame
+		settle += 1
+	var grounded_before: bool = player.is_grounded()
 	_press("Jump", true)
-	var early_land := false
-	for tick in 5:
+	var relanded := false
+	var lifted := false
+	for tick in 6:
 		await physics_frame
 		if tick == 1:
 			_press("Jump", false)
-		for n in audio.get_children():
-			if seen.has(n.get_instance_id()):
-				continue
-			seen[n.get_instance_id()] = true
-			if n is AudioStreamPlayer and land_clips.has(n.stream):
-				early_land = true
-	_known("landing sound plays right after every jump", early_land, "land sfx within 5 ticks=%s" % early_land)
-	for o in ais:
-		o.get_node("AIController").is_ai = true
+		if not player.is_grounded():
+			lifted = true
+		elif lifted and player.linear_velocity.y < -50.0:
+			relanded = true   # "grounded" while still rising = false landing
+	_check("no false landing right after a jump", grounded_before and lifted and not relanded,
+			"grounded before=%s, lifted=%s, false landing=%s" % [grounded_before, lifted, relanded])
+
+	# Knockback is no longer clipped to run speed
+	var kb = ais[0]
+	await create_timer(0.5).timeout
+	# Open air, clear of blocks and walls, so geometry can't eat the launch.
+	kb.global_position = Vector2(-300.0, -320.0)
+	kb.linear_velocity = Vector2.ZERO
+	await _physics(2)
+	kb.apply_knockback(Vector2(600.0, -100.0))
+	var peak := 0.0
+	for i in 4:
+		await physics_frame
+		peak = maxf(peak, absf(kb.linear_velocity.x))
+	_check("knockback launches past run speed", peak > 350.0, "peak vx after a 600 hit = %.0f" % peak)
 
 	# Timed tie goes to the first-registered actor (the player)
 	var saved: Dictionary = sm._scores.duplicate()
@@ -271,27 +333,47 @@ func _run() -> void:
 	sm._scores[player] = 3
 	sm._scores[ais[1]] = 3
 	var leader = sm.get_leader()
-	_known("score ties crown the player", leader == player, "leader=%s" % (leader.name if leader else "none"))
+	_check("a tie at the top has no single leader", leader == null,
+			"leader=%s, leaders=%d" % [(leader.name if leader else "none"), sm.get_leaders().size()])
 	for k in saved.keys():
 		if sm._scores.has(k):
 			sm._scores[k] = saved[k]
 
-	# Low-HP armed AI stuck in Retreat
+	# Low-HP armed AI: Retreat must time out (nothing heals, so the health
+	# exit can never fire) and lock out re-retreating for a while.
 	var x = ais[1]
+	var xc = x.get_node("AIController")
 	for o in ais:
 		tm.set_team(o, 1)
 	tm.set_team(player, 2)
 	var xh = x.get_node("Components/Health")
 	xh.current_health = 25.0
+	xh._invulnerability_timer = 10.0   # fleeing over the spikes must not kill it mid-test
 	await _equip(scene, x, "res://Scenes/Weapons/Spear.tscn")
 	player.freeze = true
-	player.global_position = x.global_position + Vector2(100.0, -10.0)
-	await create_timer(1.0).timeout
-	var s1 := _state_name(x)
-	player.global_position.x = x.global_position.x + (600.0 if x.global_position.x < 0.0 else -600.0)
-	await create_timer(4.0).timeout
-	_known("low-HP AI never leaves Retreat", s1 == "Retreat" and _state_name(x) == "Retreat",
-			"%s -> %s" % [s1, _state_name(x)])
+	# The other AIs (enemies of the player) would otherwise kill the frozen
+	# threat, which ends the retreat early for the wrong reason.
+	var player_h = player.get_node("Components/Health")
+	while player_h.is_dead():                # a dead threat is no threat
+		await physics_frame
+	player_h._invulnerability_timer = 10.0
+	await _physics(2)
+	xc.is_ai = true
+	xc.sensors.invalidate_targets()
+	await create_timer(0.4).timeout          # sensors re-acquire the player
+	xc.machine.transition_to("Retreat")
+	var max_lockout := 0.0
+	var left_retreat_at := -1.0
+	var t := 0.0
+	while t < 6.5:
+		await create_timer(0.1).timeout
+		t += 0.1
+		max_lockout = maxf(max_lockout, xc.retreat_lockout)
+		if left_retreat_at < 0.0 and _state_name(x) != "Retreat":
+			left_retreat_at = t
+	_check("low-HP AI stops fleeing after the retreat timeout",
+			max_lockout > 0.0 and left_retreat_at >= 4.5,
+			"left Retreat after %.1f s, peak lockout %.1f s, hp %.0f" % [left_retreat_at, max_lockout, xh.current_health])
 	player.freeze = false
 
 	# Play Again keeps the old weapons
@@ -301,8 +383,13 @@ func _run() -> void:
 	am.restart_match()
 	await _physics(6)
 	var w_after: int = get_nodes_in_group("weapons").size()
-	_known("Play Again keeps last match's weapons", w_before > 0 and w_after >= w_before,
+	_check("Play Again clears the last match's weapons", w_before > 0 and w_after == 0,
 			"%d -> %d" % [w_before, w_after])
+	var restart_names: Array = []
+	for a in _actors(scene):
+		restart_names.append(String(a.name))
+	_check("names survive Play Again", restart_names.has("YOU") and not str(restart_names).contains("@"),
+			"%s" % [restart_names])
 	await create_timer(3.6).timeout
 
 	# Post-round title uses raw node names
@@ -314,7 +401,7 @@ func _run() -> void:
 	sm.add_score(winner, 10)
 	await _frames(2)
 	var title: String = scene.get_node("PostRoundMenu").get_node("%Title").text
-	_known("post-round shows raw node names", title.begins_with("@"), "'%s'" % title)
+	_check("post-round names the winner", title == "%s WINS!" % String(winner.name).to_upper(), "'%s'" % title)
 	paused = false
 	await _frames(2)
 
@@ -328,8 +415,31 @@ func _run() -> void:
 	current_scene.get_node("PauseMenu")._on_quit_to_menu_pressed()
 	await _frames(6)
 	await create_timer(8.0).timeout
-	_known("timed match keeps running in the main menu", am._state == 3,
-			"ArenaManager state in menu=%d" % am._state)
+	_check("leaving the arena stops the match", am._state == 0,
+			"ArenaManager state in menu=%d (0 = IDLE)" % am._state)
+
+	print("--- match C: ArenaFlat, timed tie -> sudden death ---")
+	settings.win_mode = 1
+	settings.match_duration_seconds = 4.0
+	settings.ai_count = 1
+	change_scene_to_file("res://Scenes/Arenas/ArenaFlat.tscn")
+	await _frames(6)
+	tm._swap_timer.stop()
+	var duel: Array = _actors(current_scene)
+	for a in duel:   # keep it 0-0: no AI, no damage
+		a.get_node("Components/Health")._invulnerability_timer = 30.0
+		if not a.is_player:
+			a.get_node("AIController").is_ai = false
+	await create_timer(3.6 + 4.5).timeout   # countdown + clock, nobody scored
+	var sd: bool = am._sudden_death and am._state == 2
+	_check("timed tie goes to sudden death", sd, "sudden_death=%s state=%d" % [am._sudden_death, am._state])
+	if sd:
+		sm.add_score(duel[1], 1)
+		await _frames(2)
+		var t2: String = current_scene.get_node("PostRoundMenu").get_node("%Title").text
+		_check("first kill in sudden death wins", am._state == 3 and t2 == "%s WINS!" % String(duel[1].name).to_upper(),
+				"state=%d title='%s'" % [am._state, t2])
+	paused = false
 
 	print("=== audit_regression_probe: %s (%d known open) ===" % ["ALL PASS" if _fails == 0 else "%d FAILED" % _fails, _known_open])
 	quit(1 if _fails > 0 else 0)

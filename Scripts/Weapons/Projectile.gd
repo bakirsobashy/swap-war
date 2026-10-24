@@ -19,6 +19,7 @@ func start(pos: Vector2, dir: Vector2, data: WeaponData, source: Node) -> void:
 
 
 func _ready() -> void:
+	add_to_group("projectiles")   # ArenaManager clears these on Play Again
 	body_entered.connect(_on_body_entered)
 
 
@@ -52,8 +53,8 @@ func _on_body_entered(body: Node) -> void:
 		var is_critical := randf() < _data.critical_chance
 		if is_critical:
 			final_damage *= 1.5
-		health.take_damage(final_damage, _source)
-		_apply_knockback(body)
+		if health.take_damage(final_damage, _source):
+			_apply_knockback(body)
 
 	queue_free()
 
@@ -63,4 +64,7 @@ func _apply_knockback(body: Node) -> void:
 	if not other_body:
 		return
 	var dir := _velocity.normalized()
-	other_body.apply_central_impulse(dir * _data.knockback)
+	if other_body.has_method("apply_knockback"):
+		other_body.apply_knockback(dir * _data.knockback)
+	else:
+		other_body.apply_central_impulse(dir * _data.knockback)

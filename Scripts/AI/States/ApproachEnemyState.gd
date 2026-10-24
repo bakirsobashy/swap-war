@@ -33,8 +33,7 @@ func physics_update(delta: float) -> String:
 	var dist: float = owner.actor.global_position.distance_to(enemy.global_position)
 
 	# Low health and enemy close: disengage.
-	if owner.health_ratio() <= owner.retreat_health_ratio \
-			and dist <= owner.retreat_range:
+	if owner.should_retreat(dist):
 		return "Retreat"
 
 	# In reach: hand over to the exchange state.

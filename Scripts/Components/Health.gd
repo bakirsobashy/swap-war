@@ -20,8 +20,13 @@ var _original_modulate: Color = Color.WHITE
 @onready var _health_bar: HealthBar2D = _actor.get_node_or_null("HealthBar2D") as HealthBar2D
 @onready var _sprite: Sprite2D = _actor.get_node_or_null("VisualBody/Sprite2D") as Sprite2D
 
+## Flash colour for hits: overbright so it reads on any team texture (plain
+## WHITE equals the sprite's normal modulate, so the old flash was invisible).
+const HIT_FLASH := Color(1.8, 1.8, 1.8, 1.0)
+
 func _ready() -> void:
-	add_to_group("actors")
+	# NOT in "actors": only the actor body belongs there (Health in the group
+	# made direct arena runs register 8 actors / scoreboard rows).
 	current_health = max_health
 	health_changed.connect(_on_health_changed)
 	died.connect(_on_actor_died)
@@ -29,11 +34,13 @@ func _ready() -> void:
 		_health_bar.set_color(_team_color())
 		_update_bar()
 
-func take_damage(amount: float, attacker: Node = null) -> void:
+## Returns true when the hit landed. Callers skip knockback / durability on
+## false (dead, or respawn-invulnerable) — those used to apply regardless.
+func take_damage(amount: float, attacker: Node = null) -> bool:
 	if _is_dead:
-		return
+		return false
 	if _invulnerability_timer > 0.0:
-		return
+		return false
 	current_health -= amount
 	current_health = clamp(current_health, 0.0, max_health)
 	health_changed.emit(current_health, max_health)
@@ -46,6 +53,7 @@ func take_damage(amount: float, attacker: Node = null) -> void:
 
 	if current_health <= 0.0:
 		die()
+	return true
 
 ## Public dead-check for AI targeting and hazards — duck-typed callers (the
 ## sensors, the state layer) read this instead of the private _is_dead.
@@ -56,8 +64,13 @@ func _flash_hit() -> void:
 	var body := _actor.get_node_or_null("VisualBody/Sprite2D") as Sprite2D
 	if not body:
 		return
-	var original_mod := body.modulate
-	body.modulate = Color.WHITE
+	# Overbright so it reads on the team texture (WHITE is the sprite's normal
+	# modulate, so a WHITE flash was invisible). Restore to plain white keeping
+	# the invulnerability-flicker alpha: capturing the old colour would let an
+	# overlapping flash restore the flash itself.
+	var flash: Color = HIT_FLASH
+	flash.a = body.modulate.a
+	body.modulate = flash
 	# Capture the sprite weakly: the actor can be freed before this timer
 	# fires (match end), and a strong capture of a freed object makes the
 	# engine print "Lambda capture ... was freed" — the guard still no-ops,
@@ -66,7 +79,7 @@ func _flash_hit() -> void:
 	_actor.get_tree().create_timer(0.08).timeout.connect(func() -> void:
 		var sprite := body_ref.get_ref() as Sprite2D
 		if sprite:
-			sprite.modulate = original_mod
+			sprite.modulate = Color(1.0, 1.0, 1.0, sprite.modulate.a)
 	)
 
 func _spawn_floating_number(amount: float) -> void:
@@ -159,6 +172,10 @@ func die() -> void:
 		holder.drop_weapon(false)  # No auto-pickup: the actor is dead.
 
 	await _actor.get_tree().create_timer(1.5).timeout
+	# The respawn timer runs while paused: if this death ended the round, stay
+	# down instead of popping back at a spawn point behind the post-round menu.
+	if ArenaManager and ArenaManager.has_method("is_match_over") and ArenaManager.is_match_over():
+		return
 	_respawn()
 
 func _spawn_death_particles() -> void:

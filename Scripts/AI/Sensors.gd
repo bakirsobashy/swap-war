@@ -43,10 +43,19 @@ var has_los_to_enemy: bool = false
 var _reaction_timer: float = 0.0
 var _target_switch_timer: float = 0.0
 var _aim_error_deg: float = 0.0          # re-rolled on every target refresh
+## Weapons a seek gave up on (unreachable): instance id -> expiry msec.
+## Without it an unarmed AI re-picked the same unreachable weapon forever.
+var _weapon_blacklist: Dictionary = {}
 
 
 func _init(ai_controller) -> void:
 	owner = ai_controller
+
+
+## Skip this weapon in scoring for `sec` seconds.
+func blacklist_weapon(weapon: Node, sec: float) -> void:
+	if weapon != null and is_instance_valid(weapon):
+		_weapon_blacklist[weapon.get_instance_id()] = Time.get_ticks_msec() + int(sec * 1000.0)
 
 
 ## Full reset: respawn, fresh spawn.
@@ -154,6 +163,9 @@ func _find_best_weapon() -> WeaponBase:
 		if not weapon or not is_instance_valid(weapon):
 			continue
 		if weapon.is_held():
+			continue
+		var banned_until: int = _weapon_blacklist.get(weapon.get_instance_id(), 0)
+		if banned_until > Time.get_ticks_msec():
 			continue
 
 		var score: float = owner.actor.global_position.distance_to(weapon.global_position)

@@ -6,10 +6,7 @@ extends CanvasLayer
 @onready var _winner_message: Label = %WinnerMessage
 @onready var _top_bar: Control = %TopBar
 
-const PLACEHOLDER_NAMES: Array[String] = ["Zack", "Mark", "John", "Stacy"]
-
 var _actor_labels: Dictionary = {}
-var _actor_name_indices: Dictionary = {}
 
 func _ready() -> void:
 	if TeamManager:
@@ -67,11 +64,6 @@ func _on_actor_registered(actor: Node) -> void:
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_actor_labels[actor] = label
 
-	# Assign the next unused placeholder name in order.
-	var name_index := _actor_name_indices.size()
-	if name_index < PLACEHOLDER_NAMES.size():
-		_actor_name_indices[actor] = name_index
-
 	_score_board.add_child(label)
 
 	_update_score_label(actor)
@@ -81,7 +73,6 @@ func _on_actor_unregistered(actor: Node) -> void:
 	if label:
 		label.queue_free()
 		_actor_labels.erase(actor)
-		_actor_name_indices.erase(actor)
 
 func _on_team_changed(_teams: Dictionary) -> void:
 	for actor in _actor_labels.keys():
@@ -121,10 +112,9 @@ func _update_score_label(actor: Node) -> void:
 	var score := 0
 	if ScoreManager:
 		score = ScoreManager.get_score(actor)
-	var display_name := actor.name
-	if _actor_name_indices.has(actor):
-		display_name = PLACEHOLDER_NAMES[_actor_name_indices[actor]]
-	label.text = "%s: %d" % [display_name, score]
+	# Actor node names are the display names (ArenaManager: "YOU" + AI names),
+	# so the scoreboard and the post-round screen always agree.
+	label.text = "%s: %d" % [actor.name, score]
 	label.add_theme_color_override("font_color", _team_color(team_id))
 
 func _update_team_timer() -> void:

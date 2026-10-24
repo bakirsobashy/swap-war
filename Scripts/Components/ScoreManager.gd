@@ -47,14 +47,25 @@ func reset_scores() -> void:
 		_scores[actor] = 0
 		score_changed.emit(actor, 0)
 
+## The single top scorer, or null when nobody leads outright (no actors, or a
+## tie at the top). Ties used to go to whoever registered first: the player.
 func get_leader() -> Node:
-	var best: Node = null
-	var best_score := 0
+	var leaders := get_leaders()
+	return leaders[0] if leaders.size() == 1 else null
+
+## Every actor sharing the top score (all of them at 0-0).
+func get_leaders() -> Array:
+	var best: Array = []
+	var best_score := -1
 	for actor in _scores.keys():
+		if not is_instance_valid(actor):
+			continue
 		var s: int = _scores[actor]
 		if s > best_score:
 			best_score = s
-			best = actor
+			best = [actor]
+		elif s == best_score:
+			best.append(actor)
 	return best
 
 func _on_actor_died(victim: Node) -> void:

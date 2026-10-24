@@ -79,6 +79,9 @@ var nav_executor: NavExecutorScript = null
 var _nav_scene: Node = null
 var _was_dead: bool = false
 var _nav_plan_pos := Vector2(INF, INF)
+## Seconds an armed AI must fight before it may retreat again. Set when a
+## Retreat times out: nothing heals, so a low-HP AI used to flee forever.
+var retreat_lockout: float = 0.0
 
 
 func _ready() -> void:
@@ -113,6 +116,9 @@ func _physics_process(delta: float) -> void:
 		_nav_plan_pos = Vector2(INF, INF)
 		if nav_executor != null:
 			nav_executor.on_respawn()
+
+	if retreat_lockout > 0.0:
+		retreat_lockout -= delta
 
 	# Reset one-shot inputs each tick; states will set them.
 	move_direction = 0.0
@@ -170,6 +176,12 @@ func _connect_events() -> void:
 
 func is_armed() -> bool:
 	return weapon_holder != null and weapon_holder.is_holding_weapon()
+
+
+## Armed low-HP retreat trigger, respecting the post-retreat lockout.
+func should_retreat(dist: float) -> bool:
+	return retreat_lockout <= 0.0 and health_ratio() <= retreat_health_ratio \
+			and dist <= retreat_range
 
 
 func health_ratio() -> float:

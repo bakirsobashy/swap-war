@@ -22,17 +22,38 @@ var _post_round_menu: CanvasLayer = null
 var _win_reason: String = ""
 var _win_mode: SettingsManager.WinMode = SettingsManager.WinMode.SCORE_TARGET
 
+## Display names: the player is always "YOU"; AIs take these in order. Set as
+## the node names so every screen (HUD rows, post-round title) agrees.
+const PLAYER_NAME := "YOU"
+const AI_NAMES: Array[String] = ["Zack", "Mark", "John", "Stacy"]
+
+## Timed mode ended level at the top: no swaps, the next kill wins.
+var _sudden_death: bool = false
+
 func _ready() -> void:
 	if ScoreManager:
 		ScoreManager.match_won.connect(_on_match_won)
+		ScoreManager.score_changed.connect(_on_score_changed)
+	# Always listen: booting straight into an arena (F6 / command line) used
+	# to skip this, so Quit -> Play from the menu spawned nothing.
+	get_tree().scene_changed.connect(_on_scene_changed)
 	if _is_arena_scene():
 		_setup_arena()
-	else:
-		get_tree().scene_changed.connect(_on_scene_changed)
 
 func _on_scene_changed() -> void:
 	if _is_arena_scene():
 		_setup_arena()
+	else:
+		# Left the arena (quit to menu): stop the match clock, or a timed
+		# match keeps running and "ends" inside the main menu.
+		_state = MatchState.IDLE
+		_sudden_death = false
+		_spawned_actors.clear()
+
+## True once the round is decided (post-round screen up). Health uses it to
+## skip a pending respawn so the last victim doesn't pop back behind the menu.
+func is_match_over() -> bool:
+	return _state == MatchState.POST_ROUND
 
 func _is_arena_scene() -> bool:
 	var scene := get_tree().current_scene
@@ -84,7 +105,9 @@ func _start_match() -> void:
 	_countdown_timer = prepare_countdown
 	_match_timer = _get_match_duration()
 	_win_reason = ""
+	_sudden_death = false
 	_despawn_actors()
+	_clear_match_leftovers()
 	if ScoreManager:
 		ScoreManager.reset_scores()
 	if TeamManager:
@@ -116,12 +139,14 @@ func _spawn_actors() -> void:
 	# Spawn player
 	var player := _spawn_actor(true, spawn_points, used_indices)
 	if player:
+		player.name = PLAYER_NAME
 		_spawned_actors.append(player)
 
 	# Spawn AI
 	for i in range(ai_count):
 		var ai := _spawn_actor(false, spawn_points, used_indices)
 		if ai:
+			ai.name = AI_NAMES[i % AI_NAMES.size()]
 			_spawned_actors.append(ai)
 
 	# Register all spawned actors with TeamManager
@@ -184,13 +209,35 @@ func _despawn_actors() -> void:
 			actor.queue_free()
 	_spawned_actors.clear()
 
-	# Also remove any leftover actors not tracked (e.g. baked actors we delete later)
+	# Also remove any leftover actors not tracked (e.g. baked actors we delete later).
+	# remove_child first: a queued-but-present "YOU" would force the fresh
+	# actor's name to be auto-suffixed.
 	var actors_container := get_tree().current_scene.get_node_or_null("Actors")
 	if actors_container:
 		for child in actors_container.get_children():
 			if TeamManager:
 				TeamManager.unregister_actor(child)
+			actors_container.remove_child(child)
 			child.queue_free()
+
+## Play Again must start clean: the previous round's weapons (held ones are
+## released when their actor goes), bullets in flight, and effects.
+func _clear_match_leftovers() -> void:
+	var scene := get_tree().current_scene
+	if scene == null:
+		return
+	for w in get_tree().get_nodes_in_group("weapons"):
+		if scene.is_ancestor_of(w):
+			w.queue_free()
+	for p in get_tree().get_nodes_in_group("projectiles"):
+		p.queue_free()
+	var effects := scene.get_node_or_null("Effects")
+	if effects:
+		for e in effects.get_children():
+			e.queue_free()
+	var spawner := scene.get_node_or_null("WeaponSpawner")
+	if spawner and spawner.has_method("reset_waves"):
+		spawner.reset_waves()
 
 func _show_countdown_display() -> void:
 	var hud := _get_hud()
@@ -217,16 +264,43 @@ func _start_playing() -> void:
 	var hud := _get_hud()
 	if hud:
 		hud.hide_winner()
+	# Opening drop at "GO": nobody can attack unarmed, so without it the
+	# first sky wave (~7 s in) was dead time.
+	var scene := get_tree().current_scene
+	var spawner := scene.get_node_or_null("WeaponSpawner") if scene else null
+	if spawner and spawner.has_method("spawn_opening_wave"):
+		spawner.spawn_opening_wave()
 
 func _end_match_by_time() -> void:
-	if _state != MatchState.PLAYING:
+	if _state != MatchState.PLAYING or _sudden_death:
+		return
+	var leaders: Array = ScoreManager.get_leaders() if ScoreManager else []
+	if leaders.size() > 1:
+		# Level at the top (plan 1.6): swaps stop, the next kill decides it.
+		# Ties used to go silently to whoever registered first — the player.
+		_sudden_death = true
+		if TeamManager and TeamManager._swap_timer:
+			TeamManager._swap_timer.stop()
+		var hud := _get_hud()
+		if hud:
+			hud.show_message("SUDDEN DEATH!")
+			get_tree().create_timer(2.0).timeout.connect(_hide_sudden_death_banner)
 		return
 	_state = MatchState.POST_ROUND
 	_win_reason = "Time Up"
-	var winner: Node = null
-	if ScoreManager:
-		winner = ScoreManager.get_leader()
-	_show_post_round(winner)
+	_show_post_round(leaders[0] if leaders.size() == 1 else null)
+
+func _hide_sudden_death_banner() -> void:
+	var hud := _get_hud()
+	if hud and _state == MatchState.PLAYING:
+		hud.hide_winner()
+
+func _on_score_changed(actor: Node, _score: int) -> void:
+	if not _sudden_death or _state != MatchState.PLAYING or _score <= 0:
+		return
+	_state = MatchState.POST_ROUND
+	_win_reason = "Sudden Death"
+	_show_post_round(actor)
 
 func _on_match_won(winner: Node, _score: int) -> void:
 	if _state != MatchState.PLAYING:
