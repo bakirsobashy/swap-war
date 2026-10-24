@@ -70,7 +70,7 @@ func _register_all() -> void:
 		"attack_thrust_distance": 0.0,
 		"attack_thrust_duration": 0.0,
 		"projectile_speed": 550.0,
-		"projectile_lifetime": 0.7,
+		"projectile_lifetime": 1.0,
 		"follow_offset": Vector2(18.0, -4.0),
 	})
 
