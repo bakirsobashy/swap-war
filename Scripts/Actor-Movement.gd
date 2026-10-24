@@ -309,7 +309,7 @@ func _is_touch_input_recent() -> bool:
 		and _last_touch_msec >= _last_mouse_msec
 
 ## "HUD/TouchControls" resolves in every playable arena (all inherit ArenaBase
-## which instances HUD; the legacy arena.tscn too). Null-safe for headless
+## which instances HUD). Null-safe for headless
 ## probes where current_scene may be null — callers guard.
 func _get_touch_controls() -> Node:
 	if _touch_controls != null and is_instance_valid(_touch_controls) \

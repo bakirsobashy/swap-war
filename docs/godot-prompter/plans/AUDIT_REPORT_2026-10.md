@@ -77,13 +77,13 @@ Also fixed: the AI-count slider could show "AI Count: 0" (min is now 1); the hel
 ## 4. Tech debt and release blockers
 
 - The touch-control work (twin sticks, auto attack, layout editor) is still uncommitted.
-- **Web export isn't set up** although web is the primary platform: no Web preset; Forward+ renderer (check the web build on Compatibility); `export_filter=all_resources` ships ~1,360 unreferenced media files of 1,427.
+- **Web export isn't set up** although web is the primary platform: no Web preset; Forward+ renderer (check the web build on Compatibility); `export_filter=all_resources` used to ship ~1,360 unreferenced media files (✅ deleted 2026-10-24).
 - **Android preset is placeholder:** `com.example.$genname`, no version name, no icons; the app is still named "Brakeys game jam solo" (`project.godot:13`).
 - **Performance:** each health bar is its own always-updating SubViewport (`HealthBar2D.tscn`); `BitmapNumberLabel._texture_for_number` calls `load()` every frame. No projectile or particle pooling.
 - **Tileset:** `resourses/arenas.tres` has 62 px tiles with 64 px collision polygons.
 - **Pause button texture** is loaded from the `.godot/imported` cache path (`TouchControls.tscn`) instead of the PNG.
-- **Dead code:** `ArenaManager._on_play_again`, `_on_quit_to_menu`, `winner_message_duration`; `HUD._team_color_name` and the `ActorHealthBars` node; `TeamManager.get_actors_on_team`; `SettingsManager.get_win_mode_name`; `ArenaDatabase.get_arena_path`; most `CollisionConfig.MASK_*`; `AudioManager.play_ui_hover/toggle` (never called); MainMenu's unconnected `TextureButton`; inert StairWaypoints; legacy `Scenes/arena.tscn`.
-- **Junk:** empty `**Related` file at the repo root; the KillZone sits on collision layer 1 (World) and should be on none.
+- ✅ *Cleaned up (2026-10-24):* the dead functions, the unused HUD node, the unused collision masks, the inert StairWaypoints, the legacy `Scenes/arena.tscn`, the one-off `slope_probe`, the root junk file, and 1,363 unreferenced assets (most of the old Kenney UI pack and unused platformer sprites) are gone. Kept on purpose: `AudioManager.play_ui_hover/toggle` (planned menu sounds). **Still to remove once the menu redesign is committed:** the 9 old Kenney button PNGs, `Drawing 2-3.png` and `swap_war_theme.tres` the committed menus still use.
+- **Junk:** ✅ the empty `**Related` file is deleted. Still open: the KillZone sits on collision layer 1 (World) and should be on none.
 - Exit-time "leaks" are only SFX still playing at quit — harmless.
 
 ## 5. Full game plan status (`swap-war-full-game-plan.md`)

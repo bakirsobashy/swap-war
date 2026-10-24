@@ -2,7 +2,7 @@ extends SceneTree
 
 ## Headless probe for the navigation bake (plan step 1).
 ##
-## For each arena (Flat / Pit / Hazards + legacy arena.tscn):
+## For each arena (Flat / Pit / Hazards):
 ##   - prints the full platform/edge dump
 ##   - asserts layout-independent sanity (margins, kill filter, localization
 ##     round-trips) that stays valid when the placeholder arenas are repainted
@@ -24,7 +24,6 @@ func _run() -> void:
 	var baker = load("res://Scripts/AI/NavBaker.gd")
 
 	# --- per-arena sanity + snapshots -----------------------------------
-	await _probe_scene(baker, "res://Scenes/arena.tscn", false)
 	await _probe_scene(baker, "res://Scenes/Arenas/ArenaFlat.tscn", true)
 	await _probe_scene(baker, "res://Scenes/Arenas/ArenaPit.tscn", true)
 	await _probe_scene(baker, "res://Scenes/Arenas/ArenaHazards.tscn", true)

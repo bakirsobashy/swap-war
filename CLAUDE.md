@@ -61,7 +61,7 @@ Godot 4.7 2D physics platformer fighter — **a full game**, originally a Bracke
 Key files:
 
 - **Shell / match flow (autoloads in `project.godot`):** `ArenaManager.gd` (match state machine: countdown → playing → post-round; spawns the player + AI count from `SettingsManager`), `TeamManager.gd` (team registry + the 5 s auto-swap timer), `ScoreManager.gd`, `SettingsManager.gd` (win mode, durations, AI count, touch mode, auto attack, custom touch layout), `AudioManager.gd`, `WeaponDatabase.gd`. Menus under `Scenes/UI/`.
-- **Arenas:** `Scenes/Arenas/ArenaBase.tscn` + `ArenaFlat` (62 px tiles), `ArenaPit`, `ArenaHazards` (adds the spike strip) — placeholders; **final arenas will be 62×62-tile at 62 px tiles**. `Scenes/arena.tscn` is the legacy jam arena.
+- **Arenas:** `Scenes/Arenas/ArenaBase.tscn` + `ArenaFlat` (62 px tiles), `ArenaPit`, `ArenaHazards` (adds the spike strip) — placeholders; **final arenas will be 62×62-tile at 62 px tiles**.
 - **Actor:** `Scenes/actor.tscn` — root `RigidBody2D`, capsule shape, `GroundCheck` ray, laggy `VisualBody`, `WeaponSocket`, `PickupArea`, `AIController`, and `Components/` (Health, TeamMember).
 - **Movement:** `Scripts/Actor-Movement.gd` on the actor root; `Scenes/Actor_Body.gd` on `VisualBody`.
 - **Weapons:** `Scripts/Weapons/WeaponBase.gd` (pickup/freeze/durability; melee `MeleeWeapon.gd`, ranged `RangedWeapon.gd` + `Projectile.gd`), `WeaponData/WeaponDatabase.gd` (stats), `WeaponSpawner.gd` (sky-drops from `weapon_spawn_points` markers every 10 s).
@@ -108,7 +108,6 @@ Authoritative source: `Scripts/Components/CollisionConfig.gd` (bit values; layer
 - **Tile sizes vary by arena (for now).** `ArenaFlat` uses 62 px tiles; Pit/Hazards still 64 px. Never hardcode a tile size — read `tile_set.tile_size` (the baker and AI already do; final arenas are all 62).
 - **The bake reads the instantiated arena.** Inherited arenas override `tile_map_data`; `NavBaker` must see the instantiated `TileMapLayer` (probes `.instantiate()`, never parse `.tscn` bytes).
 - **TeamManager's swap timer scrambles teams every 10 s.** Any ad-hoc test rig that expects stable teams must stop its Timer (see `decision_probe.gd`); it also re-randomizes on match start.
-- **StairWaypoints nodes are inert dead data.** The old waypoint AI is gone; the nodes stay only because `ArenaFlat` overrides their visibility. Don't build on them.
 - **Probe actors need containment.** WeaponHolder auto-pickup is live on every actor (a passive dummy steals drops); free bodies drift under contact knockback (freeze test dummies); stop the swap timer and purge the `weapons` group between scenarios.
 - **Parsed touch events don't dispatch headless.** `Input.parse_input_event` with `InputEventScreenTouch/Drag` never reaches `Node._input` under the headless display server (parsed actions and mouse events do dispatch). Probes feed stick events directly to their handlers — see `Tools/touch_stick_probe.gd`.
 - **Settings setters persist.** `SettingsManager` setters write `user://swap_war_settings.cfg` immediately — probes must set properties directly, never call the setters (the ONE exception: `touch_layout_editor_probe` legitimately tests save/load and backs up/restores the whole config file).

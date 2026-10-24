@@ -138,12 +138,3 @@ func clear_touch_layout() -> void:
 	save_settings()
 
 signal setting_changed()
-
-func get_win_mode_name() -> String:
-	match win_mode:
-		WinMode.SCORE_TARGET:
-			return "Score Target"
-		WinMode.TIMED_SCORE:
-			return "Timed Score"
-		_:
-			return "Unknown"

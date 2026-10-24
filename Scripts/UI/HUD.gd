@@ -132,11 +132,3 @@ func _team_color(team_id: int) -> Color:
 		2: return Color.PURPLE
 		3: return Color.YELLOW
 		_: return Color.WHITE
-
-func _team_color_name(team_id: int) -> String:
-	match team_id:
-		0: return "Green"
-		1: return "Red"
-		2: return "Purple"
-		3: return "Yellow"
-		_: return "??"

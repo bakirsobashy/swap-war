@@ -7,7 +7,6 @@ const PauseMenuScene := preload("res://Scenes/UI/PauseMenu.tscn")
 const PostRoundMenuScene := preload("res://Scenes/UI/PostRoundMenu.tscn")
 
 @export var prepare_countdown: float = 3.0
-@export var winner_message_duration: float = 5.0
 
 ## IDLE until an arena scene is actually set up: the autoload exists before
 ## any scene does (main menu, probe mode), and a countdown ticking there both
@@ -60,8 +59,8 @@ func _is_arena_scene() -> bool:
 	if not scene:
 		return false
 	var path := scene.scene_file_path
-	# Support the legacy arena scene and any scene under Scenes/Arenas/.
-	if path == "res://Scenes/arena.tscn" or path.begins_with("res://Scenes/Arenas/"):
+	# Any scene under Scenes/Arenas/ is an arena.
+	if path.begins_with("res://Scenes/Arenas/"):
 		return true
 	# Fallback: treat any scene with the expected arena structure as an arena.
 	return scene.has_node("World/SpawnPoints") and scene.has_node("Actors")
@@ -333,13 +332,3 @@ func _show_post_round(winner: Node) -> void:
 			# moving under physics integration unless we freeze them too.
 			if actor is RigidBody2D:
 				actor.freeze = true
-
-func _on_play_again() -> void:
-	if _post_round_menu:
-		_post_round_menu.hide_post_round()
-	restart_match()
-
-func _on_quit_to_menu() -> void:
-	if _post_round_menu:
-		_post_round_menu.hide_post_round()
-	get_tree().change_scene_to_file("res://Scenes/UI/MainMenu.tscn")

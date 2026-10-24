@@ -9,7 +9,6 @@ func _init() -> void:
 
 func _run() -> void:
 	for path in [
-		"res://Scenes/arena.tscn",
 		"res://Scenes/Arenas/ArenaFlat.tscn",
 		"res://Scenes/Arenas/ArenaPit.tscn",
 		"res://Scenes/Arenas/ArenaHazards.tscn",

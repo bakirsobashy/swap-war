@@ -49,13 +49,6 @@ func set_team(actor: Node, team_id: int) -> void:
 	if team_member:
 		team_member.team_id = team_id
 
-func get_actors_on_team(team_id: int) -> Array:
-	var result: Array = []
-	for actor in _teams.keys():
-		if _teams[actor] == team_id:
-			result.append(actor)
-	return result
-
 func randomize_teams() -> void:
 	var actors := _teams.keys()
 	if actors.is_empty():
