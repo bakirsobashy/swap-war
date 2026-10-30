@@ -214,24 +214,30 @@ func _try_hit(body: Node) -> void:
 
 	# A blocked hit (dead / respawn-invulnerable target) costs nothing and
 	# pushes nobody — durability and knockback used to apply regardless.
-	if not health.take_damage(final_damage, _holder):
+	var dir := _knockback_dir(body)
+	if not health.take_damage(final_damage, _holder, dir, is_critical):
 		return
-	_apply_knockback(body)
+	_apply_knockback(body, dir)
 	if AudioManager:
 		AudioManager.play_hit()
 	_lose_durability(1)
 
 
-func _apply_knockback(body: Node) -> void:
-	var other_body := body as RigidBody2D
-	if not other_body:
-		return
-
+## The blade's own velocity, else away from the blade, else the facing.
+## Computed before the hit so Health (HitFeel's spray/stain) gets it too.
+func _knockback_dir(body: Node) -> Vector2:
 	var dir := linear_velocity.normalized()
 	if dir.is_zero_approx():
 		dir = (body.global_position - global_position).normalized()
 	if dir.is_zero_approx():
 		dir = Vector2(_target_facing, 0.0)
+	return dir
+
+
+func _apply_knockback(body: Node, dir: Vector2) -> void:
+	var other_body := body as RigidBody2D
+	if not other_body:
+		return
 
 	if other_body.has_method("apply_knockback"):
 		other_body.apply_knockback(dir * _data.knockback)

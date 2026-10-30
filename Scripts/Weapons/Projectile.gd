@@ -53,7 +53,7 @@ func _on_body_entered(body: Node) -> void:
 		var is_critical := randf() < _data.critical_chance
 		if is_critical:
 			final_damage *= 1.5
-		if health.take_damage(final_damage, _source):
+		if health.take_damage(final_damage, _source, _velocity.normalized(), is_critical):
 			_apply_knockback(body)
 
 	queue_free()
