@@ -22,7 +22,7 @@ var _pickup_allowed_at_msec: int = 0
 const PICKUP_DELAY_SEC := 0.5
 
 const GROUND_MASK: int = CollisionConfig.MASK_GROUND_WEAPON  # World + Weapons: ground weapons collide with level and each other.
-const HELD_MASK: int = CollisionConfig.LAYER_WORLD | CollisionConfig.LAYER_ACTORS  # World + other actors: needed for melee contact damage. The holder is excluded via collision exception; other weapons are never touched.
+const HELD_MASK: int = CollisionConfig.LAYER_WORLD | CollisionConfig.LAYER_ACTORS  # World + other actors: held weapons physically shove actors (no damage — melee hits come from the HitBox during a swing). The holder is excluded via collision exception; other weapons are never touched.
 const GROUND_LAYER: int = CollisionConfig.LAYER_WEAPONS  # Layer 4 (Weapons), same as the weapon scenes.
 const HELD_LAYER: int = CollisionConfig.LAYER_HELD_WEAPONS  # Layer 6 (HeldWeapons)
 
@@ -63,6 +63,12 @@ func is_attacking() -> bool:
 	return false
 
 
+## Would an attack launched now hit `target`? MeleeWeapon answers it; guns
+## have their own gate (AIController.ranged_shot_ready).
+func can_hit(_target: Node2D) -> bool:
+	return false
+
+
 func is_held() -> bool:
 	return _holder != null
 
@@ -86,6 +92,7 @@ func is_ranged() -> bool:
 
 
 ## The range at which the AI should consider itself able to attack.
+## MeleeWeapon overrides it with the swing's real reach.
 func get_attack_range() -> float:
 	if _data == null:
 		return 0.0
@@ -190,8 +197,9 @@ func _get_aim_direction() -> Vector2:
 	return Vector2(_target_facing, 0.0)
 
 
-## Called when the weapon body physically contacts another body.
-## Subclasses (MeleeWeapon) override this to apply damage.
+## Called when the weapon body physically contacts another body. No weapon
+## damages through it today (melee uses its HitBox, only while swinging);
+## it is the hook for thrown-weapon damage.
 func _on_body_entered(_body: Node) -> void:
 	pass
 

@@ -21,7 +21,8 @@ extends SceneTree
 ##     non-null, so a weapon that only checks `if not _holder` keeps following
 ##     the freed socket (SCRIPT ERROR every tick) and stays "held" forever.
 ##     The weapon must release itself: not held, unfrozen, ground layer,
-##     pickable — and a melee contact landing in the gap deals no damage.
+##     pickable — and a melee hit landing mid-swing in the gap deals no
+##     damage (the swing window closes instead of carrying over).
 ##
 ## `-s` mode discipline: runtime load() only, untyped vars, no game-class
 ## annotations, zero direct autoload references (the TeamManager swap timer is
@@ -136,6 +137,10 @@ func _probe_freed_holder(inst: Node, path: String, x: float, bystander: Node, me
 	for i in 3:                       # pick_up() defers the freeze
 		await physics_frame
 	_check(bool(w.is_held()) and bool(w.freeze), "%s: setup: equipped and frozen in hand" % label)
+	if melee:
+		# Melee only damages while a swing is open, so free the holder mid-swing.
+		w.attack()
+		_check(bool(w.is_attacking()), "%s: setup: swing in progress" % label)
 
 	# free(), not queue_free(): the weapon must not get a tick before the
 	# checks below. It doesn't care how its holder went — only that it never
@@ -145,14 +150,14 @@ func _probe_freed_holder(inst: Node, path: String, x: float, bystander: Node, me
 			"%s: setup: holder freed, weapon still holds the stale reference" % label)
 
 	if melee:
-		# A contact in the tick before _physics_process notices used to hand
-		# the freed holder to TeamMember.is_same_team (SCRIPT ERROR).
+		# A HitBox contact in the tick before _physics_process notices used to
+		# hand the freed holder to TeamMember.is_same_team (SCRIPT ERROR).
 		var bh = bystander.get_node("Components/Health")
 		bh._invulnerability_timer = 0.0
 		var hp_before := float(bh.current_health)
-		w._on_body_entered(bystander)
+		w._on_hit_box_body_entered(bystander)
 		_check(absf(float(bh.current_health) - hp_before) < 0.01,
-				"%s: a contact after the holder is freed deals no damage (hp %.1f -> %.1f)"
+				"%s: a hit after the holder is freed deals no damage (hp %.1f -> %.1f)"
 				% [label, hp_before, float(bh.current_health)])
 
 	for i in 10:
@@ -165,5 +170,7 @@ func _probe_freed_holder(inst: Node, path: String, x: float, bystander: Node, me
 	_check(int(w.collision_layer) == ground_layer,
 			"%s: back on the ground layer (got %d, want %d)" % [label, int(w.collision_layer), ground_layer])
 	_check(bool(w.can_be_picked_up()), "%s: pickable again" % label)
+	if melee:
+		_check(not bool(w.is_attacking()), "%s: swing window closed, not carried to the next holder" % label)
 	w.queue_free()
 	await physics_frame

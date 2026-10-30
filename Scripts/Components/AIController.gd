@@ -220,6 +220,24 @@ func ranged_shot_ready(enemy: Node2D) -> bool:
 	return weapon_holder.current_weapon.get_fire_direction().dot(to_enemy) > FIRE_DOT_GATE
 
 
+## Melee trigger: a swing launched now would land — the enemy inside the
+## swing's reach, the blade (which turns gradually after the aim) on it, and
+## the body facing it (MeleeWeapon.can_hit). Only swings deal damage, so a
+## swing at nothing just burns the cooldown.
+func melee_swing_ready(enemy: Node2D) -> bool:
+	if not is_armed() or is_ranged_armed():
+		return false
+	return weapon_holder.current_weapon.can_hit(enemy)
+
+
+## The trigger for whatever we hold: the gun's lane + muzzle gate, or the
+## blade's can-hit gate.
+func attack_ready(enemy: Node2D) -> bool:
+	if is_ranged_armed():
+		return ranged_shot_ready(enemy)
+	return melee_swing_ready(enemy)
+
+
 ## Crossing rule (Retreat refuges, unarmed Patrol hops): standing at world x
 ## means getting PAST `threat` — through its weapon — when it stands at our
 ## level and x lies on its far side.
@@ -278,7 +296,9 @@ func health_ratio() -> float:
 
 
 ## Effective attack reach with the current weapon (bare attack_range while
-## unarmed between picks).
+## unarmed between picks). Melee reports the swing's real reach — a spear
+## fights from ~190 px, a sword from ~100 — so reach, stand-off and the
+## Attack hand-over all scale with the weapon.
 func attack_reach() -> float:
 	var reach := attack_range
 	if weapon_holder and weapon_holder.is_holding_weapon() and weapon_holder.current_weapon:
