@@ -106,9 +106,10 @@ func get_attack_range() -> float:
 
 
 func _physics_process(delta: float) -> void:
-	if not _holder:
-		# Dropped mid-swing (the holder died): the window gates damage now,
-		# so it must not carry over to whoever picks the weapon up next.
+	if not _has_live_holder():
+		# Dropped mid-swing (the holder died) or its holder was freed: the
+		# window gates damage now, so it must not carry over to whoever picks
+		# the weapon up next.
 		_is_attacking = false
 		_attack_timer = 0.0
 		return
@@ -193,7 +194,9 @@ func _on_hit_box_body_entered(body: Node) -> void:
 ## Strike one body with the current swing: skip the holder, non-actors,
 ## allies and anyone this swing already hit.
 func _try_hit(body: Node) -> void:
-	if not _holder or body == _holder:
+	# A HitBox contact can land in the tick between the holder being freed
+	# mid-swing and _physics_process noticing; is_same_team would error on it.
+	if not _has_live_holder() or body == _holder:
 		return
 	if _hit_this_swing.has(body):
 		return

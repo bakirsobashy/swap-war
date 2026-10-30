@@ -205,8 +205,17 @@ func _on_body_entered(_body: Node) -> void:
 
 
 func _physics_process(_delta: float) -> void:
-	if not _holder:
+	if not _has_live_holder():
 		return
+	_update_follow_transform()
+
+
+## True while held by a holder that still exists. Every _physics_process
+## override (MeleeWeapon, RangedWeapon) and any other path that touches
+## _holder gates on this instead of a bare `if not _holder`.
+func _has_live_holder() -> bool:
+	if not _holder:
+		return false
 	if not is_instance_valid(_holder):
 		# Freed instances compare non-null in GDScript, so the check above
 		# passed: the holder left the tree without dropping (match restart
@@ -214,13 +223,13 @@ func _physics_process(_delta: float) -> void:
 		# socket — otherwise this errors every tick and the weapon stays
 		# "held" forever, an unpickable frozen phantom left on the field.
 		call_deferred("_release_from_lost_holder")
-		return
-	_update_follow_transform()
+		return false
+	return true
 
 
 ## Release to normal ground state when the holder was freed without dropping.
 ## Health.die drops properly; this is the abrupt-free path (restart, teardown).
-## Deferred from _physics_process so the physics-affecting state changes apply
+## Deferred from _has_live_holder so the physics-affecting state changes apply
 ## outside any physics callback — same discipline as drop()'s _do_drop.
 func _release_from_lost_holder() -> void:
 	_holder = null

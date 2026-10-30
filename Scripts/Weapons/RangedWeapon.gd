@@ -18,7 +18,7 @@ func attack() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if not _holder:
+	if not _has_live_holder():
 		return
 
 	if _fire_cooldown_timer > 0.0:
