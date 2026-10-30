@@ -97,15 +97,16 @@ func physics_update(delta: float) -> String:
 	return ""
 
 
-## Cover-fire while retreating: an armed retreat still shoots when the threat
-## is in reach with clear LOS — the sensors' aim follows the enemy, so this
-## is just the trigger (a gun also waits for its muzzle to come round).
+## Cover-fire while retreating: an armed retreat still attacks when the
+## threat is in reach with clear LOS — the sensors' aim follows the enemy, so
+## this is just the trigger (a gun waits for its muzzle to come round, a
+## blade until its swing would land).
 func _cover_fire(threat: Node2D, dist: float) -> void:
 	if not owner.ai_attack_enabled or not owner.is_armed():
 		return
 	if dist > owner.attack_reach() or not owner.sensors.has_los_to_enemy:
 		return
-	if owner.is_ranged_armed() and not owner.ranged_shot_ready(threat):
+	if not owner.attack_ready(threat):
 		return
 	owner.wants_attack = true
 

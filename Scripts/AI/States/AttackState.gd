@@ -1,19 +1,22 @@
 extends "res://Scripts/AI/State.gd"
 
-## The exchange state. Core fix (audit bug: attack-once freeze): while in
-## range, wants_attack is HELD true every tick — the weapons self-throttle
-## their own cooldowns, so a held intent IS the correct pacing. Ranged fire
-## additionally gates on LOS and the GUN actually pointing at the enemy (it
-## turns gradually after the aim — firing on the aim intent alone sent the
-## first shots after a target switch behind the AI). A ranged AI whose lane
-## stays blocked hands back to ApproachEnemy to find one instead of waiting
-## behind cover forever. Melee keeps contact spacing; ranged kites back while
-## firing when the enemy closes inside half the stand-off — never off a
-## ledge or into a hazard (safe_move).
+## The exchange state. Core fix (audit bug: attack-once freeze): while the
+## attack would land, wants_attack is HELD true every tick — the weapons
+## self-throttle their own cooldowns, so a held intent IS the correct pacing.
+## Both triggers gate on the weapon actually pointing at the enemy (it turns
+## gradually after the aim): ranged on LOS + the gun's muzzle — firing on the
+## aim intent alone sent the first shots after a target switch behind the AI
+## — melee on the swing landing (MeleeWeapon.can_hit: reach, blade, facing).
+## A ranged AI whose lane stays blocked hands back to ApproachEnemy to find
+## one instead of waiting behind cover forever. Melee keeps contact spacing
+## and steps in when the swing wouldn't land from where it stands; ranged
+## kites back while firing when the enemy closes inside half the stand-off —
+## never off a ledge or into a hazard (safe_move).
 
 const MIN_TIME := 0.25           # hysteresis before chasing again (range flip-flop)
 const KITE_RATIO := 0.5          # inside this fraction of the stand-off: back off
 const MELEE_CROWD_RATIO := 0.3   # inside this fraction of reach: stop body-pushing
+const CLOSE_IN_DEADZONE := 8.0   # enemy (nearly) straight above/below: stepping won't help
 
 
 var _state_timer := 0.0
@@ -82,12 +85,21 @@ func _ranged_exchange(enemy: Node2D, dist: float) -> void:
 		_kite_away(enemy)
 
 
-## Melee exchange: swing every tick in range (the weapon paces itself) and
-## keep a hair of spacing so we don't body-push through the target.
+## Melee exchange: swing every tick the swing would land (the weapon paces
+## itself) and keep a hair of spacing so we don't body-push through the
+## target. Attack is entered at the very edge of reach, where the swing can
+## still miss (aim scatter, the blade's shape): step in toward the stand-off
+## until it lands — standing there would never swing.
 func _melee_exchange(enemy: Node2D, dist: float) -> void:
-	owner.wants_attack = true
+	var can_swing: bool = owner.melee_swing_ready(enemy)
+	if can_swing:
+		owner.wants_attack = true
 	if dist < owner.attack_reach() * MELEE_CROWD_RATIO:
 		_kite_away(enemy)
+	elif not can_swing and dist > owner.combat_standoff():
+		var dx: float = enemy.global_position.x - owner.actor.global_position.x
+		if absf(dx) > CLOSE_IN_DEADZONE:
+			owner.move_direction = owner.safe_move(signf(dx))
 
 
 func _kite_away(enemy: Node2D) -> void:
