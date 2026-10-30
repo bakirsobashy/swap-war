@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A new push to a pull request cancels the run still going for the old commit.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GODOT_VERSION: "4.7.1"
+  GODOT_RELEASE: stable
+
+jobs:
+  probes:
+    name: Headless probes
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Godot binary
+        id: godot-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/godot-bin
+          key: godot-bin-${{ env.GODOT_VERSION }}-${{ env.GODOT_RELEASE }}
+
+      - name: Install Godot
+        if: steps.godot-cache.outputs.cache-hit != 'true'
+        run: |
+          base="https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-${GODOT_RELEASE}"
+          mkdir -p ~/godot-bin
+          curl -fsSL -o godot.zip "$base/Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_linux.x86_64.zip"
+          unzip -q godot.zip -d ~/godot-bin
+
+      - name: Import assets
+        run: |
+          godot="$HOME/godot-bin/Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_linux.x86_64"
+          chmod +x "$godot"
+          echo "GODOT=$godot" >> "$GITHUB_ENV"
+          "$godot" --headless --path . --import || true
+
+      - name: Smoke boot (300 frames, no script errors)
+        run: |
+          out="$("$GODOT" --headless --path . --quit-after 300 2>&1)"
+          echo "$out" | tail -n 20
+          if echo "$out" | grep -q "SCRIPT ERROR"; then exit 1; fi
+
+      # 14 probe scripts: nav bake, A*, live nav execution, the AI decision
+      # layer, hazards, touch controls, layout, menus and audit regressions.
+      # The live-physics AI probes are not fully deterministic, so a failed
+      # probe is rerun once and reported as FLAKY (with a warning) if it passes.
+      - name: Run probes
+        env:
+          PROBE_RETRIES: "1"
+        run: Tools/run_probes.sh
