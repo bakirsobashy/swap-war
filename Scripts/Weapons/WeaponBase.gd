@@ -11,6 +11,10 @@ var current_durability: int = 0
 var weapon_name: String = ""
 
 var _holder: RigidBody2D = null
+## Held state, tracked explicitly: a holder freed without dropping leaves
+## _holder pointing at a freed instance, and Godot 4.7.1 compares that EQUAL
+## to null — so `_holder != null` reads "not held" before the release runs.
+var _held: bool = false
 var _socket: Node2D = null
 var _target_facing: float = 1.0
 
@@ -70,7 +74,7 @@ func can_hit(_target: Node2D) -> bool:
 
 
 func is_held() -> bool:
-	return _holder != null
+	return _held
 
 
 ## Drop the weapon if currently held, then remove it from the world.
@@ -102,13 +106,14 @@ func get_attack_range() -> float:
 
 
 func can_be_picked_up() -> bool:
-	return _holder == null and Time.get_ticks_msec() >= _pickup_allowed_at_msec
+	return not _held and Time.get_ticks_msec() >= _pickup_allowed_at_msec
 
 
 func pick_up(holder: RigidBody2D, socket: Node2D) -> void:
-	if _holder != null or Time.get_ticks_msec() < _pickup_allowed_at_msec:
+	if _held or Time.get_ticks_msec() < _pickup_allowed_at_msec:
 		return
 
+	_held = true
 	_holder = holder
 	_socket = socket
 	_target_facing = _get_holder_facing()
@@ -132,6 +137,7 @@ func drop() -> void:
 		throw_velocity = cached_holder.linear_velocity * 0.5
 		throw_velocity += Vector2(_target_facing * 100.0, -80.0)
 
+	_held = false
 	_holder = null
 	_socket = null
 	# Nobody (including the dropper) may re-pick this weapon until the delay
@@ -214,14 +220,14 @@ func _physics_process(_delta: float) -> void:
 ## override (MeleeWeapon, RangedWeapon) and any other path that touches
 ## _holder gates on this instead of a bare `if not _holder`.
 func _has_live_holder() -> bool:
-	if not _holder:
+	if not _held:
 		return false
 	if not is_instance_valid(_holder):
-		# Freed instances compare non-null in GDScript, so the check above
-		# passed: the holder left the tree without dropping (match restart
-		# frees armed actors mid-hold). Release before touching the freed
-		# socket — otherwise this errors every tick and the weapon stays
-		# "held" forever, an unpickable frozen phantom left on the field.
+		# The holder left the tree without dropping (match restart frees
+		# armed actors mid-hold). Gate on _held, never on _holder: the freed
+		# reference compares equal to null, so `if not _holder` returned here
+		# without releasing and left an unpickable frozen phantom on the
+		# field. Release before touching the freed socket.
 		call_deferred("_release_from_lost_holder")
 		return false
 	return true
@@ -232,6 +238,7 @@ func _has_live_holder() -> bool:
 ## Deferred from _has_live_holder so the physics-affecting state changes apply
 ## outside any physics callback — same discipline as drop()'s _do_drop.
 func _release_from_lost_holder() -> void:
+	_held = false
 	_holder = null
 	_socket = null
 	scale = Vector2.ONE

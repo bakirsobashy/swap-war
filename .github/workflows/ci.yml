@@ -54,8 +54,9 @@ jobs:
           echo "$out" | tail -n 20
           if echo "$out" | grep -q "SCRIPT ERROR"; then exit 1; fi
 
-      # 14 probe scripts: nav bake, A*, live nav execution, the AI decision
-      # layer, hazards, touch controls, layout, menus and audit regressions.
+      # Every probe in Tools/run_probes.sh: nav bake, A*, live nav execution,
+      # the AI decision layer, hazards, melee swings, touch controls, layout,
+      # menus, hit feel and audit regressions.
       # The live-physics AI probes are not fully deterministic, so a failed
       # probe is rerun once and reported as FLAKY (with a warning) if it passes.
       - name: Run probes

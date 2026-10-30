@@ -17,9 +17,11 @@ extends SceneTree
 ##     In-process the probe can only prove it stayed alive; the REAL gate is
 ##     the outer console scan for "SCRIPT ERROR" (standard probe discipline).
 ##   - Freed holder: an armed actor freed WITHOUT dropping (the abrupt-free
-##     path, e.g. _despawn_actors), melee and ranged. Freed instances compare
-##     non-null, so a weapon that only checks `if not _holder` keeps following
-##     the freed socket (SCRIPT ERROR every tick) and stays "held" forever.
+##     path, e.g. _despawn_actors), melee and ranged. A freed holder reference
+##     compares EQUAL to null in Godot 4.7.1, so a weapon that infers "held"
+##     from `_holder` skips its release and stays frozen on the held layer
+##     forever (this probe caught the first fix doing exactly that); held
+##     state lives in WeaponBase._held instead.
 ##     The weapon must release itself: not held, unfrozen, ground layer,
 ##     pickable — and a melee hit landing mid-swing in the gap deals no
 ##     damage (the swing window closes instead of carrying over).
