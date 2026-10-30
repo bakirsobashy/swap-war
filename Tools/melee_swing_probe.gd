@@ -16,9 +16,14 @@ extends SceneTree
 ##   5. Teams: an ally on the blade is never hit; once the team changes, the
 ##      next swing hits.
 ##   6. Multi-target: two enemies on the blade — one swing hits both.
-##   7. Mid-window entry: a Spear thrust reaches an enemy that is out of reach
-##      at rest — hit through HitBox.body_entered during the window.
-##   8. Dropped mid-swing: the window closes (it gates damage, so it must not
+##   7. can_hit (the AI's and Auto Attack's swing gate): reach comes from the
+##      hitbox (true just inside, false just past it), facing away says no,
+##      and it follows the BLADE — right after the aim turns, the blade is
+##      still on its way round and can_hit says no until it arrives.
+##   8. Mid-window entry: a Spear thrust reaches an enemy that is out of reach
+##      at rest — can_hit counts the thrust, and the swing hits through
+##      HitBox.body_entered during the window. The spear out-reaches the sword.
+##   9. Dropped mid-swing: the window closes (it gates damage, so it must not
 ##      carry over to the next holder).
 ##
 ## Rig: ArenaHazards instanced manually (ArenaManager's scene_changed hook stays
@@ -221,8 +226,42 @@ func _probe(inst: Node) -> void:
 	_check(_one_hit(hp6a - _hp(e1), sword) and _one_hit(hp6b - _hp(e3), sword),
 			"6: both hit once (%.0f -> %.0f, %.0f -> %.0f)" % [hp6a, _hp(e1), hp6b, _hp(e3)])
 
-	# --- 7. spear thrust reaches mid-window --------------------------------------
-	print("\n--- 7: a thrust hits a body only in reach while extended ---")
+	# --- 7. can_hit -----------------------------------------------------------------
+	print("\n--- 7: can_hit — reach, facing and the blade's real direction ---")
+	var reach: float = sword.get_attack_range()
+	_check(reach > 85.0 and reach < 120.0, "7: sword reach comes from its hitbox (%.0f px)" % reach)
+	e3.global_position = PARK
+	e1.global_position = holder.global_position + dir * (reach - 8.0)
+	await _physics(2)
+	_check(sword.can_hit(e1), "7: just inside reach, faced, blade on it -> can hit")
+	e1.global_position = holder.global_position + dir * (reach + 12.0)
+	await _physics(2)
+	_check(not sword.can_hit(e1), "7: just past reach -> can't hit")
+	e1.global_position = on_blade
+	await _physics(2)
+	_check(sword.can_hit(e1), "7: on the blade -> can hit")
+	# The holder is frozen (no _integrate_forces), so facing stays as set.
+	holder.facing_direction = -1.0
+	_check(not sword.can_hit(e1), "7: facing away (blade still on it) -> can't hit")
+	holder.facing_direction = 1.0
+	# Turn the aim west at an enemy there: facing flips at once, the blade
+	# (socket) takes ~0.5 s to come round. AI off, so the aim stays as set.
+	var ctl = holder.get_node("AIController")
+	e3.global_position = holder.global_position + Vector2(-70.0, 0.0)
+	ctl.aim_direction = Vector2.LEFT
+	holder.facing_direction = -1.0
+	await _physics(1)
+	_check(not sword.can_hit(e3), "7: aim already west, blade still turning -> can't hit yet")
+	await _physics(60)
+	_check(sword.can_hit(e3), "7: blade came round -> can hit")
+	# Back east for the spear scenario.
+	ctl.aim_direction = Vector2.RIGHT
+	holder.facing_direction = 1.0
+	e3.global_position = PARK
+	await _physics(60)
+
+	# --- 8. spear thrust reaches mid-window --------------------------------------
+	print("\n--- 8: a thrust hits a body only in reach while extended ---")
 	holder.get_node("WeaponHolder").drop_weapon(false)
 	await _physics(2)
 	sword.queue_free()
@@ -240,17 +279,20 @@ func _probe(inst: Node) -> void:
 	# Capsule radius 19 + a 20 px gap at rest; the 48 px thrust closes it.
 	e1.global_position = holder.global_position + sdir * (tip + 19.0 + 20.0)
 	await _physics(10)
-	_check(not _on_blade(spear, e1), "7: setup — out of reach at rest (tip %.0f px)" % tip)
-	var hp7 := _hp(e1)
+	_check(not _on_blade(spear, e1), "8: setup — out of reach at rest (tip %.0f px)" % tip)
+	_check(spear.can_hit(e1), "8: can_hit counts the thrust")
+	_check(spear.get_attack_range() > reach + 40.0,
+			"8: the spear out-reaches the sword (%.0f vs %.0f px)" % [spear.get_attack_range(), reach])
+	var hp8 := _hp(e1)
 	await _swing(spear)
-	_check(_one_hit(hp7 - _hp(e1), spear), "7: the thrust hit (hp %.0f -> %.0f)" % [hp7, _hp(e1)])
+	_check(_one_hit(hp8 - _hp(e1), spear), "8: the thrust hit (hp %.0f -> %.0f)" % [hp8, _hp(e1)])
 
-	# --- 8. dropped mid-swing ---------------------------------------------------
-	print("\n--- 8: dropping mid-swing closes the window ---")
+	# --- 9. dropped mid-swing ---------------------------------------------------
+	print("\n--- 9: dropping mid-swing closes the window ---")
 	spear._attack_cooldown_timer = 0.0
 	spear.attack()
 	await _physics(2)
-	_check(spear.is_attacking(), "8: setup — mid-swing")
+	_check(spear.is_attacking(), "9: setup — mid-swing")
 	holder.get_node("WeaponHolder").drop_weapon(false)
 	await _physics(3)
-	_check(not spear.is_attacking(), "8: the dropped weapon is no longer attacking")
+	_check(not spear.is_attacking(), "9: the dropped weapon is no longer attacking")

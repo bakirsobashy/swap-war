@@ -2,12 +2,15 @@ extends SceneTree
 
 ## Headless probe for the Auto Attack setting (melee + ranged halves).
 ##
-##   A. PC melee auto-swing — no touch input at all: with Auto Attack on and a
-##      hostile within AUTO_MELEE_REACH (90 px), the player swings on the
-##      sword's own cooldown (rising edges of is_attacking) and the melee
-##      lock aims/faces the target (dummy to the LEFT -> facing -1).
-##   B. Negatives — no swing when the enemy is beyond reach, when the setting
-##      is off, when the nearby actor is an ALLY, or when it is dead.
+##   A. Melee auto-swing: with Auto Attack on, the player AIMED at a hostile
+##      60 px away (aim stick held toward it — Auto Attack never aims for
+##      you) swings on the sword's own cooldown (rising edges of
+##      is_attacking). The gate is MeleeWeapon.can_hit: in reach, facing it,
+##      the blade on it.
+##   B. Negatives — no swing while aiming AWAY from the hostile (and the aim
+##      stays where the player put it: no snap onto the target), when the
+##      enemy is beyond the sword's reach, when the setting is off, when the
+##      nearby actor is an ALLY, or when it is dead.
 ##   C. Ranged is touch-only — a pistol never auto-fires without the aim
 ##      stick (PC = mouse + click), fires while the stick is deflected
 ##      (durability = magazine), and stops shortly after release.
@@ -143,19 +146,20 @@ func _probe(inst: Node, settings, tc: Node) -> void:
 	var sword: Node = await _equip(inst, holder, "res://Scenes/Weapons/Sword.tscn")
 	_check(holder.current_weapon == sword, "A: player armed with the sword")
 
-	print("\n=== A: PC melee auto-swing (no touch input) ===")
+	print("\n=== A: melee auto-swing at the hostile you aim at ===")
+	# Aim with the stick: the headless mouse sits top-left of the screen, so
+	# the mouse fallback would point the blade up-left, off the dummy.
+	var aim_stick = tc.get_node("%AimStick")
+	var stick_span: float = aim_stick.MAX_DEFLECTION * aim_stick.scale.x
+	await _touch(1, true, aim_stick.position)
+	await _drag(1, aim_stick.position + Vector2(-1.0, 0.0) * stick_span)   # west, at the dummy
 	var swung := false
-	for i in 40:                      # ~0.66 s
+	for i in 60:                      # 1 s: the blade turns onto the dummy first
 		await physics_frame
 		if sword.is_attacking():
 			swung = true
 			break
-	_check(swung, "A: auto-swings when a hostile is at 60 px")
-	await process_frame
-	await process_frame
-	_check(player.facing_direction == -1.0,
-			"A: melee lock faces the target (dummy left -> -1, got %.1f)"
-			% float(player.facing_direction))
+	_check(swung, "A: auto-swings when the blade is on a hostile at 60 px")
 	var edges := 0
 	var last := false
 	var freed_tick := -1
@@ -173,14 +177,29 @@ func _probe(inst: Node, settings, tc: Node) -> void:
 			"A: swing pacing 2-4 rising edges in 1.6 s (cooldown 0.5, got %d)" % edges)
 
 	print("\n=== B: negatives ===")
-	dummy.global_position = player.global_position + Vector2(-200.0, 0.0)
+	# Aim AWAY (east) with the dummy 60 px west: facing flips with the aim at
+	# once, so no swing even while the blade turns — and no snap back.
+	await _drag(1, aim_stick.position + Vector2(1.0, 0.0) * stick_span)
 	await _settle()                   # let any in-flight swing window expire
 	var calm := true
 	for i in 48:                      # 0.8 s > cooldown
 		await physics_frame
 		if sword.is_attacking():
 			calm = false
-	_check(calm, "B: no swing beyond the 90 px reach (dummy at 200 px)")
+	_check(calm, "B: no swing while aiming away from the hostile")
+	_check(player.aim_direction.x > 0.9,
+			"B: Auto Attack leaves the aim alone (no snap onto the dummy, got %s)"
+			% player.aim_direction)
+	await _drag(1, aim_stick.position + Vector2(-1.0, 0.0) * stick_span)   # back at the dummy
+
+	dummy.global_position = player.global_position + Vector2(-200.0, 0.0)
+	await _settle()
+	calm = true
+	for i in 48:
+		await physics_frame
+		if sword.is_attacking():
+			calm = false
+	_check(calm, "B: no swing beyond the sword's reach (dummy at 200 px)")
 
 	dummy.global_position = player.global_position + Vector2(-60.0, 0.0)
 	if settings:
@@ -215,6 +234,7 @@ func _probe(inst: Node, settings, tc: Node) -> void:
 			calm = false
 	_check(calm, "B: no swing at a dead actor")
 	dummy.queue_free()
+	await _touch(1, false, aim_stick.position)
 	await physics_frame
 
 	print("\n=== C: ranged auto-fire is touch-only ===")
@@ -229,7 +249,6 @@ func _probe(inst: Node, settings, tc: Node) -> void:
 			stable = false
 	_check(stable, "C: no auto-fire without the aim stick (PC = mouse + click)")
 
-	var aim_stick = tc.get_node("%AimStick")
 	await _touch(1, true, aim_stick.position)
 	# Drag off-center — a bare press at the center is inside the deadzone.
 	await _drag(1, aim_stick.position + Vector2(0.7, -0.7) * (aim_stick.MAX_DEFLECTION * aim_stick.scale.x))

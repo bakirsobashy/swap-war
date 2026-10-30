@@ -139,3 +139,27 @@ Built as planned, with two additions:
 - **The audit probe's invulnerable-target check can't pass vacuously.** It calls `_try_hit(b1)` and also asserts the victim was marked in `_hit_this_swing` — the mark is set just before `take_damage()`, so the check proves the strike got that far.
 
 `melee_swing_probe` runs 8 scenarios: the 7 above plus "dropping mid-swing closes the window".
+
+---
+
+## Part 2: when a weapon attacks (decided and implemented 2026-10-30)
+
+**Rule:** an automatic melee swing (the AI, Auto Attack) happens only when an enemy is in the weapon's hit range **and** the actor is looking at it. `MeleeWeapon.can_hit(target)` answers "would a swing launched now hit this body?":
+
+- **Hit range** = the area the swing sweeps, from the weapon's own HitBox shape at rest, stretched forward by its thrust (Spear/Fork `_swing_thrust()`), in the WeaponSocket's frame. The target's capsule is tested against it (three circles along the spine). Nothing is hand-typed. `get_attack_range()` reports the same reach centre-to-centre: sword ~100 px, fork ~170, spear ~190 (old flat value: 80 for all).
+- **Looking at it** = the holder faces the target's side (a ~4 px deadzone straight above/below) **and** the blade, which turns gradually after the aim, is where the test is measured from. Right after the aim swings round, can_hit stays false until the blade arrives, like the gun's muzzle gate.
+
+Decisions:
+
+| Question | Decision |
+|---|---|
+| Manual Attack click | Never gated: always swings. |
+| Auto Attack aim help | None. The old lock turned your aim onto the nearest enemy, even one behind you. Now the player aims; Auto Attack only presses attack when `can_hit` is true for some hostile. The fixed 90 px circle is gone too. |
+| AI reach | Real per-weapon reach: reach, stand-off (75 %) and the Attack hand-over scale with the weapon. Spear and fork AIs fight from much further away. |
+| Ranged Auto Attack | Unchanged (touch-only, fires while the aim stick is held). AI guns already gate on lane + muzzle + range. |
+
+AI wiring: `AIController.melee_swing_ready(enemy)` and `attack_ready(enemy)` (gun gate or blade gate). Used by AttackState's melee exchange, ApproachEnemy's swing-on-the-move and Retreat's cover fire. Because Attack is entered at the very edge of reach, where aim scatter or the blade's shape can still make the swing miss, a melee AI whose swing wouldn't land steps in toward the stand-off (safe_move; not when the enemy is straight above/below). Otherwise it would stand there and never swing.
+
+Tests: `melee_swing_probe` scenario 7 (`can_hit`: just inside/past reach, facing away, blade still turning) and the spear checks in 8. `auto_attack_probe` A/B now aim with the stick and check that aiming away never swings and that the aim is left alone. `decision_probe` S1 waits up to 1 s for the first swing instead of sampling the tick after entering Attack.
+
+Watch: `retreat_range` (120 px, unarmed AIs flee inside it) is now well inside a spear's 190 px reach. Retune if unarmed AIs get poked from outside it.

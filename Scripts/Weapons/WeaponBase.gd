@@ -63,6 +63,12 @@ func is_attacking() -> bool:
 	return false
 
 
+## Would an attack launched now hit `target`? MeleeWeapon answers it; guns
+## have their own gate (AIController.ranged_shot_ready).
+func can_hit(_target: Node2D) -> bool:
+	return false
+
+
 func is_held() -> bool:
 	return _holder != null
 
@@ -86,6 +92,7 @@ func is_ranged() -> bool:
 
 
 ## The range at which the AI should consider itself able to attack.
+## MeleeWeapon overrides it with the swing's real reach.
 func get_attack_range() -> float:
 	if _data == null:
 		return 0.0
