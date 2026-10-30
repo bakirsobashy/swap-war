@@ -16,6 +16,12 @@ extends SceneTree
 ##   - Test: die() -> queue_free() at ~0.33s (mid-window) -> run past 1.5s.
 ##     In-process the probe can only prove it stayed alive; the REAL gate is
 ##     the outer console scan for "SCRIPT ERROR" (standard probe discipline).
+##   - Freed holder: an armed actor freed WITHOUT dropping (the abrupt-free
+##     path, e.g. _despawn_actors), melee and ranged. Freed instances compare
+##     non-null, so a weapon that only checks `if not _holder` keeps following
+##     the freed socket (SCRIPT ERROR every tick) and stays "held" forever.
+##     The weapon must release itself: not held, unfrozen, ground layer,
+##     pickable — and a melee contact landing in the gap deals no damage.
 ##
 ## `-s` mode discipline: runtime load() only, untyped vars, no game-class
 ## annotations, zero direct autoload references (the TeamManager swap timer is
@@ -95,5 +101,69 @@ func _probe() -> void:
 		await physics_frame
 	print("  INFO: resume window elapsed; scan console above for engine errors")
 
+	print("\n=== freed holder: armed actor freed without dropping ===")
+	# West floor, clear of the spike strip; 200 px apart so no PickupArea
+	# reaches another scenario's weapon.
+	var bystander = _spawn_actor(inst, -250.0)
+	await physics_frame               # TeamMember registers deferred; set_team
+	await physics_frame               # first would skip its tree_exited cleanup
+	if team_manager:
+		team_manager.set_team(bystander, 2)
+	await _probe_freed_holder(inst, "res://Scenes/Weapons/Sword.tscn", -450.0, bystander, true)
+	await _probe_freed_holder(inst, "res://Scenes/Weapons/Pistol.tscn", -650.0, bystander, false)
+	bystander.queue_free()
+	await physics_frame
+
 	inst.queue_free()
+	await physics_frame
+
+func _probe_freed_holder(inst: Node, path: String, x: float, bystander: Node, melee: bool) -> void:
+	var label: String = path.get_file().get_basename()
+	var team_manager = root.get_node_or_null("/root/TeamManager")
+	var owner_actor = _spawn_actor(inst, x)
+	await physics_frame
+	await physics_frame
+	if team_manager:
+		team_manager.set_team(owner_actor, 1)
+	var w = load(path).instantiate()
+	inst.add_child(w)
+	var ground_layer: int = w.collision_layer
+	# Outside the PickupArea, so the explicit equip below is the only pickup.
+	w.global_position = owner_actor.global_position + Vector2(0, -300)
+	await physics_frame
+	await physics_frame
+	owner_actor.get_node("WeaponHolder")._equip_weapon(w)
+	for i in 3:                       # pick_up() defers the freeze
+		await physics_frame
+	_check(bool(w.is_held()) and bool(w.freeze), "%s: setup: equipped and frozen in hand" % label)
+
+	# free(), not queue_free(): the weapon must not get a tick before the
+	# checks below. It doesn't care how its holder went — only that it never
+	# dropped it.
+	owner_actor.free()
+	_check(not is_instance_valid(owner_actor) and bool(w.is_held()),
+			"%s: setup: holder freed, weapon still holds the stale reference" % label)
+
+	if melee:
+		# A contact in the tick before _physics_process notices used to hand
+		# the freed holder to TeamMember.is_same_team (SCRIPT ERROR).
+		var bh = bystander.get_node("Components/Health")
+		bh._invulnerability_timer = 0.0
+		var hp_before := float(bh.current_health)
+		w._on_body_entered(bystander)
+		_check(absf(float(bh.current_health) - hp_before) < 0.01,
+				"%s: a contact after the holder is freed deals no damage (hp %.1f -> %.1f)"
+				% [label, hp_before, float(bh.current_health)])
+
+	for i in 10:
+		await physics_frame
+	_check(is_instance_valid(w), "%s: weapon outlives its holder" % label)
+	if not is_instance_valid(w):
+		return
+	_check(not bool(w.is_held()), "%s: released (is_held false)" % label)
+	_check(not bool(w.freeze), "%s: unfrozen" % label)
+	_check(int(w.collision_layer) == ground_layer,
+			"%s: back on the ground layer (got %d, want %d)" % [label, int(w.collision_layer), ground_layer])
+	_check(bool(w.can_be_picked_up()), "%s: pickable again" % label)
+	w.queue_free()
 	await physics_frame

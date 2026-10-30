@@ -38,7 +38,7 @@ func is_attacking() -> bool:
 
 
 func _physics_process(delta: float) -> void:
-	if not _holder:
+	if not _has_live_holder():
 		return
 
 	if _attack_cooldown_timer > 0.0:
@@ -58,7 +58,9 @@ func _attack_ended() -> void:
 
 
 func _on_body_entered(body: Node) -> void:
-	if not _holder or body == _holder:
+	# A contact can land in the tick between the holder being freed and
+	# _physics_process noticing; is_same_team would then error on it.
+	if not _has_live_holder() or body == _holder:
 		return
 
 	var health := body.get_node_or_null("Components/Health") as Health
