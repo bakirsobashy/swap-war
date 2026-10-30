@@ -9,13 +9,6 @@ func _init() -> void:
 	weapon_name = "Sword"
 
 
-func _ready() -> void:
-	super._ready()
-	var hit_box := get_node_or_null("HitBox") as Area2D
-	if hit_box:
-		hit_box.body_entered.connect(_on_body_entered)
-
-
 ## Override follow transform to add a 45° slash rotation during attacks.
 func _update_follow_transform() -> void:
 	if not _holder or not _socket:

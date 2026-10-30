@@ -67,7 +67,7 @@ Also fixed: the AI-count slider could show "AI Count: 0" (min is now 1); the hel
 3. ✅ *Partly fixed (batch 2): weapons drop at GO; unarmed attack still missing.* **The first ~7 s are dead time.** No weapons until the first sky drop, and nobody can attack unarmed. Drop weapons at "GO" or add the plan's unarmed shove (2.3.4).
 4. ✅ *Fixed (batch 2): a swap re-rolls one actor if everyone landed on one team.* **Swaps could leave no enemies.** Teams are rolled independently: with 1 AI a quarter of swaps make everyone allies for 10 s. Guarantee ≥ 2 teams (plan 4.4.7).
 5. ✅ *Fixed (batch 2): a hit opens a 0.3 s stun window (cap 750 px/s, no friction).* **Knockback was capped by run speed** (|vx| clamped to 300 every tick). A short stun window that lifts the cap would make ring-outs possible.
-6. **Holding a sword damages anyone you walk into**, so the attack button mostly adds reach. Consider damage only during the swing.
+6. ✅ *Fixed 2026-10-30: melee damages only during the swing, once per victim per swing (`melee-swing-only-damage.md`, guarded by `Tools/melee_swing_probe.gd`).* **Holding a sword damages anyone you walk into**, so the attack button mostly adds reach. Consider damage only during the swing.
 7. **Swaps are hard to read.** The timer digits change to a random team colour every second; add a clear "SWAP!" cue. The AI gets a 0.35 s reaction delay after a swap; the player gets nothing.
 8. **Missing feedback:** crits look like normal hits, no kill feed, no deaths or team colours on the end screen, no screenshake or freeze frame.
 9. **Static camera.** The planned 62×62-tile arenas (~3,800 px) need a follow or fit-all camera.
@@ -105,7 +105,7 @@ Also fixed: the AI-count slider could show "AI Count: 0" (min is now 1); the hel
 Still open from section 1: **#17** (Pit is a copy of the jam arena). Everything else in section 1 is fixed and guarded by `Tools/audit_regression_probe.gd`.
 
 1. **Readability:** a YOU marker/outline on the player, a colour-blind-safe team identity (design 1-2), a clear swap cue (7).
-2. **Combat:** an unarmed shove (design 3), consider removing passive contact damage (6), crit/kill feedback (8).
+2. **Combat:** an unarmed shove (design 3), ~~remove passive contact damage (6)~~ ✅ swing-only, crit/kill feedback (8).
 3. **Content:** the real Pit layout (#17), then the Phase 4 list (moving platform, thrown weapons, new weapons, difficulty presets).
 4. **Release:** Web export preset + Compatibility check + asset trim, Android preset, health-bar SubViewports.
 
