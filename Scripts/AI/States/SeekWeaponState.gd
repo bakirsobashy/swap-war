@@ -54,8 +54,8 @@ func physics_update(delta: float) -> String:
 			return "Idle"
 		# No route and no active goal — the state's write survives (the
 		# executor only overwrites inputs while a goal is running).
-		owner.move_direction = signf(weapon.global_position.x
-				- owner.actor.global_position.x)
+		owner.move_direction = owner.safe_move(signf(weapon.global_position.x
+				- owner.actor.global_position.x))
 		return ""
 	_direct_steer_clock = 0.0
 	return ""

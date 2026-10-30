@@ -11,9 +11,11 @@ config_version=5
 [application]
 
 config/name="Swap-War"
+config/version="1.0.0"
 run/main_scene="res://Scenes/UI/MainMenu.tscn"
+config/quit_on_go_back=false
 config/features=PackedStringArray("4.7", "Forward Plus")
-config/icon="res://icon.svg"
+config/icon="res://Assets/icon/icon_512.png"
 
 [autoload]
 

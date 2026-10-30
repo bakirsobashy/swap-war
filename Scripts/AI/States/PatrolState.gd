@@ -4,6 +4,9 @@ extends "res://Scripts/AI/State.gd"
 ## states all need something (enemy, weapon); Patrol is what an armed AI with
 ## no enemies left does, and what an unarmed one does while waiting for a
 ## drop. Picks a random reachable platform within ~2 hops and walks there.
+## An unarmed patroller keeps its distance from a live enemy: it never hops
+## past one at its level or into its safe distance, and bounces back through
+## the hub to Retreat when one closes in.
 
 const HOP_REACH := 520.0        # ~2 platform hops — wander radius for the next target
 const JITTER := 48.0            # random offset from the picked platform's center
@@ -28,12 +31,18 @@ func exit() -> void:
 
 func physics_update(delta: float) -> String:
 	# The hub conditions outrank patrolling — bounce back the instant one
-	# fires (armed with an enemy to fight, unarmed with a weapon to fetch).
+	# fires (armed with an enemy to fight, unarmed with a weapon to fetch or
+	# an enemy close enough to evade).
 	var enemy: Node2D = owner.sensors.nearest_enemy
-	if owner.is_armed() and owner.sensors.is_valid_target(enemy):
+	var enemy_valid: bool = owner.sensors.is_valid_target(enemy)
+	if owner.is_armed() and enemy_valid:
 		return "Idle"
-	if not owner.is_armed() and owner.sensors.best_weapon != null:
-		return "Idle"
+	if not owner.is_armed():
+		if owner.sensors.best_weapon != null:
+			return "Idle"
+		if enemy_valid and owner.actor.global_position.distance_to(enemy.global_position) \
+				<= owner.retreat_range:
+			return "Idle"
 
 	_hop_clock -= delta
 	if owner.nav_arrived() or owner.nav_failed() or _hop_clock <= 0.0:
@@ -52,15 +61,20 @@ func _plan_hop() -> void:
 ## jittered off its center. Unreachable picks are filtered out; if nothing
 ## qualifies (isolated platform — Flat's floor has no outgoing routes) the
 ## hop degrades to wandering in place on the current platform, which is the
-## designed Flat behavior ("patrol-hops, nothing to jump to").
+## designed Flat behavior ("patrol-hops, nothing to jump to"). Unarmed, a hop
+## that would pass or crowd a live enemy is dropped too (no hop this cycle
+## rather than a walk through its weapon).
 func _pick_hop_target() -> Vector2:
 	var graph = owner.nav_graph()
 	if graph == null or graph.platforms.is_empty():
 		return Vector2(INF, INF)
 	var actor_x: float = owner.actor.global_position.x
 	var here: int = owner.sensors.current_platform_id
+	var threat: Node2D = null
+	if not owner.is_armed() and owner.sensors.is_valid_target(owner.sensors.nearest_enemy):
+		threat = owner.sensors.nearest_enemy
 
-	var candidates: Array = []
+	var targets: Array = []
 	for P in graph.platforms:
 		if bool(P.hazardous) or P.id == here:
 			continue
@@ -68,17 +82,28 @@ func _pick_hop_target() -> Vector2:
 			continue
 		if absf(P.center() - actor_x) > HOP_REACH:
 			continue
-		candidates.append(P)
+		var x: float = clampf(P.center() + randf_range(-JITTER, JITTER),
+				P.x_min + EDGE_PAD, P.x_max - EDGE_PAD)
+		var t := Vector2(x, P.y_top)
+		if not _crowds(threat, t):
+			targets.append(t)
 
-	if candidates.is_empty():
+	if targets.is_empty():
 		if here < 0:
 			return Vector2(INF, INF)
 		var cur = graph.platforms[here]
 		var x: float = clampf(actor_x + randf_range(-HOP_REACH, HOP_REACH),
 				cur.x_min + EDGE_PAD, cur.x_max - EDGE_PAD)
-		return Vector2(x, cur.y_top)
+		var t := Vector2(x, cur.y_top)
+		return Vector2(INF, INF) if _crowds(threat, t) else t
 
-	var P = candidates[randi() % candidates.size()]
-	var x: float = clampf(P.center() + randf_range(-JITTER, JITTER),
-			P.x_min + EDGE_PAD, P.x_max - EDGE_PAD)
-	return Vector2(x, P.y_top)
+	return targets[randi() % targets.size()]
+
+
+## An unarmed hop target past `threat` (Retreat's crossing rule) or inside
+## its safe distance — the walk there runs into its weapon.
+func _crowds(threat: Node2D, target: Vector2) -> bool:
+	if threat == null:
+		return false
+	return owner.is_past_threat(threat, target.x) \
+			or target.distance_to(threat.global_position) < owner.retreat_safe_distance

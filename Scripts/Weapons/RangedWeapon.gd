@@ -32,19 +32,24 @@ func _local_weapon_rotation() -> float:
 	return 0.0
 
 
+## The muzzle's world direction: the gun turns gradually after the aim, so
+## this — not the aim — is where a shot fired now travels.
+func get_fire_direction() -> Vector2:
+	var muzzle := get_node_or_null("Visuals/Muzzle") as Marker2D
+	if muzzle:
+		var muzzle_dir := Vector2.RIGHT.rotated(muzzle.global_rotation)
+		if not muzzle_dir.is_zero_approx():
+			return muzzle_dir
+	return _get_aim_direction()
+
+
 func _fire_projectile() -> void:
 	var projectile_scene := preload("res://Scenes/Weapons/Projectile.tscn")
 	var projectile := projectile_scene.instantiate() as Projectile
 
 	var muzzle := get_node_or_null("Visuals/Muzzle") as Marker2D
-	var spawn_pos := global_position
-	var dir := _get_aim_direction()
-
-	if muzzle:
-		spawn_pos = muzzle.global_position
-		var muzzle_dir := Vector2.RIGHT.rotated(muzzle.global_rotation)
-		if not muzzle_dir.is_zero_approx():
-			dir = muzzle_dir
+	var spawn_pos := muzzle.global_position if muzzle else global_position
+	var dir := get_fire_direction()
 
 	# Defer spawn to avoid adding an Area2D during _integrate_forces.
 	call_deferred("_spawn_projectile_deferred", projectile, spawn_pos, dir, _data, _holder)

@@ -177,6 +177,12 @@ func _local_weapon_rotation() -> float:
 	return deg_to_rad(90.0)
 
 
+## Where an attack launched right now would go (the AI's fire gate reads it).
+## RangedWeapon overrides it with the muzzle, which lags the holder's aim.
+func get_fire_direction() -> Vector2:
+	return _get_aim_direction()
+
+
 ## Where the weapon is currently aiming.
 func _get_aim_direction() -> Vector2:
 	if _holder and "aim_direction" in _holder:

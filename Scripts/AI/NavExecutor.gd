@@ -309,7 +309,7 @@ func _approach_jump_across(e, grounded: bool) -> void:
 	# hazard edge by capsule radius plus stopping slop, or a slow pass clips
 	# the tips (the stop-line coast still lands ~4px past guard_x).
 	var B = _graph.platforms[e.to_id]
-	var cap := _capsule_radius()
+	var cap := capsule_radius()
 	for P in _graph.platforms:
 		if not bool(P.hazardous) or P.y_top < A.y_top - 8.0:
 			continue
@@ -683,7 +683,7 @@ func _actor_vx() -> float:
 
 ## Capsule half-width from the actor's collision shape, cached — the hazard
 ## guard needs it to keep the body (not just the center) clear of spike tips.
-func _capsule_radius() -> float:
+func capsule_radius() -> float:
 	if _capsule_radius_cache < 0.0:
 		var cs = _actor.get_node_or_null("CollisionShape2D")
 		if cs != null and cs.shape != null and "radius" in cs.shape:
