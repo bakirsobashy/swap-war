@@ -48,9 +48,13 @@ Godot is installed at `D:\Apps\godot\Godot_v4.7.1-stable_win64.exe` and is not o
   - `melee_swing_probe` — swing-only melee damage: a resting blade / an enemy walking into it deals nothing, one hit per victim per swing, held (cooldown-paced) swings all land, allies skipped, multi-target, `can_hit` (hitbox-derived reach, facing, follows the turning blade), Spear thrust hits mid-window and out-reaches the sword, dropping mid-swing closes the window
   - `audit_regression_probe` — replays every bug reproduced in the 2026-10 audit (`docs/godot-prompter/plans/AUDIT_REPORT_2026-10.md`) in live matches: fixed ones FAIL on regression, open ones print `KNOWN (open)` (promote to a check when fixed)
 
-  Run them all with `pwsh Tools/run_probes.ps1` — it also fails a probe that printed a `SCRIPT ERROR` (a script error only aborts the current function, so a crashed probe can still exit 0).
+  Run them all with `pwsh Tools/run_probes.ps1` (Windows) or `Tools/run_probes.sh` (Linux/macOS/CI; `GODOT=` overrides the binary, `PROBE_RETRIES=1` reruns a failed probe once and reports it as FLAKY) — it also fails a probe that printed a `SCRIPT ERROR` (a script error only aborts the current function, so a crashed probe can still exit 0).
 
   **Probe discipline** (`-s` mode compiles the script before autoloads register): runtime `load()` only, untyped vars, no game-class annotations, no direct autoload references (guarded node-path access like `root.get_node_or_null("/root/TeamManager")` is fine).
+
+- **CI** — `.github/workflows/ci.yml` runs a 300-frame smoke boot plus `Tools/run_probes.sh` (with one retry) on every push and PR; `deploy-web.yml` exports the Web preset to GitHub Pages on every push to `main`. `decision_probe` S8 (patrol never touches the spike strip) is known to fail occasionally.
+
+- **README media** — `docs/images/` (`.gdignore`d). `Tools/nav_graph_snapshot.gd` renders an arena with its baked graph drawn on top (needs a display, not `--headless`). Gameplay GIFs: `godot --path . --write-movie out.avi --fixed-fps 30 --quit-after 600 Scenes/Arenas/ArenaHazards.tscn`, then ffmpeg.
 
 - **Reimport assets headlessly** (useful after pulling changes or on CI)
   ```powershell
