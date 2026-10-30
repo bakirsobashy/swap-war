@@ -1,6 +1,6 @@
 # Plan: melee damages only on the swing (passive contact damage removed)
 
-**Status:** decided, plan only, not implemented. **Date:** 2026-10-30. Closes design flaw 6 in `AUDIT_REPORT_2026-10.md` ("Holding a sword damages anyone you walk into").
+**Status:** implemented 2026-10-30 (see "Implementation notes" at the end). **Date:** 2026-10-30. Closes design flaw 6 in `AUDIT_REPORT_2026-10.md` ("Holding a sword damages anyone you walk into").
 
 ## Decision
 
@@ -130,3 +130,12 @@ Unarmed shove (design 3), thrown-weapon damage, crit/kill feedback (design 8), t
 - `Tools/melee_swing_probe.gd` (new), `Tools/run_probes.ps1`
 - `Tools/audit_regression_probe.gd`, `Tools/decision_probe.gd` (comment)
 - `CLAUDE.md`, `docs/godot-prompter/plans/AUDIT_REPORT_2026-10.md`
+
+## Implementation notes
+
+Built as planned, with two additions:
+
+- **Dropped mid-swing closes the window.** `MeleeWeapon._physics_process` returns early while unheld, so a weapon dropped mid-swing (the holder died) kept `_is_attacking = true` and the leftover window ran on for the next holder. Harmless when the window was only visual; now it gates damage, so an unheld melee weapon resets `_is_attacking` / `_attack_timer`.
+- **The audit probe's invulnerable-target check can't pass vacuously.** It calls `_try_hit(b1)` and also asserts the victim was marked in `_hit_this_swing` — the mark is set just before `take_damage()`, so the check proves the strike got that far.
+
+`melee_swing_probe` runs 8 scenarios: the 7 above plus "dropping mid-swing closes the window".

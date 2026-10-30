@@ -265,11 +265,16 @@ func _run() -> void:
 	var sword = await _equip(scene, a1, "res://Scenes/Weapons/Sword.tscn")
 	bh._invulnerability_timer = 1.5
 	var dur: int = sword.current_durability
-	sword._recent_hits.clear()
-	sword._on_body_entered(b1)
+	# _try_hit is the swing's per-body strike (melee only damages while
+	# swinging — the probe calls the strike directly). It marks the victim
+	# just before take_damage, so the mark proves the hit got that far and
+	# the durability check isn't vacuous.
+	sword._try_hit(b1)
 	await _physics(1)
-	_check("hits on invulnerable targets cost nothing", sword.current_durability == dur,
-			"durability %d -> %d" % [dur, sword.current_durability])
+	_check("hits on invulnerable targets cost nothing",
+			sword._hit_this_swing.has(b1) and sword.current_durability == dur,
+			"reached take_damage=%s, durability %d -> %d"
+			% [sword._hit_this_swing.has(b1), dur, sword.current_durability])
 	bh._invulnerability_timer = 0.0
 
 	# Swing vs an enemy already touching the blade

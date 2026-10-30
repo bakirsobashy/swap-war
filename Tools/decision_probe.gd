@@ -109,10 +109,10 @@ func _spawn_dummy(inst: Node, x: float, y: float, team: int):
 	actor.position = Vector2(x, y)
 	inst.get_node("Actors").add_child(actor)
 	actor.get_node("Components/TeamMember").team_id = team
-	# Pin the dummy in place: a free body drifts east forever under the held
-	# sword's contact knockback — the AI's approach chases a receding foe and
-	# can lose that race forever (never closing into attack range). Frozen =
-	# static: no treadmill, fights converge deterministically.
+	# Pin the dummy in place: a free body drifts east under every swing's
+	# knockback — the AI's approach chases a receding foe and can lose that
+	# race (never closing into attack range). Frozen = static: fights
+	# converge deterministically.
 	actor.freeze = true
 	# WeaponHolder auto-pickup is live on EVERY actor (players rely on it) —
 	# a dummy standing near a scenario drop steals the sword, and the AI ends

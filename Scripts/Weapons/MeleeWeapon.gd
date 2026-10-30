@@ -1,12 +1,26 @@
 class_name MeleeWeapon
 extends WeaponBase
 
+## Melee damage happens ONLY during a swing (audit design flaw 6): a held
+## blade resting on an enemy, or an enemy walking into it, does nothing. The
+## HitBox is the single damage path — the weapon body still collides with
+## actors (it shoves), but its contact hook is WeaponBase's no-op.
+
 const CRITICAL_MULTIPLIER: float = 1.5
 
 var _attack_cooldown_timer: float = 0.0
 var _attack_timer: float = 0.0
 var _is_attacking: bool = false
-var _recent_hits: Dictionary = {}
+## Victims already struck by the current swing — one hit per victim per
+## swing. Cleared when a swing starts; the swing cooldown paces repeats.
+var _hit_this_swing: Dictionary = {}
+
+
+func _ready() -> void:
+	super._ready()
+	var hit_box := get_node_or_null("HitBox") as Area2D
+	if hit_box:
+		hit_box.body_entered.connect(_on_hit_box_body_entered)
 
 
 func attack() -> void:
@@ -20,17 +34,18 @@ func attack() -> void:
 	_attack_cooldown_timer = _data.attack_cooldown
 	_attack_timer = _data.attack_thrust_duration
 	_is_attacking = true
+	_hit_this_swing.clear()
 
 	if AudioManager:
 		AudioManager.play_melee_attack()
 
-	# Damage only fired on contact BEGIN, so a swing at an enemy already
-	# touching the blade did nothing. Hit what the hitbox overlaps now; the
-	# per-victim cooldown in _on_body_entered still paces repeat hits.
+	# body_entered only fires on overlap BEGIN, so an enemy already touching
+	# the blade would never be hit. Strike what the hitbox overlaps now;
+	# bodies the swing reaches later arrive through _on_hit_box_body_entered.
 	var hit_box := get_node_or_null("HitBox") as Area2D
 	if hit_box:
 		for body in hit_box.get_overlapping_bodies():
-			_on_body_entered(body)
+			_try_hit(body)
 
 
 func is_attacking() -> bool:
@@ -39,6 +54,10 @@ func is_attacking() -> bool:
 
 func _physics_process(delta: float) -> void:
 	if not _holder:
+		# Dropped mid-swing (the holder died): the window gates damage now,
+		# so it must not carry over to whoever picks the weapon up next.
+		_is_attacking = false
+		_attack_timer = 0.0
 		return
 
 	if _attack_cooldown_timer > 0.0:
@@ -57,8 +76,18 @@ func _attack_ended() -> void:
 	pass
 
 
-func _on_body_entered(body: Node) -> void:
+func _on_hit_box_body_entered(body: Node) -> void:
+	# Only a swing deals damage — a resting blade is harmless.
+	if _is_attacking:
+		_try_hit(body)
+
+
+## Strike one body with the current swing: skip the holder, non-actors,
+## allies and anyone this swing already hit.
+func _try_hit(body: Node) -> void:
 	if not _holder or body == _holder:
+		return
+	if _hit_this_swing.has(body):
 		return
 
 	var health := body.get_node_or_null("Components/Health") as Health
@@ -66,12 +95,9 @@ func _on_body_entered(body: Node) -> void:
 		return
 	if TeamMember.is_same_team(_holder, body):
 		return
-
-	var now := Time.get_ticks_msec() / 1000.0
-	var last_hit: float = _recent_hits.get(body, -_data.attack_cooldown - 1.0)
-	if now - last_hit < _data.attack_cooldown:
-		return
-	_recent_hits[body] = now
+	# Marked before take_damage: a blocked hit still spends this victim's
+	# one chance this swing.
+	_hit_this_swing[body] = true
 
 	var final_damage := _data.damage
 	var is_critical := randf() < _data.critical_chance
