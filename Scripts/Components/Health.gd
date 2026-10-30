@@ -15,6 +15,9 @@ var _invulnerability_timer: float = 0.0
 var _flash_timer: float = 0.0
 var _flash_visible: bool = true
 var _original_modulate: Color = Color.WHITE
+## World direction of the latest landed hit (unit, or zero): aims the kill
+## burst and the stain. Reset on respawn.
+var _last_hit_dir: Vector2 = Vector2.ZERO
 
 @onready var _actor: RigidBody2D = get_parent().get_parent()
 @onready var _health_bar: HealthBar2D = _actor.get_node_or_null("HealthBar2D") as HealthBar2D
@@ -36,13 +39,16 @@ func _ready() -> void:
 
 ## Returns true when the hit landed. Callers skip knockback / durability on
 ## false (dead, or respawn-invulnerable) — those used to apply regardless.
-func take_damage(amount: float, attacker: Node = null) -> bool:
+## hit_dir (the knockback direction) and is_critical feed HitFeel.
+func take_damage(amount: float, attacker: Node = null, hit_dir: Vector2 = Vector2.ZERO,
+		is_critical: bool = false) -> bool:
 	if _is_dead:
 		return false
 	if _invulnerability_timer > 0.0:
 		return false
 	current_health -= amount
 	current_health = clamp(current_health, 0.0, max_health)
+	_last_hit_dir = hit_dir.normalized()
 	health_changed.emit(current_health, max_health)
 	_flash_hit()
 	_spawn_hit_particles()
@@ -50,6 +56,8 @@ func take_damage(amount: float, attacker: Node = null) -> bool:
 
 	if attacker:
 		_record_attacker(attacker)
+	if HitFeel:
+		HitFeel.on_hit(_actor, attacker, amount, _last_hit_dir, is_critical)
 
 	if current_health <= 0.0:
 		die()
@@ -135,6 +143,11 @@ func _spawn_hit_particles() -> void:
 			p.queue_free()
 	)
 
+## Untyped: the attribution can point at an actor freed since (Play Again).
+func _last_attacker():
+	var holder := _actor.get_node_or_null("WeaponHolder") as WeaponHolder
+	return holder.get_last_attacker() if holder else null
+
 func _record_attacker(attacker: Node) -> void:
 	var holder := _actor.get_node_or_null("WeaponHolder") as WeaponHolder
 	if holder:
@@ -152,7 +165,9 @@ func _process(delta: float) -> void:
 	elif _sprite and _sprite.modulate.a != _original_modulate.a:
 		_sprite.modulate.a = _original_modulate.a
 
-func die() -> void:
+## off_map: the KillZone death plane. HitFeel skips the pop and the stain
+## (nothing to see where they fell) and splashes at the view's edge instead.
+func die(off_map: bool = false) -> void:
 	if _is_dead:
 		return
 	_is_dead = true
@@ -160,7 +175,9 @@ func die() -> void:
 
 	if AudioManager:
 		AudioManager.play_death()
-	_spawn_death_particles()
+	# Before the hide below: the death pop copies the visible body.
+	if HitFeel:
+		HitFeel.on_kill(_actor, _last_attacker(), _last_hit_dir, _team_color(), off_map)
 
 	_actor.process_mode = Node.PROCESS_MODE_DISABLED
 	_actor.visible = false
@@ -177,33 +194,6 @@ func die() -> void:
 	if ArenaManager and ArenaManager.has_method("is_match_over") and ArenaManager.is_match_over():
 		return
 	_respawn()
-
-func _spawn_death_particles() -> void:
-	var effects := _actor.get_tree().current_scene.get_node_or_null("Effects")
-	if not effects:
-		return
-	var particles := CPUParticles2D.new()
-	particles.global_position = _actor.global_position
-	particles.amount = 24
-	particles.lifetime = 0.5
-	particles.explosiveness = 0.8
-	particles.emission_shape = CPUParticles2D.EMISSION_SHAPE_SPHERE
-	particles.emission_sphere_radius = 20.0
-	particles.direction = Vector2(0, -1)
-	particles.spread = 90.0
-	particles.initial_velocity_min = 80.0
-	particles.initial_velocity_max = 160.0
-	particles.scale_amount_min = 2.0
-	particles.scale_amount_max = 6.0
-	particles.color = _team_color()
-	effects.add_child(particles)
-	particles.emitting = true
-	var particles_ref: WeakRef = weakref(particles)
-	_actor.get_tree().create_timer(particles.lifetime).timeout.connect(func() -> void:
-		var p := particles_ref.get_ref() as CPUParticles2D
-		if p:
-			p.queue_free()
-	)
 
 ## Re-tint the floating bar to the current team (TeamMember calls this on
 ## every team change — the bar used to stay at its spawn-time green).
@@ -234,6 +224,7 @@ func _respawn() -> void:
 	_actor.angular_velocity = 0.0
 	current_health = max_health
 	_is_dead = false
+	_last_hit_dir = Vector2.ZERO
 
 	var holder := _actor.get_node_or_null("WeaponHolder") as WeaponHolder
 	if holder:

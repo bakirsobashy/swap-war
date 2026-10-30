@@ -78,10 +78,13 @@ func _physics_process(delta: float) -> void:
 		_cooldowns[id] = damage_interval
 		# No attacker: environment damage must not overwrite the enemy who
 		# knocked the victim in (the hazard used to take — and score — the kill).
+		# The hit direction follows the pop (straight up without one): it aims
+		# the kill burst and the stain.
+		var dir := knockback_impulse.normalized() if not knockback_impulse.is_zero_approx() else Vector2.UP
 		if instant_kill:
-			health.take_damage(health.max_health, null)
+			health.take_damage(health.max_health, null, dir)
 		else:
-			health.take_damage(damage, null)
+			health.take_damage(damage, null, dir)
 		if body is RigidBody2D and not knockback_impulse.is_zero_approx():
 			body.apply_central_impulse(knockback_impulse)
 

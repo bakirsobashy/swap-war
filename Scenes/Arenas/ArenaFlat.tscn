@@ -8,7 +8,7 @@
 
 [node name="Background" type="Sprite2D" parent="." index="0" unique_id=702390062]
 modulate = Color(0.87243545, 0.8724354, 0.87243533, 1)
-z_index = -1
+z_index = -2
 position = Vector2(0, -150)
 texture = ExtResource("3_bg")
 

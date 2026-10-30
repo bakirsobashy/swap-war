@@ -1,6 +1,8 @@
 # Plan: hit & kill feel (impact juice + persistent kill stains)
 
-**Status:** plan only, not implemented. **Date:** 2026-10-30.
+**Status:** phase 1 implemented (needs the probe suite run on a Godot machine, and the Splat Pack pushed); phases 2–3 planned. **Date:** 2026-10-30.
+
+**Decisions (2026-10-30):** stains use the **victim's** colour; off-map deaths get an **edge splash, no stain**; hit-stop is **player-involved only**; the screen-shake toggle ships with the phase 3 settings work (phase 1 shake is gated to the player's fights and kept modest). Splat Pack lives at `Assets/vfx/PNG/`.
 
 ## Goals
 
@@ -191,10 +193,18 @@ New `Tools/hit_feel_probe.gd`, added to `run_probes.ps1` and to the CLAUDE.md pr
 - **Plumbing:** `hit_dir` and `is_critical` reach `ImpactFX` and `FloatingNumber`. A death while the actor is freed mid-await throws no errors (extends the `death_free_probe` scenario).
 - **Regressions:** all existing probes still pass. The timing-sensitive ones (`hazard_damage_probe` pacing, `decision_probe`, `auto_attack_probe`) run with `HitFeel.enabled = false`, set through a guarded `/root/HitFeel` lookup.
 
-## Open questions
+## Open questions (answered 2026-10-30)
 
-1. **Stain colour:** the victim's colour (recommended: it's "their paint") or the killer's (marks territory)?
-2. **Off-map deaths:** edge splash with no stain (recommended), or a stain at the actor's last ground position?
-3. **Hit-stop scope:** player-involved only (recommended), or every on-screen kill?
-4. **Screen-shake toggle** in Settings: add it in phase 1, or wait until someone asks for it?
-5. **Splat Pack:** confirm the PNGs are white/greyscale and that it includes small drop sprites. Otherwise I'll make white versions and take the droplets from Kenney's Particle Pack.
+1. **Stain colour:** victim's.
+2. **Off-map deaths:** edge splash, no stain.
+3. **Hit-stop scope:** player-involved only.
+4. **Screen-shake toggle:** phase 3, with the other settings work.
+5. **Splat Pack:** added locally at `Assets/vfx/PNG/`, not pushed yet. Still to check once it's in the repo: white vs pre-coloured PNGs, and which files are splats vs drops (StainLayer loads every PNG in the folder for now; curate after).
+
+## Phase 1 as built
+
+- `Health.take_damage(amount, attacker, hit_dir, is_critical)` / `Health.die(off_map)`; melee, projectile and hazard pass their knockback direction, KillZone passes `off_map = true`.
+- `HitFeel` autoload (registered last in `project.godot`): `on_hit` / `on_kill`, `TUNING`, `enabled`, `hitstop_enabled` (defaults off under headless — see CLAUDE.md gotchas).
+- `ArenaCamera.gd` on ArenaBase's `Camera2D`; `StainLayer.gd` as ArenaBase's `Stains` node (z -1); ArenaFlat's `Background` moved to z -2.
+- `ImpactFX.gd`: white death pop (inline flat-white shader), kill burst along the blow, edge splash. Health's old upward death particles are gone; the per-hit yellow particles stay until phase 2.
+- `Tools/hit_feel_probe.gd`, added to `run_probes.ps1`.
