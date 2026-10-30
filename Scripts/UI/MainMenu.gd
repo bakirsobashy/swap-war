@@ -35,6 +35,7 @@ const AI_COUNT_MIN := 1
 @onready var corner_music: Button = %CornerMusic
 @onready var touch_stepper: Stepper = %TouchStepper
 @onready var auto_attack_check: CheckButton = %AutoAttackCheck
+@onready var quit_btn: Button = %QuitBtn
 
 ## First control focused by a keyboard/gamepad navigation press, per panel.
 @onready var _default_focus: Dictionary = {
@@ -61,7 +62,13 @@ func _ready() -> void:
 	_populate_arena_options()
 	_update_options_ui()
 	_update_settings_ui()
+	quit_btn.visible = _can_quit()
 	_show_panel(main_panel)
+
+## A browser tab can't close itself and iOS apps never quit themselves, so
+## Quit only shows on desktop and Android.
+func _can_quit() -> bool:
+	return not (OS.has_feature("web") or OS.has_feature("ios"))
 
 func _unhandled_input(event: InputEvent) -> void:
 	if touch_layout_editor.visible:
@@ -70,6 +77,20 @@ func _unhandled_input(event: InputEvent) -> void:
 		if panel.visible:
 			MenuFocus.focus_on_nav(event, _default_focus[panel])
 			return
+
+## Android's Back steps out one level: layout editor -> Settings, any panel ->
+## the main screen, and the main screen quits (the platform's root behaviour).
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST and is_node_ready():
+		go_back()
+
+func go_back() -> void:
+	if touch_layout_editor.visible:
+		_on_touch_editor_closed()
+	elif not main_panel.visible:
+		_on_back_pressed()
+	else:
+		get_tree().quit()
 
 func _show_panel(panel: Control) -> void:
 	main_panel.visible = false

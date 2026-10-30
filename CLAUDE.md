@@ -43,7 +43,7 @@ Godot is installed at `D:\Apps\godot\Godot_v4.7.1-stable_win64.exe` and is not o
   - `auto_attack_probe` — melee proximity auto-swing + aim lock, negatives (far/off/ally/dead), ranged touch-only auto-fire, hold-last guard
   - `touch_layout_editor_probe` — layout persistence round-trip, editor selection/drag/resize/clamps, gameplay denormalized apply + resize + procedural fallback, config backup/restore
   - `death_free_probe` — death/respawn while the actor is freed mid-await (no resumed-coroutine errors)
-  - `menu_probe` — Menu UI 2.0: lazy keyboard focus, Stepper wrap/emit + match-state wiring, win-mode row greying + m:ss, mute icon/slider, pause close button, post-round DRAW/reason/sorted starred rows
+  - `menu_probe` — Menu UI 2.0: lazy keyboard focus, Stepper wrap/emit + match-state wiring, win-mode row greying + m:ss, mute icon/slider, pause close button, post-round DRAW/reason/sorted starred rows, focus-loss/backgrounding auto-pause, Android Back (pause toggle, end screen → menu, menu panels step back), Quit hidden on web/iOS
   - `swap_preview_probe` — player arrow + 2 s swap-colour preview: preview timing/colours, swap applies the previewed roll, clears on swap/stop/restart, arrow only on the player and hidden while dead, two-team guarantee on pre-rolls
   - `audit_regression_probe` — replays every bug reproduced in the 2026-10 audit (`docs/godot-prompter/plans/AUDIT_REPORT_2026-10.md`) in live matches: fixed ones FAIL on regression, open ones print `KNOWN (open)` (promote to a check when fixed)
 

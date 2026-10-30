@@ -12,12 +12,18 @@ extends SceneTree
 ##   5. PauseMenu: the corner close button resumes and unpauses
 ##   6. PostRoundMenu: DRAW title, reworded reason, rows sorted by kills with
 ##      the winner starred
+##   7. app lifecycle: focus loss / backgrounding opens the pause menu (never
+##      closes it, never over the post-round screen)
+##   8. Android Back: toggles pause, leaves the end screen for the main menu,
+##      and steps the main menu back one level (layout editor -> Settings ->
+##      main); Quit shows on desktop (hidden on web/iOS)
 ##
 ## Probe discipline: runtime load() only, untyped vars, no autoload identifiers.
 ## Never presses START / mute buttons / the touch stepper — those reach
 ## SettingsManager setters, which persist to the user's settings file.
 
 const SOUND_OFF_PATH := "res://Assets/ui/ui-2.0/scribble_ui/x1/icons/sound_off.png"
+const MAIN_MENU_PATH := "res://Scenes/UI/MainMenu.tscn"
 
 var _fails: int = 0
 
@@ -102,6 +108,24 @@ func _main_menu_checks() -> void:
 	else:
 		_check(false, "SettingsManager autoload present")
 
+	# 8. Back steps out one level; Quit is a desktop/Android button
+	_check(menu.quit_btn.visible, "Quit shows on desktop")
+	menu._on_how_to_play_pressed()
+	menu.propagate_notification(Node.NOTIFICATION_WM_GO_BACK_REQUEST)
+	_check(menu.main_panel.visible and not menu.help_panel.visible,
+			"Back from How to Play returns to the main screen")
+	menu._on_settings_pressed()
+	menu._on_customize_touch_pressed()
+	await process_frame
+	menu.propagate_notification(Node.NOTIFICATION_WM_GO_BACK_REQUEST)
+	await process_frame
+	_check(menu.settings_panel.visible and not menu.touch_layout_editor.visible
+			and not Input.emulate_touch_from_mouse,
+			"Back from the layout editor returns to Settings and restores emulation")
+	menu.propagate_notification(Node.NOTIFICATION_WM_GO_BACK_REQUEST)
+	_check(menu.main_panel.visible and not menu.settings_panel.visible,
+			"Back from Settings returns to the main screen")
+
 	menu.queue_free()
 	await process_frame
 
@@ -115,6 +139,28 @@ func _pause_checks() -> void:
 	_check(pause.get_node("Root/Dim").visible, "pause dims the game behind the card")
 	pause.get_node("%CloseBtn").pressed.emit()
 	_check(not pause.visible and not paused, "corner close button resumes")
+
+	# 7. focus loss / backgrounding pauses; 8. Back toggles
+	pause.propagate_notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
+	_check(pause.visible and paused, "losing focus opens the pause menu")
+	pause.propagate_notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
+	_check(pause.visible and paused, "a second focus loss keeps it open")
+	pause.propagate_notification(Node.NOTIFICATION_WM_GO_BACK_REQUEST)
+	_check(not pause.visible and not paused, "Back closes the pause menu")
+	pause.propagate_notification(Node.NOTIFICATION_APPLICATION_PAUSED)
+	_check(pause.visible and paused, "going to the background opens the pause menu")
+	pause._on_resume_pressed()
+	pause.propagate_notification(Node.NOTIFICATION_WM_GO_BACK_REQUEST)
+	_check(pause.visible and paused, "Back opens the pause menu during play")
+	pause._on_resume_pressed()
+	var fake_post := CanvasLayer.new()
+	root.add_child(fake_post)
+	pause._post_round_menu = fake_post
+	pause.propagate_notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
+	pause.propagate_notification(Node.NOTIFICATION_WM_GO_BACK_REQUEST)
+	_check(not pause.visible and not paused,
+			"focus loss and Back leave the post-round screen alone")
+	fake_post.queue_free()
 	pause.queue_free()
 	await process_frame
 
@@ -146,6 +192,15 @@ func _post_round_checks() -> void:
 			"winner row starred, others ranked")
 	_check(board.get_child_count() == 5, "notebook-line separators between rows (rows rebuilt, not appended)")
 	_check(post.get_node("%Title").text == "BRAVO WINS!", "winner title")
+
+	# 8. Back on the end screen goes to the main menu
+	post.propagate_notification(Node.NOTIFICATION_WM_GO_BACK_REQUEST)
+	await process_frame
+	await process_frame
+	_check(not paused and current_scene != null
+			and current_scene.scene_file_path == MAIN_MENU_PATH,
+			"Back on the end screen goes to the main menu")
+	unload_current_scene()
 
 	paused = false
 	post.queue_free()

@@ -29,6 +29,26 @@ func _unhandled_input(event: InputEvent) -> void:
 	if visible:
 		MenuFocus.focus_on_nav(event, resume_btn)
 
+## Losing focus (alt-tab, a browser tab switch) or going to the background
+## (a call on a phone) pauses, so the match and its clock wait for the player.
+## Android's Back toggles the menu like Esc (quit_on_go_back is off).
+func _notification(what: int) -> void:
+	match what:
+		NOTIFICATION_APPLICATION_FOCUS_OUT, NOTIFICATION_APPLICATION_PAUSED:
+			pause_for_interruption()
+		NOTIFICATION_WM_GO_BACK_REQUEST:
+			if is_inside_tree():
+				toggle_pause()
+
+## Opens the menu if the match is running; never closes it (focus can bounce
+## out twice) and leaves the post-round screen alone.
+func pause_for_interruption() -> void:
+	if not is_inside_tree() or visible or get_tree().paused:
+		return
+	if _post_round_menu and _post_round_menu.visible:
+		return
+	_toggle_pause()
+
 func _toggle_pause() -> void:
 	if get_tree().paused and not visible:
 		return

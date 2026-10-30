@@ -26,6 +26,11 @@ func _unhandled_input(event: InputEvent) -> void:
 	if visible:
 		MenuFocus.focus_on_nav(event, play_again_btn)
 
+## Android's Back on the end screen leaves for the main menu.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST and visible and is_inside_tree():
+		_on_main_menu_pressed()
+
 func show_post_round(winner: Node, scores: Dictionary, win_reason: String) -> void:
 	visible = true
 	get_tree().paused = true
