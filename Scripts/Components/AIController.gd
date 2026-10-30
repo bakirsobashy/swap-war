@@ -30,15 +30,30 @@ const NavExecutorScript := preload("res://Scripts/AI/NavExecutor.gd")
 ## ever fire). 96px is the plan's "destination moved materially" threshold.
 const NAV_REPLAN_DIST := 96.0
 
+## Ranged fire gate (~16 degrees): the GUN must point at the enemy, not just
+## the aim intent — the gun turns gradually after the aim, and shots fired
+## mid-swing went behind the AI after a swap flipped its target.
+const FIRE_DOT_GATE := 0.96
+## A ranged AI whose fire lane stayed blocked this long moves to find one
+## (one ray clipping a tile corner is not a blocked lane).
+const LOS_BLOCKED_TIME := 0.4
+## Direct-steer ledge guard (safe_move): stop-line slack before a lethal or
+## hazardous edge, plus the friction coast per px/s of speed (ground friction
+## 0.88/tick at 60 tps carries ~0.12 s of travel, plus one tick of input lag).
+const LEDGE_SLACK := 10.0
+const LEDGE_COAST := 0.14
+## A threat this far above/below us can be passed under or over freely
+## (is_past_threat).
+const CROSS_LEVEL_BAND := 128.0
+
 # Virtual inputs read by Actor-Movement.gd
 var move_direction: float = 0.0
 var wants_jump: bool = false
 var wants_attack: bool = false
 var wants_drop: bool = false
 var aim_direction: Vector2 = Vector2.RIGHT
-## Body facing the decision layer wants (Actor-Movement reads it between its
-## move-input branch and the velocity fallback). 0 = no intent: the velocity
-## fallback governs.
+## Body facing the decision layer wants (Actor-Movement ranks it above both
+## move input and the velocity fallback). 0 = no intent: movement governs.
 var facing_intent: float = 0.0
 
 @export var is_ai: bool = true
@@ -127,7 +142,13 @@ func _physics_process(delta: float) -> void:
 	wants_drop = false
 
 	sensors.update(delta)
-	machine.physics_update(delta)
+	# Team-swap reaction window: the machine HOLDS its state with every
+	# decision input silent until the sensors re-acquire. Running it here
+	# tore the fight down (no enemy -> Idle -> a random Patrol hop) even when
+	# the swap kept the same enemy. A live nav goal still finishes its move —
+	# a jump cut off mid-air would land short (into the spikes).
+	if not sensors.in_swap_window():
+		machine.physics_update(delta)
 	# The executor runs AFTER the decision machine and overwrites the movement
 	# inputs while a nav goal is active — clean attribution, one owner.
 	if nav_enabled and nav_executor != null:
@@ -178,6 +199,72 @@ func is_armed() -> bool:
 	return weapon_holder != null and weapon_holder.is_holding_weapon()
 
 
+func is_ranged_armed() -> bool:
+	if not is_armed():
+		return false
+	var weapon = weapon_holder.current_weapon
+	return is_instance_valid(weapon) and weapon.is_ranged()
+
+
+## The fire lane to the enemy has stayed blocked: waiting in place never
+## ends, so a ranged AI has to move until it finds one.
+func los_blocked() -> bool:
+	return sensors.no_los_time >= LOS_BLOCKED_TIME
+
+
+## Ranged trigger: a clear lane AND the gun's muzzle on target.
+func ranged_shot_ready(enemy: Node2D) -> bool:
+	if not sensors.has_los_to_enemy or not is_ranged_armed():
+		return false
+	var to_enemy: Vector2 = (enemy.global_position - actor.global_position).normalized()
+	return weapon_holder.current_weapon.get_fire_direction().dot(to_enemy) > FIRE_DOT_GATE
+
+
+## Crossing rule (Retreat refuges, unarmed Patrol hops): standing at world x
+## means getting PAST `threat` — through its weapon — when it stands at our
+## level and x lies on its far side.
+func is_past_threat(threat: Node2D, x: float) -> bool:
+	var me: Vector2 = actor.global_position
+	var t: Vector2 = threat.global_position
+	if absf(t.y - me.y) > CROSS_LEVEL_BAND:
+		return false
+	var side := signf(me.x - t.x)
+	return side != 0.0 and signf(x - t.x) != side
+
+
+## Direct-steer guard for the states' own move writes (kiting, the retreat
+## fallback, no-route charges): `dir`, unless that step carries the body off
+## its platform into nothing (the KillZone) or onto a hazard — then 0, early
+## enough that the friction coast still stops short. Nav routes never need
+## this: the graph only links safe landings.
+func safe_move(dir: float) -> float:
+	if dir == 0.0 or not actor.is_grounded():
+		return dir
+	var graph = nav_graph()
+	var here: int = sensors.current_platform_id
+	if graph == null or here < 0 or here >= graph.platforms.size():
+		return dir
+	var P = graph.platforms[here]
+	var x: float = actor.global_position.x
+	if not P.contains_x(x):
+		return dir
+	var s := signf(dir)
+	var edge: float = P.x_max if s > 0.0 else P.x_min
+	# What the body lands on past the edge: a walkable neighbour or a safe
+	# drop is fine; nothing at all is the KillZone. (A step or wall rising
+	# past the edge reads as nothing too — harmless, it blocks the body.)
+	var beyond: int = graph.platform_below(Vector2(edge + s * 8.0, P.y_top - 4.0))
+	var hazard: bool = beyond >= 0 and bool(graph.platforms[beyond].hazardous)
+	if beyond >= 0 and not hazard:
+		return dir
+	# Spikes reach the capsule's side before its center.
+	var slack: float = LEDGE_SLACK + (nav_executor.capsule_radius() if hazard else 0.0)
+	var coast: float = maxf(0.0, actor.linear_velocity.x * s) * LEDGE_COAST
+	if (edge - x) * s > slack + coast:
+		return dir
+	return 0.0
+
+
 ## Armed low-HP retreat trigger, respecting the post-retreat lockout.
 func should_retreat(dist: float) -> bool:
 	return retreat_lockout <= 0.0 and health_ratio() <= retreat_health_ratio \
@@ -213,8 +300,9 @@ func combat_standoff() -> float:
 ## Facing intent: an armed AI with a live enemy always faces it — approach,
 ## exchange, or retreat with cover-fire (the ranged weapon render flips on
 ## facing, and melee keeps its eyes on the target through knockback: the old
-## velocity fallback flipped facing on every hit). Unarmed states leave the
-## intent 0 and the velocity fallback governs.
+## velocity fallback flipped facing on every hit). Actor-Movement ranks the
+## intent above move input, so backing off or retreating never turns the
+## AI's back. Unarmed states leave the intent 0 and movement governs.
 func _publish_facing() -> void:
 	facing_intent = 0.0
 	if not is_armed():
@@ -236,8 +324,9 @@ func _publish_aim() -> void:
 # --- events ----------------------------------------------------------------------
 
 ## Team swap: NO state is torn down (no flinch). The sensors forget the
-## enemy NOW (it may be an ally), re-acquire after the reaction window, and
-## the executor re-plans so a route toward the old enemy is re-considered.
+## enemy NOW (it may be an ally) and re-acquire after the reaction window;
+## _physics_process holds the machine until then, and the executor re-plans
+## so a route toward the old enemy is re-considered.
 func _on_team_changed(_teams: Dictionary) -> void:
 	sensors.invalidate_enemy()
 	sensors.force_refresh_after(swap_reaction_time)

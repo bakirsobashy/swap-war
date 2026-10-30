@@ -3,13 +3,15 @@ extends "res://Scripts/AI/State.gd"
 ## The exchange state. Core fix (audit bug: attack-once freeze): while in
 ## range, wants_attack is HELD true every tick — the weapons self-throttle
 ## their own cooldowns, so a held intent IS the correct pacing. Ranged fire
-## additionally gates on LOS and the aim actually pointing at the enemy (the
-## sensor's per-refresh scatter roll shows up here — a bad roll holds fire
-## until the next re-roll). Melee keeps contact spacing; ranged kites back
-## while firing when the enemy closes inside half the stand-off.
+## additionally gates on LOS and the GUN actually pointing at the enemy (it
+## turns gradually after the aim — firing on the aim intent alone sent the
+## first shots after a target switch behind the AI). A ranged AI whose lane
+## stays blocked hands back to ApproachEnemy to find one instead of waiting
+## behind cover forever. Melee keeps contact spacing; ranged kites back while
+## firing when the enemy closes inside half the stand-off — never off a
+## ledge or into a hazard (safe_move).
 
 const MIN_TIME := 0.25           # hysteresis before chasing again (range flip-flop)
-const AIM_DOT_GATE := 0.96       # ~16 degrees — ranged fire only roughly on target
 const KITE_RATIO := 0.5          # inside this fraction of the stand-off: back off
 const MELEE_CROWD_RATIO := 0.3   # inside this fraction of reach: stop body-pushing
 
@@ -56,25 +58,26 @@ func physics_update(delta: float) -> String:
 			return "ApproachEnemy"
 		return ""
 
+	# In range but no lane (terrain between us): the rifle's 720px reach made
+	# this the common case — go find a shot.
+	if owner.is_ranged_armed() and owner.los_blocked():
+		return "ApproachEnemy"
+
 	if not owner.ai_attack_enabled:
 		return ""
 
-	var weapon = owner.weapon_holder.current_weapon
-	if weapon != null and is_instance_valid(weapon) and weapon.is_ranged():
+	if owner.is_ranged_armed():
 		_ranged_exchange(enemy, dist)
 	else:
 		_melee_exchange(enemy, dist)
 	return ""
 
 
-## Ranged duel: fire only with clear LOS and the aim on target; kite back
+## Ranged duel: fire only with a clear lane and the gun on target; kite back
 ## when the enemy crowds inside half the stand-off distance.
 func _ranged_exchange(enemy: Node2D, dist: float) -> void:
-	if owner.sensors.has_los_to_enemy:
-		var to_enemy: Vector2 = (enemy.global_position
-				- owner.actor.global_position).normalized()
-		if owner.aim_direction.dot(to_enemy) > AIM_DOT_GATE:
-			owner.wants_attack = true
+	if owner.ranged_shot_ready(enemy):
+		owner.wants_attack = true
 	if dist < owner.combat_standoff() * KITE_RATIO:
 		_kite_away(enemy)
 
@@ -91,7 +94,7 @@ func _kite_away(enemy: Node2D) -> void:
 	var away: float = signf(owner.actor.global_position.x - enemy.global_position.x)
 	if away == 0.0:
 		away = -signf(owner.actor.facing_direction)
-	owner.move_direction = away
+	owner.move_direction = owner.safe_move(away)
 
 
 ## Unarmed mid-exchange (weapon broke): the hub rules apply — a known weapon

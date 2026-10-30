@@ -16,6 +16,10 @@ extends RefCounted
 
 const FEET_DOWN := 31.0        # capsule bottom below the body origin (executor's convention)
 const NO_CELL := Vector2i(9999, 9999)
+## Half-width of the fire lane the LOS test sweeps: a bullet is 7px thick and
+## leaves a muzzle a few px off the body's center line, so a lane where only
+## the center ray grazes past a tile corner ate every shot.
+const LOS_HALF_WIDTH := 10.0
 
 var owner = null
 
@@ -39,10 +43,15 @@ var hazard_escape_dir: float = 0.0
 ## Solid-world-only ray to the enemy reaches it — a FIRE gate for ranged
 ## weapons ("don't shoot the wall"), never a knowledge gate.
 var has_los_to_enemy: bool = false
+## Seconds the fire lane to the current enemy has stayed blocked (0 while
+## clear or with no enemy) — the controller's los_blocked() trigger.
+var no_los_time: float = 0.0
 
 var _reaction_timer: float = 0.0
 var _target_switch_timer: float = 0.0
 var _aim_error_deg: float = 0.0          # re-rolled on every target refresh
+## A team swap forgot the enemy and the forced re-acquire has not run yet.
+var _swap_window: bool = false
 ## Weapons a seek gave up on (unreachable): instance id -> expiry msec.
 ## Without it an unarmed AI re-picked the same unreachable weapon forever.
 var _weapon_blacklist: Dictionary = {}
@@ -64,6 +73,8 @@ func invalidate_targets() -> void:
 	best_weapon = null
 	_reaction_timer = 0.0
 	_target_switch_timer = 0.0
+	no_los_time = 0.0
+	_swap_window = false
 
 
 ## Team-swap reaction window, step 1: forget the enemy NOW (it may be an
@@ -72,6 +83,7 @@ func invalidate_targets() -> void:
 func invalidate_enemy() -> void:
 	nearest_enemy = null
 	_target_switch_timer = 0.0
+	no_los_time = 0.0
 
 
 ## Team-swap reaction window, step 2: schedule the next target refresh `sec`
@@ -79,6 +91,13 @@ func invalidate_enemy() -> void:
 ## second timer to keep in sync.
 func force_refresh_after(sec: float) -> void:
 	_reaction_timer = maxf(sec, owner.reaction_time)
+	_swap_window = true
+
+
+## The swap reaction window is open (the controller holds its decision
+## machine until the refresh that closes it).
+func in_swap_window() -> bool:
+	return _swap_window
 
 
 ## Main update: perception + environment sensing.
@@ -99,7 +118,7 @@ func update(delta: float) -> void:
 		_reaction_timer = owner.reaction_time
 
 	_update_environment()
-	_update_los()
+	_update_los(delta)
 	_update_aim()
 
 
@@ -107,6 +126,7 @@ func update(delta: float) -> void:
 ## weapon is pure score — nearest, with a ranged bonus and a hazard penalty,
 ## so a sword 50px away still beats a bow sitting in the spikes 40px away.
 func refresh_targets() -> void:
+	_swap_window = false
 	best_weapon = _find_best_weapon()
 
 	if not _is_valid_target(nearest_enemy) or _target_switch_timer <= 0.0:
@@ -114,9 +134,10 @@ func refresh_targets() -> void:
 		if candidate != nearest_enemy:
 			nearest_enemy = candidate
 			_target_switch_timer = owner.target_switch_cooldown
+			no_los_time = 0.0
 
-	# Ranged aim scatter re-rolls per refresh — a bad roll holds fire for one
-	# reaction window (the attack state gates on the aim dot), then re-rolls.
+	# Ranged aim scatter re-rolls per refresh; the gun slerps onto each roll
+	# (the fire gate checks the muzzle against the TRUE enemy direction).
 	_aim_error_deg = randf_range(-owner.aim_error_deg, owner.aim_error_deg)
 
 	var graph = owner.nav_graph()
@@ -226,23 +247,30 @@ func _update_environment() -> void:
 			hazard_escape_dir = graph.hazard_escape_dir(feet)
 
 
-## One ray, mask 1 (solid world only): weapons, actors and hazards never
-## block fire, so this is purely "is there terrain in the way".
-func _update_los() -> void:
+## A lane LOS_HALF_WIDTH either side of the center line (two parallel rays),
+## mask 1 (solid world only): weapons, actors and hazards never block fire,
+## so this is purely "is there terrain in the way of a bullet".
+func _update_los(delta: float) -> void:
 	has_los_to_enemy = false
 	if nearest_enemy == null or not is_instance_valid(nearest_enemy):
+		no_los_time = 0.0
 		return
 
 	var from: Vector2 = owner.actor.global_position
 	var to: Vector2 = nearest_enemy.global_position
 	if from.distance_to(to) < 4.0:
 		has_los_to_enemy = true
-		return
+	else:
+		var side: Vector2 = (to - from).normalized().orthogonal() * LOS_HALF_WIDTH
+		has_los_to_enemy = _ray_clear(from + side, to + side) \
+				and _ray_clear(from - side, to - side)
+	no_los_time = 0.0 if has_los_to_enemy else no_los_time + delta
 
+
+func _ray_clear(from: Vector2, to: Vector2) -> bool:
 	var params := PhysicsRayQueryParameters2D.create(from, to, 1)
 	params.exclude = [owner.actor.get_rid()]
-	var hit: Dictionary = owner.actor.get_world_2d().direct_space_state.intersect_ray(params)
-	has_los_to_enemy = hit.is_empty()
+	return owner.actor.get_world_2d().direct_space_state.intersect_ray(params).is_empty()
 
 
 ## Aim at the enemy with the per-refresh scatter roll, else forward.

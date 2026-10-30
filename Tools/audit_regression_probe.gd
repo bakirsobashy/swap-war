@@ -182,10 +182,20 @@ func _run() -> void:
 	# Quiet arena from here on: the GO wave arms the AIs at once, and live
 	# fights cost durability, steal kills and shove test actors around.
 	# Scenarios that need an AI brain switch that one AI back on.
-	for o in ais:
+	for i in ais.size():
+		var o = ais[i]
 		o.get_node("AIController").is_ai = false
 		o.get_node("AIController").move_direction = 0.0
 		o.get_node("AIController").wants_attack = false
+		# Park the living AIs on the west floor at full health: frozen where
+		# the GO fight left it, an AI could stand brushing the spike strip and
+		# bleed out during the quiet tests — the kill-credit victim was then
+		# already dead when its scenario began (flaky "attacker gets the kill").
+		var oh = o.get_node("Components/Health")
+		if not oh.is_dead():
+			oh.current_health = oh.max_health
+			o.global_position = Vector2(-450.0 + 80.0 * i, 78.0)
+			o.linear_velocity = Vector2.ZERO
 	for a in _actors(scene):
 		var wh = a.get_node("WeaponHolder")
 		if wh.current_weapon != null:
