@@ -6,6 +6,8 @@
 [ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/play.png" id="4_play"]
 [ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/restart.png" id="5_restart"]
 [ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/home.png" id="6_home"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/settings.png" id="7_settings"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/SettingsPanel.tscn" id="8_settings_panel"]
 
 [node name="PauseMenu" type="CanvasLayer" unique_id=483318585]
 process_mode = 3
@@ -93,10 +95,18 @@ theme_type_variation = &"ButtonAlt"
 text = "RESTART"
 icon = ExtResource("5_restart")
 
+[node name="SettingsBtn" type="Button" parent="Root/Center/Panel/VBox/Buttons" unique_id=930200008]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(340, 64)
+layout_mode = 2
+text = "SETTINGS"
+icon = ExtResource("7_settings")
+
 [node name="QuitBtn" type="Button" parent="Root/Center/Panel/VBox/Buttons" unique_id=141778926]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(340, 64)
 layout_mode = 2
+theme_type_variation = &"ButtonAlt"
 text = "QUIT TO MENU"
 icon = ExtResource("6_home")
 
@@ -104,6 +114,12 @@ icon = ExtResource("6_home")
 custom_minimum_size = Vector2(0, 4)
 layout_mode = 2
 mouse_filter = 2
+
+[node name="SettingsPanel" parent="Root/Center" unique_id=930200009 instance=ExtResource("8_settings_panel")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+show_touch_layout_button = false
 
 [connection signal="pressed" from="Root/Center/Panel/VBox/Header/CloseBtn" to="." method="_play_click"]
 [connection signal="pressed" from="Root/Center/Panel/VBox/Header/CloseBtn" to="." method="_on_resume_pressed"]
@@ -113,3 +129,6 @@ mouse_filter = 2
 [connection signal="pressed" from="Root/Center/Panel/VBox/Buttons/RestartBtn" to="." method="_on_restart_pressed"]
 [connection signal="pressed" from="Root/Center/Panel/VBox/Buttons/QuitBtn" to="." method="_on_quit_to_menu_pressed"]
 [connection signal="pressed" from="Root/Center/Panel/VBox/Buttons/QuitBtn" to="." method="_play_click"]
+[connection signal="pressed" from="Root/Center/Panel/VBox/Buttons/SettingsBtn" to="." method="_on_settings_pressed"]
+[connection signal="pressed" from="Root/Center/Panel/VBox/Buttons/SettingsBtn" to="." method="_play_click"]
+[connection signal="back_requested" from="Root/Center/SettingsPanel" to="." method="_on_settings_back"]

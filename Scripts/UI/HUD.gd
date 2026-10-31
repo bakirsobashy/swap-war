@@ -2,14 +2,19 @@ class_name HUD
 extends CanvasLayer
 
 ## In-match HUD (Notebook Doodle, menu_theme): paper scoreboard card, swap
-## timer badge, goal chip (score target / match clock / sudden death) and the
-## centre banner. Every Control ignores the mouse — Attack is mouse-bound.
+## timer badge, goal chip (score target / match clock / sudden death), a pause
+## button in the top-right corner and the centre banner. Every Control except
+## the pause button ignores the mouse — Attack is mouse-bound (Actor-Movement
+## skips Attack while the mouse is over the pause button).
 
 const TeamDotScript := preload("res://Scripts/UI/TeamDot.gd")
 const LEADER_STAR := preload("res://Assets/ui/ui-2.0/scribble_ui/x1/hud/star_small_full.png")
-## Goal chip: gap to the touch pause button / to the canvas corner.
+## Top-right corner slot of the pause button (the touch PauseButton's default
+## spot too): margin from the canvas edges and button size.
+const CORNER_MARGIN := 22.0
+const PAUSE_SIZE := 56.0
+## Minimum gap between the goal chip and the swap timer.
 const CHIP_GAP := 14.0
-const CHIP_CORNER_MARGIN := 22.0
 ## Long banner texts ("SUDDEN DEATH!", "X WINS!") drop to this size.
 const BANNER_SHORT_MAX_CHARS := 3
 const BANNER_LONG_FONT_SIZE := 72
@@ -20,6 +25,7 @@ const BANNER_LONG_FONT_SIZE := 72
 @onready var _top_bar: Control = %TopBar
 @onready var _goal_chip: Control = %GoalChip
 @onready var _goal_label: Label = %GoalLabel
+@onready var _pause_button: Button = %PauseButton
 ## Untyped: its script API (uses_touch_controls, get_control_rect) isn't on
 ## the CanvasLayer base, and TouchControls.gd has no class_name.
 @onready var _touch_controls = $TouchControls
@@ -44,7 +50,7 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	_update_team_timer()
-	_update_goal_chip()
+	_update_top_right()
 
 ## Shift the top bar below any notch/status-bar inset and shrink the
 ## scoreboard font on narrow windows (phones in portrait).
@@ -52,6 +58,8 @@ func _apply_responsive_layout() -> void:
 	var insets: Vector4 = SafeAreaUtil.get_canvas_insets(get_viewport())
 	_top_bar.offset_top = insets.y
 	_top_bar.offset_bottom = 110.0 + insets.y
+	_pause_button.offset_right = -CORNER_MARGIN - insets.z
+	_pause_button.offset_left = _pause_button.offset_right - PAUSE_SIZE
 
 	# Size the fonts off the real WINDOW width: under canvas_items stretch with
 	# the expand aspect the canvas is never narrower than the 1152-unit base,
@@ -204,10 +212,13 @@ func _update_team_timer() -> void:
 	var timer: Timer = TeamManager._swap_timer
 	_team_timer.update_timer(timer.time_left, TeamManager.swap_interval, timer.is_stopped())
 
-## Goal chip text + placement: just left of the touch pause button while touch
-## controls are in use and the button sits in the top-right band; otherwise in
-## the canvas corner (desktop, or a custom layout that moved the button away).
-func _update_goal_chip() -> void:
+## Top-right row: the pause button sits in the corner (hidden while touch
+## controls are in use — their own PauseButton takes that spot), and the goal
+## chip is centred between the swap timer and whichever pause button is active.
+func _update_top_right() -> void:
+	var touch_on: bool = _touch_controls != null and _touch_controls.uses_touch_controls()
+	_pause_button.visible = not touch_on
+
 	var text := _goal_text()
 	_goal_chip.visible = not text.is_empty()
 	if text != _goal_label.text:
@@ -216,19 +227,30 @@ func _update_goal_chip() -> void:
 		return
 	var canvas := get_viewport().get_visible_rect().size
 	var insets: Vector4 = SafeAreaUtil.get_canvas_insets(get_viewport())
-	var chip_h := _goal_chip.get_combined_minimum_size().y
-	var right_edge := canvas.x - insets.z - CHIP_CORNER_MARGIN
-	var center_y := insets.y + CHIP_CORNER_MARGIN + chip_h * 0.5
-	if _touch_controls and _touch_controls.uses_touch_controls():
-		var pause: Rect2 = _touch_controls.get_control_rect("PauseButton")
-		if pause.position.y < 160.0 and pause.get_center().x > canvas.x * 0.5:
-			right_edge = pause.position.x - CHIP_GAP
-			center_y = pause.get_center().y
-	# TopBar spans the canvas width and starts at insets.y.
-	_goal_chip.offset_right = right_edge - canvas.x
-	_goal_chip.offset_left = _goal_chip.offset_right
-	_goal_chip.offset_top = center_y - chip_h * 0.5 - _top_bar.offset_top
+	var pause := Rect2(canvas.x - insets.z - CORNER_MARGIN - PAUSE_SIZE, insets.y + CORNER_MARGIN,
+			PAUSE_SIZE, PAUSE_SIZE)
+	if touch_on:
+		# Follow the touch PauseButton while it is still in the top-right band
+		# (a custom layout can move it anywhere).
+		var touch_pause: Rect2 = _touch_controls.get_control_rect("PauseButton")
+		if touch_pause.position.y < 160.0 and touch_pause.get_center().x > canvas.x * 0.5:
+			pause = touch_pause
+	var timer_right := _team_timer.get_global_rect().end.x
+	var chip_size := _goal_chip.get_combined_minimum_size()
+	var left := maxf((timer_right + pause.position.x - chip_size.x) * 0.5, timer_right + CHIP_GAP)
+	# TopBar spans the canvas width from x = 0 and starts at insets.y.
+	_goal_chip.offset_left = left
+	_goal_chip.offset_right = left
+	_goal_chip.offset_top = pause.get_center().y - chip_size.y * 0.5 - _top_bar.offset_top
 	_goal_chip.offset_bottom = _goal_chip.offset_top
+
+func _on_pause_pressed() -> void:
+	var scene := get_tree().current_scene
+	var pause_menu: PauseMenu = scene.get_node_or_null("PauseMenu") as PauseMenu if scene else null
+	if pause_menu:
+		pause_menu.toggle_pause()
+	if AudioManager:
+		AudioManager.play_ui_click()
 
 func _goal_text() -> String:
 	if ArenaManager and ArenaManager.is_sudden_death():

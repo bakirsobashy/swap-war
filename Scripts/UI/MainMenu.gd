@@ -1,10 +1,6 @@
 extends CanvasLayer
 
-const SOUND_ON := preload("res://Assets/ui/ui-2.0/scribble_ui/x1/icons/sound_on.png")
-const SOUND_OFF := preload("res://Assets/ui/ui-2.0/scribble_ui/x1/icons/sound_off.png")
-const MUSIC_ON := preload("res://Assets/ui/ui-2.0/scribble_ui/x1/icons/music_on.png")
-const MUSIC_OFF := preload("res://Assets/ui/ui-2.0/scribble_ui/x1/icons/music_off.png")
-## Rows that don't apply right now (the unused match limit, a muted volume) fade.
+## Rows that don't apply right now (the unused match limit) fade.
 const INACTIVE_TINT := Color(1, 1, 1, 0.4)
 ## AIStepper item 0 is "1 bot".
 const AI_COUNT_MIN := 1
@@ -12,7 +8,7 @@ const AI_COUNT_MIN := 1
 @onready var main_panel: Control = %MainPanel
 @onready var options_panel: PanelContainer = %OptionsPanel
 @onready var help_panel: PanelContainer = %HelpPanel
-@onready var settings_panel: PanelContainer = %SettingsPanel
+@onready var settings_panel: SettingsPanel = %SettingsPanel
 @onready var touch_layout_editor: Control = %TouchLayoutEditor
 
 @onready var ai_stepper: Stepper = %AIStepper
@@ -27,14 +23,8 @@ const AI_COUNT_MIN := 1
 @onready var duration_slider: HSlider = %DurationSlider
 @onready var duration_value: Label = %DurationValue
 
-@onready var sfx_slider: HSlider = %SFXSlider
-@onready var music_slider: HSlider = %MusicSlider
-@onready var sfx_toggle: Button = %SFXToggle
-@onready var music_toggle: Button = %MusicToggle
 @onready var corner_sound: Button = %CornerSound
 @onready var corner_music: Button = %CornerMusic
-@onready var touch_stepper: Stepper = %TouchStepper
-@onready var auto_attack_check: CheckButton = %AutoAttackCheck
 @onready var quit_btn: Button = %QuitBtn
 
 ## First control focused by a keyboard/gamepad navigation press, per panel.
@@ -42,7 +32,7 @@ const AI_COUNT_MIN := 1
 	main_panel: %PlayBtn,
 	options_panel: %StartMatchBtn,
 	help_panel: %HelpBackBtn,
-	settings_panel: %SFXToggle,
+	settings_panel: settings_panel.get_default_focus(),
 }
 
 var _ai_count := 3
@@ -155,40 +145,13 @@ func _on_arena_option_changed(index: int) -> void:
 	_arena_index = index
 	_update_options_ui()
 
-func _on_sfx_volume_changed(value: float) -> void:
-	if SettingsManager:
-		SettingsManager.set_audio_settings(value, SettingsManager.music_volume_db, SettingsManager.sfx_enabled, SettingsManager.music_enabled)
-
-func _on_music_volume_changed(value: float) -> void:
-	if SettingsManager:
-		SettingsManager.set_audio_settings(SettingsManager.sfx_volume_db, value, SettingsManager.sfx_enabled, SettingsManager.music_enabled)
-
-## Sound/music buttons (Settings rows and the main-screen corner) flip the flag.
+## Main-screen corner mute buttons: same toggles as the Settings rows
+## (SettingsPanel emits audio_changed, which re-syncs these icons).
 func _on_sfx_toggle_pressed() -> void:
-	if SettingsManager:
-		_on_sfx_toggled(not SettingsManager.sfx_enabled)
+	settings_panel.toggle_sound()
 
 func _on_music_toggle_pressed() -> void:
-	if SettingsManager:
-		_on_music_toggled(not SettingsManager.music_enabled)
-
-func _on_sfx_toggled(enabled: bool) -> void:
-	if SettingsManager:
-		SettingsManager.set_audio_settings(SettingsManager.sfx_volume_db, SettingsManager.music_volume_db, enabled, SettingsManager.music_enabled)
-	_refresh_audio_ui()
-
-func _on_music_toggled(enabled: bool) -> void:
-	if SettingsManager:
-		SettingsManager.set_audio_settings(SettingsManager.sfx_volume_db, SettingsManager.music_volume_db, SettingsManager.sfx_enabled, enabled)
-	_refresh_audio_ui()
-
-func _on_touch_mode_changed(index: int) -> void:
-	if SettingsManager:
-		SettingsManager.set_touch_controls_mode(index as SettingsManager.TouchControlsMode)
-
-func _on_auto_attack_toggled(enabled: bool) -> void:
-	if SettingsManager:
-		SettingsManager.set_auto_attack_enabled(enabled)
+	settings_panel.toggle_music()
 
 func _update_options_ui() -> void:
 	ai_stepper.set_selected_no_signal(_ai_count - AI_COUNT_MIN)
@@ -221,28 +184,14 @@ func _path_to_index(path: String) -> int:
 	return ArenaDatabase.get_default_index()
 
 func _update_settings_ui() -> void:
-	if not SettingsManager:
-		return
-	sfx_slider.set_value_no_signal(SettingsManager.sfx_volume_db)
-	music_slider.set_value_no_signal(SettingsManager.music_volume_db)
-	touch_stepper.set_selected_no_signal(SettingsManager.touch_controls_mode)
-	auto_attack_check.set_pressed_no_signal(SettingsManager.auto_attack_enabled)
-	_refresh_audio_ui()
+	settings_panel.refresh()
+	_refresh_corner_icons()
 
-## Mute icons on both button pairs; a muted channel's volume slider fades out.
-func _refresh_audio_ui() -> void:
+func _refresh_corner_icons() -> void:
 	if not SettingsManager:
 		return
-	var sfx_on := SettingsManager.sfx_enabled
-	var music_on := SettingsManager.music_enabled
-	for button: Button in [sfx_toggle, corner_sound]:
-		button.icon = SOUND_ON if sfx_on else SOUND_OFF
-	for button: Button in [music_toggle, corner_music]:
-		button.icon = MUSIC_ON if music_on else MUSIC_OFF
-	sfx_slider.editable = sfx_on
-	sfx_slider.modulate = Color.WHITE if sfx_on else INACTIVE_TINT
-	music_slider.editable = music_on
-	music_slider.modulate = Color.WHITE if music_on else INACTIVE_TINT
+	corner_sound.icon = SettingsPanel.sound_icon(SettingsManager.sfx_enabled)
+	corner_music.icon = SettingsPanel.music_icon(SettingsManager.music_enabled)
 
 func _play_click() -> void:
 	if AudioManager:

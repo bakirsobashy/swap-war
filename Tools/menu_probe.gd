@@ -9,7 +9,9 @@ extends SceneTree
 ##   3. win mode greys out the limit that doesn't apply (score target in
 ##      TIMED_SCORE, time limit in SCORE_TARGET) and the time limit reads m:ss
 ##   4. mute state swaps the sound icon and disables that volume slider
-##   5. PauseMenu: the corner close button resumes and unpauses
+##   5. PauseMenu: the corner close button resumes and unpauses; SETTINGS opens
+##      the shared SettingsPanel (no touch-layout editor), and Esc / Back / the
+##      back arrow step back to the pause card without unpausing
 ##   6. PostRoundMenu: DRAW title, reworded reason, rows sorted by kills with
 ##      the winner starred
 ##   7. app lifecycle: focus loss / backgrounding opens the pause menu (never
@@ -98,13 +100,13 @@ func _main_menu_checks() -> void:
 	if settings:
 		var sfx_was: bool = settings.sfx_enabled
 		settings.sfx_enabled = false
-		menu._refresh_audio_ui()
-		_check(menu.sfx_toggle.icon.resource_path == SOUND_OFF_PATH
+		menu._update_settings_ui()
+		_check(menu.settings_panel.sfx_toggle.icon.resource_path == SOUND_OFF_PATH
 				and menu.corner_sound.icon.resource_path == SOUND_OFF_PATH,
 				"muted sound shows sound_off on both buttons")
-		_check(not menu.sfx_slider.editable, "muted sound disables its volume slider")
+		_check(not menu.settings_panel.sfx_slider.editable, "muted sound disables its volume slider")
 		settings.sfx_enabled = sfx_was
-		menu._refresh_audio_ui()
+		menu._update_settings_ui()
 	else:
 		_check(false, "SettingsManager autoload present")
 
@@ -139,6 +141,32 @@ func _pause_checks() -> void:
 	_check(pause.get_node("Root/Dim").visible, "pause dims the game behind the card")
 	pause.get_node("%CloseBtn").pressed.emit()
 	_check(not pause.visible and not paused, "corner close button resumes")
+
+	# 5b. SETTINGS inside the pause menu (the shared SettingsPanel)
+	pause._toggle_pause()
+	var sp = pause.settings_panel
+	pause.get_node("%SettingsBtn").pressed.emit()
+	_check(sp.visible and not pause.panel.visible and paused,
+			"pause SETTINGS swaps the pause card for the settings panel")
+	_check(not sp.customize_touch_btn.visible, "pause settings hide EDIT TOUCH LAYOUT")
+	var esc := InputEventAction.new()
+	esc.action = &"Pause"
+	esc.pressed = true
+	pause._input(esc)
+	_check(pause.visible and paused and pause.panel.visible and not sp.visible,
+			"Esc in pause settings steps back to the pause card (still paused)")
+	pause._on_settings_pressed()
+	pause.propagate_notification(Node.NOTIFICATION_WM_GO_BACK_REQUEST)
+	_check(pause.visible and paused and pause.panel.visible and not sp.visible,
+			"Back in pause settings steps back to the pause card")
+	pause._on_settings_pressed()
+	sp.get_node("%SettingsBackBtn").pressed.emit()
+	_check(pause.panel.visible and not sp.visible, "settings back arrow returns to the pause card")
+	pause._on_settings_pressed()
+	pause._on_resume_pressed()
+	pause._toggle_pause()
+	_check(pause.panel.visible and not sp.visible, "the pause menu reopens on the pause card")
+	pause._on_resume_pressed()
 
 	# 7. focus loss / backgrounding pauses; 8. Back toggles
 	pause.propagate_notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
