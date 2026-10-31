@@ -23,7 +23,7 @@ const SIZE_BUTTON_SIZE := Vector2(72.0, 60.0)
 const SIZE_BUTTON_GAP: float = 14.0
 ## Hit-test priority: visible buttons before the sticks' (invisible, larger)
 ## grab zones — a button dragged inside a stick's zone must stay selectable.
-const HIT_TEST_ORDER: Array[String] = ["PauseButton", "JumpButton", "AttackButton", "DropButton", "MoveStick", "AimStick"]
+const HIT_TEST_ORDER: Array[String] = ["JumpButton", "AttackButton", "DropButton", "MoveStick", "AimStick"]
 
 @onready var touch_controls: CanvasLayer = %TouchControls
 @onready var _overlay_layer: CanvasLayer = %OverlayLayer
@@ -39,6 +39,13 @@ var _drag_touch_index: int = -1
 var _drag_offset: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
+	# The nested canvases start closed whatever the scene file says: a Godot
+	# re-save once dropped TouchControls' `visible = false` and the main menu
+	# showed the touch controls until the editor was opened and closed.
+	# _enter_editor opens them; CanvasLayers never follow this Control's
+	# visibility on their own.
+	_overlay_layer.visible = false
+	touch_controls.visible = false
 	visibility_changed.connect(_on_visibility_changed)
 	# CONNECT_DEFERRED: TouchControls also listens to size_changed and
 	# re-applies the layout; the deferred call guarantees the box re-tracks

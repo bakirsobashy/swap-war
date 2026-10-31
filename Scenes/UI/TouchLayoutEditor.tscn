@@ -1,13 +1,13 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://cp1yrbke6wa6x"]
 
-[ext_resource type="Script" path="res://Scripts/UI/TouchLayoutEditor.gd" id="1_editor"]
-[ext_resource type="PackedScene" path="res://Scenes/UI/TouchControls.tscn" id="2_tc"]
-[ext_resource type="Theme" path="res://Assets/ui/Themes/menu_theme.tres" id="3_theme"]
-[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/decor/paper_lined.png" id="4_paper"]
-[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/arrow_left.png" id="5_back"]
-[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/restart.png" id="6_restart"]
-[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/custom/minus.png" id="7_minus"]
-[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/custom/plus.png" id="8_plus"]
+[ext_resource type="Script" uid="uid://bv8bkgbnnx83l" path="res://Scripts/UI/TouchLayoutEditor.gd" id="1_editor"]
+[ext_resource type="PackedScene" uid="uid://d1r8qvpi16ghr" path="res://Scenes/UI/TouchControls.tscn" id="2_tc"]
+[ext_resource type="Theme" uid="uid://biu6bq2tywh2t" path="res://Assets/ui/Themes/menu_theme.tres" id="3_theme"]
+[ext_resource type="Texture2D" uid="uid://dbf08kg72vtii" path="res://Assets/ui/ui-2.0/scribble_ui/x1/decor/paper_lined.png" id="4_paper"]
+[ext_resource type="Texture2D" uid="uid://dcntybiixm5m8" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/arrow_left.png" id="5_back"]
+[ext_resource type="Texture2D" uid="uid://c026gwy3w3082" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/restart.png" id="6_restart"]
+[ext_resource type="Texture2D" uid="uid://ds0nwneqmjoyi" path="res://Assets/ui/ui-2.0/custom/minus.png" id="7_minus"]
+[ext_resource type="Texture2D" uid="uid://dcbwy4gbhe4uu" path="res://Assets/ui/ui-2.0/custom/plus.png" id="8_plus"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_selection"]
 bg_color = Color(1, 0.894118, 0.360784, 0.22)
@@ -45,14 +45,14 @@ stretch_mode = 1
 
 [node name="TouchControls" parent="." unique_id=920000004 instance=ExtResource("2_tc")]
 unique_name_in_owner = true
-editor_mode = true
 visible = false
 layer = 10
+editor_mode = true
 
 [node name="OverlayLayer" type="CanvasLayer" parent="." unique_id=920000005]
 unique_name_in_owner = true
-visible = false
 layer = 11
+visible = false
 
 [node name="OverlayRoot" type="Control" parent="OverlayLayer" unique_id=920000006]
 layout_mode = 3
@@ -96,7 +96,6 @@ icon = ExtResource("6_restart")
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-mouse_filter = 2
 theme_type_variation = &"HintLabel"
 theme_override_font_sizes/font_size = 24
 text = "tap a control to select it - drag to move, + / - to resize"
@@ -106,6 +105,7 @@ vertical_alignment = 1
 [node name="SelectionBox" type="Panel" parent="OverlayLayer/OverlayRoot" unique_id=920000011]
 unique_name_in_owner = true
 visible = false
+layout_mode = 0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_selection")
 
@@ -113,6 +113,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_selection")
 unique_name_in_owner = true
 visible = false
 custom_minimum_size = Vector2(72, 60)
+layout_mode = 0
 tooltip_text = "Smaller"
 theme_type_variation = &"SquareButton"
 icon = ExtResource("7_minus")
@@ -122,6 +123,7 @@ icon_alignment = 1
 unique_name_in_owner = true
 visible = false
 custom_minimum_size = Vector2(72, 60)
+layout_mode = 0
 tooltip_text = "Bigger"
 theme_type_variation = &"SquareButton"
 icon = ExtResource("8_plus")
@@ -129,9 +131,9 @@ icon_alignment = 1
 
 [connection signal="pressed" from="OverlayLayer/OverlayRoot/TopBar/BackButton" to="." method="_on_back_pressed"]
 [connection signal="pressed" from="OverlayLayer/OverlayRoot/TopBar/BackButton" to="." method="_play_click"]
-[connection signal="pressed" from="OverlayLayer/OverlayRoot/TopBar/ResetButton" to="." method="_on_reset_pressed"]
 [connection signal="pressed" from="OverlayLayer/OverlayRoot/TopBar/ResetButton" to="." method="_play_click"]
-[connection signal="pressed" from="OverlayLayer/OverlayRoot/MinusButton" to="." method="_on_minus_pressed"]
+[connection signal="pressed" from="OverlayLayer/OverlayRoot/TopBar/ResetButton" to="." method="_on_reset_pressed"]
 [connection signal="pressed" from="OverlayLayer/OverlayRoot/MinusButton" to="." method="_play_click"]
-[connection signal="pressed" from="OverlayLayer/OverlayRoot/PlusButton" to="." method="_on_plus_pressed"]
+[connection signal="pressed" from="OverlayLayer/OverlayRoot/MinusButton" to="." method="_on_minus_pressed"]
 [connection signal="pressed" from="OverlayLayer/OverlayRoot/PlusButton" to="." method="_play_click"]
+[connection signal="pressed" from="OverlayLayer/OverlayRoot/PlusButton" to="." method="_on_plus_pressed"]

@@ -15,9 +15,10 @@ const GAP: float = 14.0
 ## Seconds without any touch before the controls hide (AUTO mode only).
 const IDLE_HIDE_DELAY: float = 4.0
 
-## The six touch controls. The layout editor and probes read this through the
-## instance (single source of truth).
-const CONTROL_NAMES: Array[String] = ["MoveStick", "AimStick", "JumpButton", "AttackButton", "DropButton", "PauseButton"]
+## The five touch controls. The layout editor and probes read this through the
+## instance (single source of truth). Pause is not a touch control — the HUD's
+## own pause button (top-right) serves touch and mouse alike.
+const CONTROL_NAMES: Array[String] = ["MoveStick", "AimStick", "JumpButton", "AttackButton", "DropButton"]
 ## Size-multiplier limits for the saved custom layout (editor steps 0.1).
 const SIZE_MULT_MIN: float = 0.5
 const SIZE_MULT_MAX: float = 2.0
@@ -33,7 +34,6 @@ const BUTTON_ART_SCALE := {
 	"JumpButton": 0.65,
 	"AttackButton": 0.65,
 	"DropButton": 0.65,
-	"PauseButton": 0.85,
 }
 
 ## VirtualStick referenced through a preload path (never its class_name) so
@@ -46,7 +46,6 @@ const VirtualStickScript := preload("res://Scripts/UI/VirtualStick.gd")
 ## idle, never gate visibility on settings, and never inject gameplay input.
 @export var editor_mode := false
 
-@onready var _pause_button: TouchScreenButton = %PauseButton
 @onready var _drop_button: TouchScreenButton = %DropButton
 @onready var _move_stick: VirtualStickScript = %MoveStick
 @onready var _aim_stick: VirtualStickScript = %AimStick
@@ -57,7 +56,8 @@ var _last_activity_msec: int = 0
 var _held_touches: int = 0
 
 func _ready() -> void:
-	# Keep processing while paused so the pause button can unpause the game.
+	# Keep processing while paused: _process is the touch->mouse emulation
+	# authority, and it must turn emulation ON for the pause menu's buttons.
 	process_mode = PROCESS_MODE_ALWAYS
 	if editor_mode:
 		_enter_editor_mode()
@@ -146,8 +146,7 @@ func _release_sticks() -> void:
 		_aim_stick.release_stick()
 
 ## Whether touch controls are in use at all (settings + device), ignoring the
-## AUTO-mode idle hide — the HUD reserves the pause slot on this, so its goal
-## chip doesn't jump every time the controls fade out.
+## AUTO-mode idle hide.
 func uses_touch_controls() -> bool:
 	return _should_show_touch_controls()
 
@@ -170,7 +169,7 @@ func _should_show_touch_controls() -> bool:
 ## Layout (user-approved): MoveStick bottom-left, AimStick bottom-right,
 ## JUMP + ATTACK stacked above the AimStick (ATTACK lowest, nearest the
 ## resting thumb — matching the old attack-outermost convention), DROP above
-## that cluster, pause top-right.
+## that cluster. (Pause lives in the HUD's top-right corner, not here.)
 func _layout_buttons() -> void:
 	if not is_inside_tree() or _move_stick == null:
 		return
@@ -228,12 +227,6 @@ func _layout_buttons() -> void:
 		_jump_button.position.y - gap - size_drop.y
 	)
 
-	# Pause: top-right corner.
-	var size_pause: Vector2 = _scaled_size(_pause_button)
-	_pause_button.position = Vector2(
-		canvas_size.x - insets.z - side_margin - size_pause.x,
-		insets.y + side_margin
-	)
 
 	_apply_saved_layout(canvas_size, btn_scale)
 
@@ -257,7 +250,6 @@ func get_control_node(name: String) -> Node2D:
 		"JumpButton": return _jump_button
 		"AttackButton": return _attack_button
 		"DropButton": return _drop_button
-		"PauseButton": return _pause_button
 	return null
 
 ## The rect a tap selects (layout_probe's math exactly): sticks = full grab
@@ -321,24 +313,3 @@ func _on_drop_button_pressed() -> void:
 		return
 	if AudioManager:
 		AudioManager.play_ui_touch()
-
-func _on_pause_button_pressed() -> void:
-	# Editor instances never inject gameplay input.
-	if editor_mode:
-		return
-	# Directly call PauseMenu's toggle so the button works for both touch and mouse.
-	# Input.parse_input_event with InputEventAction is unreliable across nodes.
-	var pause_menu := get_tree().current_scene.get_node_or_null("PauseMenu") as PauseMenu
-	if pause_menu:
-		pause_menu.toggle_pause()
-	else:
-		var ev := InputEventAction.new()
-		ev.action = "Pause"
-		ev.pressed = true
-		Input.parse_input_event(ev)
-		var up := InputEventAction.new()   # release, or Pause stays held
-		up.action = "Pause"
-		up.pressed = false
-		Input.parse_input_event(up)
-	if AudioManager:
-		AudioManager.play_ui_click()

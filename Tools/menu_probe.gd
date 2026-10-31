@@ -56,6 +56,9 @@ func _main_menu_checks() -> void:
 			and not menu.settings_panel.visible and not menu.help_panel.visible,
 			"main panel is the only visible panel on open")
 	_check(root.gui_get_focus_owner() == null, "nothing focused on open (no focus ring)")
+	var editor = menu.touch_layout_editor
+	_check(not editor.get_node("%TouchControls").visible and not editor.get_node("%OverlayLayer").visible,
+			"the layout editor's touch controls + overlay stay hidden on the main menu")
 	_press_action(&"ui_down")
 	await process_frame
 	var focused = root.gui_get_focus_owner()
