@@ -109,10 +109,10 @@ func _spawn_dummy(inst: Node, x: float, y: float, team: int):
 	actor.position = Vector2(x, y)
 	inst.get_node("Actors").add_child(actor)
 	actor.get_node("Components/TeamMember").team_id = team
-	# Pin the dummy in place: a free body drifts east forever under the held
-	# sword's contact knockback — the AI's approach chases a receding foe and
-	# can lose that race forever (never closing into attack range). Frozen =
-	# static: no treadmill, fights converge deterministically.
+	# Pin the dummy in place: a free body drifts east under every swing's
+	# knockback — the AI's approach chases a receding foe and can lose that
+	# race (never closing into attack range). Frozen = static: fights
+	# converge deterministically.
 	actor.freeze = true
 	# WeaponHolder auto-pickup is live on EVERY actor (players rely on it) —
 	# a dummy standing near a scenario drop steals the sword, and the AI ends
@@ -218,10 +218,12 @@ func _probe_decisions() -> void:
 			% [t_atk, _state_name(ctl1)])
 	_check(absf(min_hp - 100.0) < 0.01,
 			"S1: spike strip crossed undamaged (hp=%.0f)" % min_hp)
-	# One tick so Attack's OWN physics_update runs (the transition tick's
-	# inputs were still ApproachEnemy's) before sampling the attack intent.
-	await physics_frame
-	_check(bool(ctl1.wants_attack), "S1: holds the attack intent in range")
+	# Attack is entered at the edge of reach, where the swing may not land
+	# yet (aim scatter, blade shape): it steps in and swings once the blade
+	# would hit (MeleeWeapon.can_hit) — then holds the intent every tick.
+	var t_swing := await _wait_until(func(): return bool(ctl1.wants_attack), 60)
+	_check(t_swing >= 0, "S1: swings once the blade would land (t=%d, state=%s)"
+			% [t_swing, _state_name(ctl1)])
 	ai1.queue_free()
 	foe1.queue_free()
 	await physics_frame

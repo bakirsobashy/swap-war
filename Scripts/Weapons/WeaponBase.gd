@@ -11,6 +11,10 @@ var current_durability: int = 0
 var weapon_name: String = ""
 
 var _holder: RigidBody2D = null
+## Held state, tracked explicitly: a holder freed without dropping leaves
+## _holder pointing at a freed instance, and Godot 4.7.1 compares that EQUAL
+## to null — so `_holder != null` reads "not held" before the release runs.
+var _held: bool = false
 var _socket: Node2D = null
 var _target_facing: float = 1.0
 
@@ -22,7 +26,7 @@ var _pickup_allowed_at_msec: int = 0
 const PICKUP_DELAY_SEC := 0.5
 
 const GROUND_MASK: int = CollisionConfig.MASK_GROUND_WEAPON  # World + Weapons: ground weapons collide with level and each other.
-const HELD_MASK: int = CollisionConfig.LAYER_WORLD | CollisionConfig.LAYER_ACTORS  # World + other actors: needed for melee contact damage. The holder is excluded via collision exception; other weapons are never touched.
+const HELD_MASK: int = CollisionConfig.LAYER_WORLD | CollisionConfig.LAYER_ACTORS  # World + other actors: held weapons physically shove actors (no damage — melee hits come from the HitBox during a swing). The holder is excluded via collision exception; other weapons are never touched.
 const GROUND_LAYER: int = CollisionConfig.LAYER_WEAPONS  # Layer 4 (Weapons), same as the weapon scenes.
 const HELD_LAYER: int = CollisionConfig.LAYER_HELD_WEAPONS  # Layer 6 (HeldWeapons)
 
@@ -63,8 +67,14 @@ func is_attacking() -> bool:
 	return false
 
 
+## Would an attack launched now hit `target`? MeleeWeapon answers it; guns
+## have their own gate (AIController.ranged_shot_ready).
+func can_hit(_target: Node2D) -> bool:
+	return false
+
+
 func is_held() -> bool:
-	return _holder != null
+	return _held
 
 
 ## Drop the weapon if currently held, then remove it from the world.
@@ -86,6 +96,7 @@ func is_ranged() -> bool:
 
 
 ## The range at which the AI should consider itself able to attack.
+## MeleeWeapon overrides it with the swing's real reach.
 func get_attack_range() -> float:
 	if _data == null:
 		return 0.0
@@ -95,13 +106,14 @@ func get_attack_range() -> float:
 
 
 func can_be_picked_up() -> bool:
-	return _holder == null and Time.get_ticks_msec() >= _pickup_allowed_at_msec
+	return not _held and Time.get_ticks_msec() >= _pickup_allowed_at_msec
 
 
 func pick_up(holder: RigidBody2D, socket: Node2D) -> void:
-	if _holder != null or Time.get_ticks_msec() < _pickup_allowed_at_msec:
+	if _held or Time.get_ticks_msec() < _pickup_allowed_at_msec:
 		return
 
+	_held = true
 	_holder = holder
 	_socket = socket
 	_target_facing = _get_holder_facing()
@@ -125,6 +137,7 @@ func drop() -> void:
 		throw_velocity = cached_holder.linear_velocity * 0.5
 		throw_velocity += Vector2(_target_facing * 100.0, -80.0)
 
+	_held = false
 	_holder = null
 	_socket = null
 	# Nobody (including the dropper) may re-pick this weapon until the delay
@@ -190,31 +203,42 @@ func _get_aim_direction() -> Vector2:
 	return Vector2(_target_facing, 0.0)
 
 
-## Called when the weapon body physically contacts another body.
-## Subclasses (MeleeWeapon) override this to apply damage.
+## Called when the weapon body physically contacts another body. No weapon
+## damages through it today (melee uses its HitBox, only while swinging);
+## it is the hook for thrown-weapon damage.
 func _on_body_entered(_body: Node) -> void:
 	pass
 
 
 func _physics_process(_delta: float) -> void:
-	if not _holder:
-		return
-	if not is_instance_valid(_holder):
-		# Freed instances compare non-null in GDScript, so the check above
-		# passed: the holder left the tree without dropping (match restart
-		# frees armed actors mid-hold). Release before touching the freed
-		# socket — otherwise this errors every tick and the weapon stays
-		# "held" forever, an unpickable frozen phantom left on the field.
-		call_deferred("_release_from_lost_holder")
+	if not _has_live_holder():
 		return
 	_update_follow_transform()
 
 
+## True while held by a holder that still exists. Every _physics_process
+## override (MeleeWeapon, RangedWeapon) and any other path that touches
+## _holder gates on this instead of a bare `if not _holder`.
+func _has_live_holder() -> bool:
+	if not _held:
+		return false
+	if not is_instance_valid(_holder):
+		# The holder left the tree without dropping (match restart frees
+		# armed actors mid-hold). Gate on _held, never on _holder: the freed
+		# reference compares equal to null, so `if not _holder` returned here
+		# without releasing and left an unpickable frozen phantom on the
+		# field. Release before touching the freed socket.
+		call_deferred("_release_from_lost_holder")
+		return false
+	return true
+
+
 ## Release to normal ground state when the holder was freed without dropping.
 ## Health.die drops properly; this is the abrupt-free path (restart, teardown).
-## Deferred from _physics_process so the physics-affecting state changes apply
+## Deferred from _has_live_holder so the physics-affecting state changes apply
 ## outside any physics callback — same discipline as drop()'s _do_drop.
 func _release_from_lost_holder() -> void:
+	_held = false
 	_holder = null
 	_socket = null
 	scale = Vector2.ONE

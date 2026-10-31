@@ -25,6 +25,7 @@ ArenaManager="*res://Scripts/Components/ArenaManager.gd"
 AudioManager="*res://Scripts/Components/AudioManager.gd"
 WeaponDatabase="*res://Scripts/Weapons/WeaponDatabase.gd"
 SettingsManager="*res://Scripts/Components/SettingsManager.gd"
+HitFeel="*res://Scripts/Components/HitFeel.gd"
 
 [display]
 

@@ -222,7 +222,7 @@ func _despawn_actors() -> void:
 			child.queue_free()
 
 ## Play Again must start clean: the previous round's weapons (held ones are
-## released when their actor goes), bullets in flight, and effects.
+## released when their actor goes), bullets in flight, effects and stains.
 func _clear_match_leftovers() -> void:
 	var scene := get_tree().current_scene
 	if scene == null:
@@ -236,6 +236,9 @@ func _clear_match_leftovers() -> void:
 	if effects:
 		for e in effects.get_children():
 			e.queue_free()
+	var stains := scene.get_node_or_null("Stains")
+	if stains and stains.has_method("clear"):
+		stains.clear()
 	var spawner := scene.get_node_or_null("WeaponSpawner")
 	if spawner and spawner.has_method("reset_waves"):
 		spawner.reset_waves()
