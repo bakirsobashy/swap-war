@@ -4,6 +4,8 @@
 [ext_resource type="PackedScene" uid="uid://b3nq1gq7qvnwi" path="res://Scenes/HUD.tscn" id="4_hud"]
 [ext_resource type="PackedScene" uid="uid://b85pu1unpwads" path="res://Scenes/Weapons/WeaponSpawner.tscn" id="6_spawner"]
 [ext_resource type="Script" uid="uid://c5cq7n7g52pjj" path="res://Scripts/Components/KillZone.gd" id="10_killzone"]
+[ext_resource type="Script" path="res://Scripts/Arena/ArenaCamera.gd" id="11_camera"]
+[ext_resource type="Script" path="res://Scripts/FX/StainLayer.gd" id="12_stains"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ra5jo"]
 texture = ExtResource("1_lq7nq")
@@ -232,6 +234,7 @@ shape = SubResource("RectangleShape2D_top")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 zoom = Vector2(0.55, 0.55)
+script = ExtResource("11_camera")
 
 [node name="WeaponSpawner" parent="." instance=ExtResource("6_spawner")]
 
@@ -245,3 +248,7 @@ script = ExtResource("10_killzone")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="KillZone"]
 position = Vector2(0, 334)
 shape = SubResource("RectangleShape2D_kill")
+
+[node name="Stains" type="Node2D" parent="."]
+z_index = -1
+script = ExtResource("12_stains")

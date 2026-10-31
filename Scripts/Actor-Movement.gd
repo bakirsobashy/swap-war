@@ -31,13 +31,6 @@ const DROP_DURATION: float = 0.3
 ## single line to make aim fall back to facing on release instead.
 const TOUCH_AIM_HOLD_ON_RELEASE: bool = true
 
-## Auto-attack melee: swing at the nearest hostile within this center-to-
-## center reach. Contact reach = socket orbit 6 + follow_offset 24 + thrust
-## 32 ≈ 62 px in front, + enemy capsule r19 ≈ 81; the AI's own attack_range
-## precedent is 80 (AIDifficulty). 90 adds a tick of margin — and a miss
-## costs nothing (melee loses durability only on damaging hits).
-const AUTO_MELEE_REACH: float = 90.0
-
 var _drop_timer: float = 0.0
 
 ## Ground contacts linger a tick or two after liftoff; reading them as a
@@ -216,9 +209,11 @@ func _get_attack_input() -> bool:
 				var tc = _get_touch_controls()
 				return tc != null \
 					and tc.get_aim_stick_value().length_squared() > 0.0
-			# Melee: auto-swing while a hostile is in reach (PC and touch).
-			# Returning held-true is paced by MeleeWeapon's cooldown.
-			return _find_auto_attack_target() != null
+			# Melee (PC and touch): swing whenever the swing would land on a
+			# hostile. No aim help — the player aims, Auto Attack only pulls
+			# the trigger. Returning held-true is paced by MeleeWeapon's
+			# cooldown.
+			return _has_auto_attack_target(weapon)
 		return false
 	if _ai_controller and "wants_attack" in _ai_controller:
 		return _ai_controller.wants_attack
@@ -282,20 +277,11 @@ func _is_holding_ranged_weapon() -> bool:
 func _auto_attack_enabled() -> bool:
 	return SettingsManager != null and SettingsManager.auto_attack_enabled
 
-func _is_holding_melee_weapon() -> bool:
-	if not _weapon_holder:
-		return false
-	var weapon: WeaponBase = _weapon_holder.current_weapon
-	return weapon != null and not weapon.is_ranged()
-
-## Nearest hostile within AUTO_MELEE_REACH, for the auto-attack melee half.
-## Same "actors"-group discipline as the AI's sensors: the group is
-## double-added (the actor RigidBody2D AND its Health node), so the Node2D
-## cast filter neutralizes the Health nodes. No LOS check — matches AI melee,
-## which also swings within reach without a sight test.
-func _find_auto_attack_target() -> Node2D:
-	var best: Node2D = null
-	var best_dist: float = AUTO_MELEE_REACH
+## Auto Attack's melee half: true when a swing launched now would hit some
+## live hostile — the weapon decides (MeleeWeapon.can_hit: inside the swing's
+## reach, the blade on it, the body facing it). No LOS check — matches AI
+## melee, and the blade's HitBox ignores walls too.
+func _has_auto_attack_target(weapon: WeaponBase) -> bool:
 	for a in get_tree().get_nodes_in_group("actors"):
 		var other := a as Node2D
 		if other == null or other == self:
@@ -305,11 +291,9 @@ func _find_auto_attack_target() -> Node2D:
 			continue
 		if TeamMember.is_same_team(self, other):
 			continue
-		var d := global_position.distance_to(other.global_position)
-		if d < best_dist:
-			best_dist = d
-			best = other
-	return best
+		if weapon.can_hit(other):
+			return true
+	return false
 
 ## True when the most recent pointing input was a REAL touch (emulated mouse
 ## carries the emulation device id and never updates _last_mouse_msec).
@@ -332,16 +316,9 @@ func _get_touch_controls() -> Node:
 
 func _get_target_aim() -> Vector2:
 	if is_player:
-		# 1. Auto-attack melee lock: aim (and therefore face) at the target
-		#    so the swing connects — this outranks the stick, else auto-swings
-		#    would fire the wrong way while the stick is deflected.
-		if _auto_attack_enabled() and _is_holding_melee_weapon():
-			var auto_target := _find_auto_attack_target()
-			if auto_target:
-				var to_target: Vector2 = auto_target.global_position - global_position
-				if to_target.length() > 0.01:
-					return to_target.normalized()
-		# 2. Right aim stick: deflection steers aim AND facing (facing is
+		# Auto Attack never steers the aim: the player aims, it only swings
+		# when the blade is already on a hostile (_has_auto_attack_target).
+		# 1. Right aim stick: deflection steers aim AND facing (facing is
 		#    derived from aim in _update_aim — twin-stick play wants both).
 		var tc = _get_touch_controls()
 		if tc:
@@ -354,7 +331,7 @@ func _get_target_aim() -> Vector2:
 				# Held aim only for guns (keeps the firing lane); with melee or
 				# bare hands it made you walk backwards forever.
 				return _last_stick_aim
-		# 3. Touch fallback: with no aim-stick input on a touchscreen the
+		# 2. Touch fallback: with no aim-stick input on a touchscreen the
 		#    player aims along facing — like a classic button-driven mobile
 		#    platformer (mouse-from-touch emulation is disabled during play
 		#    so taps never fire the mouse-bound Attack action).

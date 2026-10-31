@@ -53,9 +53,9 @@ func physics_update(delta: float) -> String:
 			and (not owner.is_ranged_armed() or owner.sensors.has_los_to_enemy):
 		return "Attack"
 	# In reach on the move (mid-jump, or a lane that only opens at the top of
-	# a hop): strike anyway — the route keeps the legs.
+	# a hop): strike anyway when it would land — the route keeps the legs.
 	if in_reach and owner.ai_attack_enabled:
-		owner.wants_attack = not owner.is_ranged_armed() or owner.ranged_shot_ready(enemy)
+		owner.wants_attack = owner.attack_ready(enemy)
 
 	if owner.is_ranged_armed() and owner.los_blocked():
 		_lane_seek = true
