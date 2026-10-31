@@ -6,9 +6,11 @@ extends SceneTree
 ##   - every control/touch button rect lies inside the visible canvas rect
 ##   - no two buttons overlap
 ##   - the scoreboard (simulated 4-player labels) fits the viewport width
-##   - the goal chip (top right) is on-canvas and clear of the swap timer, the
-##     scoreboard card and — while touch controls are in use — the pause button;
-##     every resolution runs with touch controls ALWAYS and HIDDEN (corner slot)
+##   - the HUD pause button holds the top-right corner while touch controls are
+##     off (the touch PauseButton takes it when they are on)
+##   - the goal chip is on-canvas, clear of the swap timer, the scoreboard card
+##     and the active pause button, and centred between the timer and it;
+##     every resolution runs with touch controls ALWAYS and HIDDEN
 
 const RESOLUTIONS: Array[Vector2i] = [
 	Vector2i(400, 800),
@@ -113,10 +115,23 @@ func _check_resolution(res: Vector2i) -> void:
 	print("GoalChip rect=%s inside=%s" % [chip_rect, "PASS" if chip_ok else "FAIL"])
 	if not chip_ok:
 		_fails += 1
-	var chip_blockers := {"TeamTimer": timer_rect, "ScoreCard": card_rect}
-	if tc.uses_touch_controls():
-		chip_blockers["PauseButton"] = pause_rect
+	# The HUD's own pause button holds the top-right corner while touch
+	# controls are off (their PauseButton takes the spot when they are on).
+	var hud_pause = _hud.get_node("%PauseButton")
+	var touch_on: bool = tc.uses_touch_controls()
+	var active_pause: Rect2 = pause_rect if touch_on else hud_pause.get_global_rect()
+	var pause_ok: bool = hud_pause.visible != touch_on and canvas.encloses(active_pause)
+	print("active pause rect=%s hud button visible=%s ok=%s" % [active_pause, hud_pause.visible, "PASS" if pause_ok else "FAIL"])
+	if not pause_ok:
+		_fails += 1
+	var chip_blockers := {"TeamTimer": timer_rect, "ScoreCard": card_rect, "Pause": active_pause}
 	for blocker in chip_blockers:
 		if chip_rect.intersects(chip_blockers[blocker], true):
 			print("OVERLAP FAIL: GoalChip <-> %s  %s %s" % [blocker, chip_rect, chip_blockers[blocker]])
 			_fails += 1
+	# ...and sits centred between the swap timer and that pause button.
+	var mid_x: float = (timer_rect.end.x + active_pause.position.x) * 0.5
+	var centred: bool = absf(chip_rect.get_center().x - mid_x) <= 1.0
+	print("GoalChip centre x=%.1f mid=%.1f %s" % [chip_rect.get_center().x, mid_x, "PASS" if centred else "FAIL"])
+	if not centred:
+		_fails += 1

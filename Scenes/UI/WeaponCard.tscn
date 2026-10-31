@@ -1,0 +1,74 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scripts/UI/WeaponCard.gd" id="1_card"]
+
+[node name="WeaponCard" type="PanelContainer"]
+custom_minimum_size = Vector2(296, 0)
+theme_type_variation = &"CardPanel"
+script = ExtResource("1_card")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Content" type="VBoxContainer" parent="VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Top" type="HBoxContainer" parent="VBox/Content"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Icon" type="TextureRect" parent="VBox/Content/Top"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Titles" type="VBoxContainer" parent="VBox/Content/Top"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_constants/separation = 2
+
+[node name="NameLabel" type="Label" parent="VBox/Content/Top/Titles"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SubHeaderLabel"
+text = "Sword"
+
+[node name="CategoryLabel" type="Label" parent="VBox/Content/Top/Titles"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+theme_type_variation = &"CategoryLabel"
+text = "melee"
+
+[node name="Stats" type="GridContainer" parent="VBox/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 2
+columns = 3
+
+[node name="SwitchRow" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="SwitchHint" type="Label" parent="VBox/SwitchRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"HintLabel"
+text = "in game"
+vertical_alignment = 1
+
+[node name="InGameSwitch" type="CheckButton" parent="VBox/SwitchRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+tooltip_text = "Include this weapon in matches"
+button_pressed = true

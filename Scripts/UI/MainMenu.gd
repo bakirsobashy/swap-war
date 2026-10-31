@@ -1,10 +1,6 @@
 extends CanvasLayer
 
-const SOUND_ON := preload("res://Assets/ui/ui-2.0/scribble_ui/x1/icons/sound_on.png")
-const SOUND_OFF := preload("res://Assets/ui/ui-2.0/scribble_ui/x1/icons/sound_off.png")
-const MUSIC_ON := preload("res://Assets/ui/ui-2.0/scribble_ui/x1/icons/music_on.png")
-const MUSIC_OFF := preload("res://Assets/ui/ui-2.0/scribble_ui/x1/icons/music_off.png")
-## Rows that don't apply right now (the unused match limit, a muted volume) fade.
+## Rows that don't apply right now (the unused match limit) fade.
 const INACTIVE_TINT := Color(1, 1, 1, 0.4)
 ## AIStepper item 0 is "1 bot".
 const AI_COUNT_MIN := 1
@@ -12,7 +8,9 @@ const AI_COUNT_MIN := 1
 @onready var main_panel: Control = %MainPanel
 @onready var options_panel: PanelContainer = %OptionsPanel
 @onready var help_panel: PanelContainer = %HelpPanel
-@onready var settings_panel: PanelContainer = %SettingsPanel
+@onready var settings_panel: SettingsPanel = %SettingsPanel
+@onready var weapons_panel: WeaponsPanel = %WeaponsPanel
+@onready var weapons_btn: Button = %WeaponsBtn
 @onready var touch_layout_editor: Control = %TouchLayoutEditor
 
 @onready var ai_stepper: Stepper = %AIStepper
@@ -27,21 +25,17 @@ const AI_COUNT_MIN := 1
 @onready var duration_slider: HSlider = %DurationSlider
 @onready var duration_value: Label = %DurationValue
 
-@onready var sfx_slider: HSlider = %SFXSlider
-@onready var music_slider: HSlider = %MusicSlider
-@onready var sfx_toggle: Button = %SFXToggle
-@onready var music_toggle: Button = %MusicToggle
 @onready var corner_sound: Button = %CornerSound
 @onready var corner_music: Button = %CornerMusic
-@onready var touch_stepper: Stepper = %TouchStepper
-@onready var auto_attack_check: CheckButton = %AutoAttackCheck
+@onready var quit_btn: Button = %QuitBtn
 
 ## First control focused by a keyboard/gamepad navigation press, per panel.
 @onready var _default_focus: Dictionary = {
 	main_panel: %PlayBtn,
 	options_panel: %StartMatchBtn,
 	help_panel: %HelpBackBtn,
-	settings_panel: %SFXToggle,
+	settings_panel: settings_panel.get_default_focus(),
+	weapons_panel: weapons_panel.get_default_focus(),
 }
 
 var _ai_count := 3
@@ -49,6 +43,8 @@ var _win_mode := SettingsManager.WinMode.SCORE_TARGET
 var _score_target := 10
 var _match_duration := 120.0
 var _arena_index := 0
+## Weapons switched off in CHOOSE WEAPONS; saved with START MATCH.
+var _disabled_weapons := PackedStringArray()
 
 func _ready() -> void:
 	if SettingsManager:
@@ -57,11 +53,18 @@ func _ready() -> void:
 		_score_target = SettingsManager.score_target
 		_match_duration = SettingsManager.match_duration_seconds
 		_arena_index = _path_to_index(SettingsManager.selected_arena_path)
+		_disabled_weapons = SettingsManager.disabled_weapons.duplicate()
 
 	_populate_arena_options()
 	_update_options_ui()
 	_update_settings_ui()
+	quit_btn.visible = _can_quit()
 	_show_panel(main_panel)
+
+## A browser tab can't close itself and iOS apps never quit themselves, so
+## Quit only shows on desktop and Android.
+func _can_quit() -> bool:
+	return not (OS.has_feature("web") or OS.has_feature("ios"))
 
 func _unhandled_input(event: InputEvent) -> void:
 	if touch_layout_editor.visible:
@@ -71,11 +74,28 @@ func _unhandled_input(event: InputEvent) -> void:
 			MenuFocus.focus_on_nav(event, _default_focus[panel])
 			return
 
+## Android's Back steps out one level: layout editor -> Settings, any panel ->
+## the main screen, and the main screen quits (the platform's root behaviour).
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST and is_node_ready():
+		go_back()
+
+func go_back() -> void:
+	if touch_layout_editor.visible:
+		_on_touch_editor_closed()
+	elif weapons_panel.visible:
+		_on_weapons_back()
+	elif not main_panel.visible:
+		_on_back_pressed()
+	else:
+		get_tree().quit()
+
 func _show_panel(panel: Control) -> void:
 	main_panel.visible = false
 	options_panel.visible = false
 	help_panel.visible = false
 	settings_panel.visible = false
+	weapons_panel.visible = false
 	touch_layout_editor.visible = false
 	panel.visible = true
 	# Drop focus left on a now-hidden button; the next nav press re-seeds it.
@@ -111,8 +131,33 @@ func _on_back_pressed() -> void:
 func _on_start_match_pressed() -> void:
 	if SettingsManager:
 		SettingsManager.set_match_options(_ai_count, _win_mode, _score_target, _match_duration)
+		SettingsManager.set_disabled_weapons(_disabled_weapons)
 		SettingsManager.set_arena_path(ArenaDatabase.get_arena_path_by_index(_arena_index))
 	get_tree().change_scene_to_file(SettingsManager.selected_arena_path)
+
+func _on_weapons_pressed() -> void:
+	weapons_panel.set_disabled(_disabled_weapons)
+	_show_panel(weapons_panel)
+
+## Weapons panel BACK (arrow / Android Back) returns to Match Options.
+func _on_weapons_back() -> void:
+	_show_panel(options_panel)
+	_update_options_ui()
+
+func _on_weapons_changed() -> void:
+	_disabled_weapons = weapons_panel.get_disabled()
+	_update_options_ui()
+
+## Match Options DEFAULTS: factory match values (saved with START MATCH).
+func _on_options_defaults_pressed() -> void:
+	if SettingsManager:
+		_ai_count = SettingsManager.MATCH_DEFAULTS["ai_count"]
+		_win_mode = SettingsManager.MATCH_DEFAULTS["win_mode"]
+		_score_target = SettingsManager.MATCH_DEFAULTS["score_target"]
+		_match_duration = SettingsManager.MATCH_DEFAULTS["match_duration_seconds"]
+	_arena_index = ArenaDatabase.get_default_index()
+	_disabled_weapons = PackedStringArray()
+	_update_options_ui()
 
 func _on_ai_stepper_changed(index: int) -> void:
 	_ai_count = index + AI_COUNT_MIN
@@ -134,40 +179,13 @@ func _on_arena_option_changed(index: int) -> void:
 	_arena_index = index
 	_update_options_ui()
 
-func _on_sfx_volume_changed(value: float) -> void:
-	if SettingsManager:
-		SettingsManager.set_audio_settings(value, SettingsManager.music_volume_db, SettingsManager.sfx_enabled, SettingsManager.music_enabled)
-
-func _on_music_volume_changed(value: float) -> void:
-	if SettingsManager:
-		SettingsManager.set_audio_settings(SettingsManager.sfx_volume_db, value, SettingsManager.sfx_enabled, SettingsManager.music_enabled)
-
-## Sound/music buttons (Settings rows and the main-screen corner) flip the flag.
+## Main-screen corner mute buttons: same toggles as the Settings rows
+## (SettingsPanel emits audio_changed, which re-syncs these icons).
 func _on_sfx_toggle_pressed() -> void:
-	if SettingsManager:
-		_on_sfx_toggled(not SettingsManager.sfx_enabled)
+	settings_panel.toggle_sound()
 
 func _on_music_toggle_pressed() -> void:
-	if SettingsManager:
-		_on_music_toggled(not SettingsManager.music_enabled)
-
-func _on_sfx_toggled(enabled: bool) -> void:
-	if SettingsManager:
-		SettingsManager.set_audio_settings(SettingsManager.sfx_volume_db, SettingsManager.music_volume_db, enabled, SettingsManager.music_enabled)
-	_refresh_audio_ui()
-
-func _on_music_toggled(enabled: bool) -> void:
-	if SettingsManager:
-		SettingsManager.set_audio_settings(SettingsManager.sfx_volume_db, SettingsManager.music_volume_db, SettingsManager.sfx_enabled, enabled)
-	_refresh_audio_ui()
-
-func _on_touch_mode_changed(index: int) -> void:
-	if SettingsManager:
-		SettingsManager.set_touch_controls_mode(index as SettingsManager.TouchControlsMode)
-
-func _on_auto_attack_toggled(enabled: bool) -> void:
-	if SettingsManager:
-		SettingsManager.set_auto_attack_enabled(enabled)
+	settings_panel.toggle_music()
 
 func _update_options_ui() -> void:
 	ai_stepper.set_selected_no_signal(_ai_count - AI_COUNT_MIN)
@@ -182,6 +200,10 @@ func _update_options_ui() -> void:
 	var by_score := _win_mode == SettingsManager.WinMode.SCORE_TARGET
 	_set_row_active(score_label, score_row, score_slider, by_score)
 	_set_row_active(duration_label, duration_row, duration_slider, not by_score)
+	# The panel filters unknown names and never allows "all off".
+	weapons_panel.set_disabled(_disabled_weapons)
+	_disabled_weapons = weapons_panel.get_disabled()
+	weapons_btn.text = "%d / %d  ›" % [weapons_panel.get_enabled_count(), weapons_panel.get_total_count()]
 
 func _set_row_active(label: Control, row: Control, slider: Slider, active: bool) -> void:
 	var tint := Color.WHITE if active else INACTIVE_TINT
@@ -200,28 +222,14 @@ func _path_to_index(path: String) -> int:
 	return ArenaDatabase.get_default_index()
 
 func _update_settings_ui() -> void:
-	if not SettingsManager:
-		return
-	sfx_slider.set_value_no_signal(SettingsManager.sfx_volume_db)
-	music_slider.set_value_no_signal(SettingsManager.music_volume_db)
-	touch_stepper.set_selected_no_signal(SettingsManager.touch_controls_mode)
-	auto_attack_check.set_pressed_no_signal(SettingsManager.auto_attack_enabled)
-	_refresh_audio_ui()
+	settings_panel.refresh()
+	_refresh_corner_icons()
 
-## Mute icons on both button pairs; a muted channel's volume slider fades out.
-func _refresh_audio_ui() -> void:
+func _refresh_corner_icons() -> void:
 	if not SettingsManager:
 		return
-	var sfx_on := SettingsManager.sfx_enabled
-	var music_on := SettingsManager.music_enabled
-	for button: Button in [sfx_toggle, corner_sound]:
-		button.icon = SOUND_ON if sfx_on else SOUND_OFF
-	for button: Button in [music_toggle, corner_music]:
-		button.icon = MUSIC_ON if music_on else MUSIC_OFF
-	sfx_slider.editable = sfx_on
-	sfx_slider.modulate = Color.WHITE if sfx_on else INACTIVE_TINT
-	music_slider.editable = music_on
-	music_slider.modulate = Color.WHITE if music_on else INACTIVE_TINT
+	corner_sound.icon = SettingsPanel.sound_icon(SettingsManager.sfx_enabled)
+	corner_music.icon = SettingsPanel.music_icon(SettingsManager.music_enabled)
 
 func _play_click() -> void:
 	if AudioManager:

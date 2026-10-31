@@ -183,10 +183,17 @@ func _update_drop_timer(delta: float) -> void:
 			_drop_timer = 0.0
 			set_collision_mask_value(ONE_WAY_LAYER, true)
 
+## True while the real mouse hovers a clickable Control (HUD Controls ignore
+## the mouse except the pause button, so only that one counts in play).
+func _pointer_over_ui() -> bool:
+	return get_viewport().gui_get_hovered_control() != null
+
 func _get_attack_input() -> bool:
 	if is_player:
-		# Manual input always works, in both modes.
-		if Input.is_action_just_pressed("Attack"):
+		# Manual input always works, in both modes — except a click on a HUD
+		# button (the pause button): Attack is the left mouse button, and the
+		# Input singleton registers the click even though the GUI handled it.
+		if Input.is_action_just_pressed("Attack") and not _pointer_over_ui():
 			return true
 		if _auto_attack_enabled() and _weapon_holder \
 				and _weapon_holder.is_holding_weapon():

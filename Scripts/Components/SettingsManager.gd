@@ -5,21 +5,40 @@ enum TouchControlsMode { AUTO, ALWAYS, HIDDEN }
 
 const CONFIG_PATH := "user://swap_war_settings.cfg"
 
+## Factory values — first launch and the two DEFAULTS buttons (Settings card,
+## Match Options) both read these, so they can't drift apart.
+const SETTINGS_DEFAULTS := {
+	"sfx_volume_db": -6.0,
+	"music_volume_db": -12.0,
+	"sfx_enabled": true,
+	"music_enabled": true,
+	"touch_controls_mode": TouchControlsMode.AUTO,
+	"auto_attack_enabled": false,
+}
+## Match defaults; the arena default is ArenaDatabase.DEFAULT_PATH and the
+## weapon default is "all on" (an empty disabled_weapons list).
+const MATCH_DEFAULTS := {
+	"ai_count": 3,
+	"win_mode": WinMode.SCORE_TARGET,
+	"score_target": 10,
+	"match_duration_seconds": 120.0,
+}
+
 signal settings_loaded()
 
 # Audio settings
-@export var sfx_volume_db: float = -6.0
-@export var music_volume_db: float = -12.0
-@export var sfx_enabled: bool = true
-@export var music_enabled: bool = true
+@export var sfx_volume_db: float = SETTINGS_DEFAULTS["sfx_volume_db"]
+@export var music_volume_db: float = SETTINGS_DEFAULTS["music_volume_db"]
+@export var sfx_enabled: bool = SETTINGS_DEFAULTS["sfx_enabled"]
+@export var music_enabled: bool = SETTINGS_DEFAULTS["music_enabled"]
 
 # UI settings
-@export var touch_controls_mode: TouchControlsMode = TouchControlsMode.AUTO
+@export var touch_controls_mode: TouchControlsMode = SETTINGS_DEFAULTS["touch_controls_mode"]
 ## Auto Attack (default off — manual is the default): melee weapons auto-swing
 ## at the nearest hostile in reach (aiming at it, on PC too); ranged weapons
 ## auto-fire while the touch aim stick is deflected (touch-only — PC aims
 ## with the mouse). The manual ATTACK input always works alongside it.
-@export var auto_attack_enabled: bool = false
+@export var auto_attack_enabled: bool = SETTINGS_DEFAULTS["auto_attack_enabled"]
 ## Custom touch-control layout: control name -> Vector3(nx, ny, size_mult)
 ## (nx/ny normalized to canvas size at save time; mult 0.5-2.0 on top of the
 ## automatic resolution scale). Empty = procedural layout. Applied per-control
@@ -27,11 +46,15 @@ signal settings_loaded()
 @export var touch_layout: Dictionary = {}
 
 # Match options (persisted as last-used)
-@export var ai_count: int = 3
-@export var win_mode: WinMode = WinMode.SCORE_TARGET
-@export var score_target: int = 10
-@export var match_duration_seconds: float = 120.0
+@export var ai_count: int = MATCH_DEFAULTS["ai_count"]
+@export var win_mode: WinMode = MATCH_DEFAULTS["win_mode"]
+@export var score_target: int = MATCH_DEFAULTS["score_target"]
+@export var match_duration_seconds: float = MATCH_DEFAULTS["match_duration_seconds"]
 @export var selected_arena_path: String = ArenaDatabase.DEFAULT_PATH
+## Weapons switched OFF in CHOOSE WEAPONS (WeaponDatabase names). Storing the
+## disabled list means a weapon added in a later update starts ON for players
+## with an older settings file.
+@export var disabled_weapons: PackedStringArray = PackedStringArray()
 
 func _ready() -> void:
 	load_settings()
@@ -51,6 +74,7 @@ func save_settings() -> void:
 	config.set_value("match", "score_target", score_target)
 	config.set_value("match", "match_duration_seconds", match_duration_seconds)
 	config.set_value("match", "selected_arena_path", selected_arena_path)
+	config.set_value("match", "disabled_weapons", disabled_weapons)
 	# Custom touch layout — one key per control (empty dict writes no section).
 	for key in touch_layout.keys():
 		config.set_value("touch_layout", key, touch_layout[key])
@@ -75,6 +99,8 @@ func load_settings() -> void:
 	score_target = config.get_value("match", "score_target", score_target)
 	match_duration_seconds = config.get_value("match", "match_duration_seconds", match_duration_seconds)
 	selected_arena_path = config.get_value("match", "selected_arena_path", selected_arena_path)
+	var disabled: Variant = config.get_value("match", "disabled_weapons", PackedStringArray())
+	disabled_weapons = PackedStringArray(disabled) if (disabled is PackedStringArray or disabled is Array) else PackedStringArray()
 	# Custom touch layout — filter to Vector3 so corrupt entries self-heal
 	# on the next save.
 	touch_layout.clear()
@@ -107,6 +133,26 @@ func set_match_options(new_ai_count: int, new_win_mode: WinMode, new_score_targe
 	score_target = maxi(new_score_target, 1)
 	match_duration_seconds = maxf(new_duration, 30.0)
 	save_settings()
+
+func is_weapon_enabled(weapon_name: String) -> bool:
+	return not disabled_weapons.has(weapon_name)
+
+func set_disabled_weapons(names: PackedStringArray) -> void:
+	disabled_weapons = names
+	save_settings()
+
+## Settings card DEFAULTS: audio, touch-controls mode and auto attack back to
+## factory values (the custom touch layout keeps its own RESET in the editor).
+func reset_settings_to_defaults() -> void:
+	sfx_volume_db = SETTINGS_DEFAULTS["sfx_volume_db"]
+	music_volume_db = SETTINGS_DEFAULTS["music_volume_db"]
+	sfx_enabled = SETTINGS_DEFAULTS["sfx_enabled"]
+	music_enabled = SETTINGS_DEFAULTS["music_enabled"]
+	touch_controls_mode = SETTINGS_DEFAULTS["touch_controls_mode"]
+	auto_attack_enabled = SETTINGS_DEFAULTS["auto_attack_enabled"]
+	_apply_audio_settings()
+	save_settings()
+	setting_changed.emit()
 
 func set_arena_path(path: String) -> void:
 	if path.is_empty():

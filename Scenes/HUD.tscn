@@ -4,6 +4,7 @@
 [ext_resource type="Theme" path="res://Assets/ui/Themes/menu_theme.tres" id="2_theme"]
 [ext_resource type="PackedScene" uid="uid://d1r8qvpi16ghr" path="res://Scenes/UI/TouchControls.tscn" id="2_tc"]
 [ext_resource type="PackedScene" uid="uid://x3me4yg41ypk" path="res://Scenes/UI/TeamTimer.tscn" id="3_teamtimer"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/pause.png" id="4_pause"]
 
 [node name="HUD" type="CanvasLayer" unique_id=1514791500]
 script = ExtResource("1_hud")
@@ -57,14 +58,10 @@ grow_horizontal = 2
 [node name="GoalChip" type="PanelContainer" parent="Root/TopBar" unique_id=930500003]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -22.0
-offset_top = 22.0
-offset_right = -22.0
-offset_bottom = 22.0
-grow_horizontal = 0
+offset_left = 800.0
+offset_top = 34.0
+offset_right = 800.0
+offset_bottom = 34.0
 mouse_filter = 2
 theme_type_variation = &"ChipPanel"
 
@@ -75,6 +72,23 @@ theme_type_variation = &"ChipLabel"
 text = "first to 10"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="PauseButton" type="Button" parent="Root/TopBar" unique_id=930500005]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -78.0
+offset_top = 22.0
+offset_right = -22.0
+offset_bottom = 78.0
+grow_horizontal = 0
+focus_mode = 0
+tooltip_text = "Pause (Esc)"
+theme_type_variation = &"IconButton"
+icon = ExtResource("4_pause")
+icon_alignment = 1
 
 [node name="WinnerMessage" type="Label" parent="Root" unique_id=2073104039]
 unique_name_in_owner = true
@@ -95,3 +109,5 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="TouchControls" parent="." unique_id=2135960030 instance=ExtResource("2_tc")]
+
+[connection signal="pressed" from="Root/TopBar/PauseButton" to="." method="_on_pause_pressed"]

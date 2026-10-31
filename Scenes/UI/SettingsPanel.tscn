@@ -1,0 +1,181 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scripts/UI/SettingsPanel.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/Stepper.tscn" id="5_stepper"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/settings.png" id="13_settings"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/sound_on.png" id="15_sound_on"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/music_on.png" id="16_music_on"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/arrow_left.png" id="17_back"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/restart.png" id="18_reset"]
+
+[node name="SettingsPanel" type="PanelContainer" unique_id=1285881015]
+custom_minimum_size = Vector2(640, 0)
+script = ExtResource("1_script")
+
+[node name="VBox" type="VBoxContainer" parent="." unique_id=332680952]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Header" type="HBoxContainer" parent="VBox" unique_id=930100090]
+layout_mode = 2
+
+[node name="SettingsBackBtn" type="Button" parent="VBox/Header" unique_id=918368014]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 0
+tooltip_text = "Back"
+theme_type_variation = &"IconButton"
+icon = ExtResource("17_back")
+icon_alignment = 1
+
+[node name="Title" type="Label" parent="VBox/Header" unique_id=2060730652]
+layout_mode = 2
+size_flags_horizontal = 6
+theme_type_variation = &"HeaderLabel"
+text = "SETTINGS"
+horizontal_alignment = 1
+
+[node name="SettingsDefaultsBtn" type="Button" parent="VBox/Header" unique_id=930100091]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 0
+tooltip_text = "Reset settings to defaults"
+theme_type_variation = &"IconButton"
+icon = ExtResource("18_reset")
+icon_alignment = 1
+
+[node name="Rows" type="GridContainer" parent="VBox" unique_id=930100092]
+layout_mode = 2
+theme_override_constants/h_separation = 28
+theme_override_constants/v_separation = 12
+columns = 2
+
+[node name="SFXLabel" type="Label" parent="VBox/Rows" unique_id=1881925599]
+layout_mode = 2
+theme_type_variation = &"RowLabel"
+text = "Sound"
+vertical_alignment = 1
+
+[node name="SFXRow" type="HBoxContainer" parent="VBox/Rows" unique_id=1235945840]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 18
+
+[node name="SFXToggle" type="Button" parent="VBox/Rows/SFXRow" unique_id=464119754]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+tooltip_text = "Sound on / off"
+theme_type_variation = &"IconButton"
+icon = ExtResource("15_sound_on")
+icon_alignment = 1
+
+[node name="SFXSlider" type="HSlider" parent="VBox/Rows/SFXRow" unique_id=4705233]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(250, 40)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+min_value = -30.0
+max_value = 0.0
+value = -6.0
+
+[node name="MusicLabel" type="Label" parent="VBox/Rows" unique_id=2126004285]
+layout_mode = 2
+theme_type_variation = &"RowLabel"
+text = "Music"
+vertical_alignment = 1
+
+[node name="MusicRow" type="HBoxContainer" parent="VBox/Rows" unique_id=1637190524]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 18
+
+[node name="MusicToggle" type="Button" parent="VBox/Rows/MusicRow" unique_id=1665859288]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+tooltip_text = "Music on / off"
+theme_type_variation = &"IconButton"
+icon = ExtResource("16_music_on")
+icon_alignment = 1
+
+[node name="MusicSlider" type="HSlider" parent="VBox/Rows/MusicRow" unique_id=944025182]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(250, 40)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+min_value = -30.0
+max_value = 0.0
+value = -12.0
+
+[node name="TouchLabel" type="Label" parent="VBox/Rows" unique_id=1848945941]
+layout_mode = 2
+theme_type_variation = &"RowLabel"
+text = "Touch Controls"
+vertical_alignment = 1
+
+[node name="TouchStepper" parent="VBox/Rows" unique_id=1419333573 instance=ExtResource("5_stepper")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+items = PackedStringArray("Auto", "Always", "Hidden")
+
+[node name="AutoAttackLabel" type="Label" parent="VBox/Rows" unique_id=812345684]
+layout_mode = 2
+theme_type_variation = &"RowLabel"
+text = "Auto Attack"
+vertical_alignment = 1
+
+[node name="AutoAttackRow" type="HBoxContainer" parent="VBox/Rows" unique_id=812345683]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="AutoAttackCheck" type="CheckButton" parent="VBox/Rows/AutoAttackRow" unique_id=812345685]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="AutoAttackHint" type="Label" parent="VBox/Rows/AutoAttackRow" unique_id=930100093]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"HintLabel"
+text = "swings & fires for you"
+vertical_alignment = 1
+
+[node name="Spacer" type="Control" parent="VBox" unique_id=570540419]
+custom_minimum_size = Vector2(0, 4)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="CustomizeTouchBtn" type="Button" parent="VBox" unique_id=910000001]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(400, 64)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "EDIT TOUCH LAYOUT"
+icon = ExtResource("13_settings")
+
+[node name="BottomSpacer" type="Control" parent="VBox" unique_id=809856035]
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+mouse_filter = 2
+
+[connection signal="pressed" from="VBox/Header/SettingsBackBtn" to="." method="_on_back_pressed"]
+[connection signal="pressed" from="VBox/Header/SettingsBackBtn" to="." method="_play_click"]
+[connection signal="pressed" from="VBox/Rows/SFXRow/SFXToggle" to="." method="_on_sfx_toggle_pressed"]
+[connection signal="pressed" from="VBox/Rows/SFXRow/SFXToggle" to="." method="_play_click"]
+[connection signal="value_changed" from="VBox/Rows/SFXRow/SFXSlider" to="." method="_on_sfx_volume_changed"]
+[connection signal="pressed" from="VBox/Rows/MusicRow/MusicToggle" to="." method="_on_music_toggle_pressed"]
+[connection signal="pressed" from="VBox/Rows/MusicRow/MusicToggle" to="." method="_play_click"]
+[connection signal="value_changed" from="VBox/Rows/MusicRow/MusicSlider" to="." method="_on_music_volume_changed"]
+[connection signal="item_selected" from="VBox/Rows/TouchStepper" to="." method="_on_touch_mode_changed"]
+[connection signal="toggled" from="VBox/Rows/AutoAttackRow/AutoAttackCheck" to="." method="_on_auto_attack_toggled"]
+[connection signal="toggled" from="VBox/Rows/AutoAttackRow/AutoAttackCheck" to="." method="_play_click" unbinds=1]
+[connection signal="pressed" from="VBox/CustomizeTouchBtn" to="." method="_on_customize_touch_pressed"]
+[connection signal="pressed" from="VBox/CustomizeTouchBtn" to="." method="_play_click"]
+[connection signal="pressed" from="VBox/Header/SettingsDefaultsBtn" to="." method="_on_defaults_pressed"]
+[connection signal="pressed" from="VBox/Header/SettingsDefaultsBtn" to="." method="_play_click"]

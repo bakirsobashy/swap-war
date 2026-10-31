@@ -9,15 +9,23 @@ extends SceneTree
 ##   3. win mode greys out the limit that doesn't apply (score target in
 ##      TIMED_SCORE, time limit in SCORE_TARGET) and the time limit reads m:ss
 ##   4. mute state swaps the sound icon and disables that volume slider
-##   5. PauseMenu: the corner close button resumes and unpauses
+##   5. PauseMenu: the corner close button resumes and unpauses; SETTINGS opens
+##      the shared SettingsPanel (no touch-layout editor), and Esc / Back / the
+##      back arrow step back to the pause card without unpausing
 ##   6. PostRoundMenu: DRAW title, reworded reason, rows sorted by kills with
 ##      the winner starred
+##   7. app lifecycle: focus loss / backgrounding opens the pause menu (never
+##      closes it, never over the post-round screen)
+##   8. Android Back: toggles pause, leaves the end screen for the main menu,
+##      and steps the main menu back one level (layout editor -> Settings ->
+##      main); Quit shows on desktop (hidden on web/iOS)
 ##
 ## Probe discipline: runtime load() only, untyped vars, no autoload identifiers.
 ## Never presses START / mute buttons / the touch stepper — those reach
 ## SettingsManager setters, which persist to the user's settings file.
 
 const SOUND_OFF_PATH := "res://Assets/ui/ui-2.0/scribble_ui/x1/icons/sound_off.png"
+const MAIN_MENU_PATH := "res://Scenes/UI/MainMenu.tscn"
 
 var _fails: int = 0
 
@@ -26,6 +34,7 @@ func _init() -> void:
 
 func _run() -> void:
 	await _main_menu_checks()
+	await _weapons_checks()
 	await _pause_checks()
 	await _post_round_checks()
 
@@ -92,16 +101,72 @@ func _main_menu_checks() -> void:
 	if settings:
 		var sfx_was: bool = settings.sfx_enabled
 		settings.sfx_enabled = false
-		menu._refresh_audio_ui()
-		_check(menu.sfx_toggle.icon.resource_path == SOUND_OFF_PATH
+		menu._update_settings_ui()
+		_check(menu.settings_panel.sfx_toggle.icon.resource_path == SOUND_OFF_PATH
 				and menu.corner_sound.icon.resource_path == SOUND_OFF_PATH,
 				"muted sound shows sound_off on both buttons")
-		_check(not menu.sfx_slider.editable, "muted sound disables its volume slider")
+		_check(not menu.settings_panel.sfx_slider.editable, "muted sound disables its volume slider")
 		settings.sfx_enabled = sfx_was
-		menu._refresh_audio_ui()
+		menu._update_settings_ui()
 	else:
 		_check(false, "SettingsManager autoload present")
 
+	# 8. Back steps out one level; Quit is a desktop/Android button
+	_check(menu.quit_btn.visible, "Quit shows on desktop")
+	menu._on_how_to_play_pressed()
+	menu.propagate_notification(Node.NOTIFICATION_WM_GO_BACK_REQUEST)
+	_check(menu.main_panel.visible and not menu.help_panel.visible,
+			"Back from How to Play returns to the main screen")
+	menu._on_settings_pressed()
+	menu._on_customize_touch_pressed()
+	await process_frame
+	menu.propagate_notification(Node.NOTIFICATION_WM_GO_BACK_REQUEST)
+	await process_frame
+	_check(menu.settings_panel.visible and not menu.touch_layout_editor.visible
+			and not Input.emulate_touch_from_mouse,
+			"Back from the layout editor returns to Settings and restores emulation")
+	menu.propagate_notification(Node.NOTIFICATION_WM_GO_BACK_REQUEST)
+	_check(menu.main_panel.visible and not menu.settings_panel.visible,
+			"Back from Settings returns to the main screen")
+
+	menu.queue_free()
+	await process_frame
+
+## CHOOSE WEAPONS row + panel and the two DEFAULTS buttons (Match Options
+## state only — START is never pressed, so nothing is persisted).
+func _weapons_checks() -> void:
+	var settings = root.get_node_or_null("/root/SettingsManager")
+	var menu = (load("res://Scenes/UI/MainMenu.tscn") as PackedScene).instantiate()
+	root.add_child(menu)
+	await process_frame
+	await process_frame
+	menu._on_play_pressed()
+	menu._disabled_weapons = PackedStringArray()
+	menu._update_options_ui()
+	var total: int = menu.weapons_panel.get_total_count()
+	_check(menu.weapons_btn.text == "%d / %d  ›" % [total, total], "Weapons row shows all %d on" % total)
+
+	menu.get_node("%WeaponsBtn").pressed.emit()
+	_check(menu.weapons_panel.visible and not menu.options_panel.visible, "Weapons row opens CHOOSE WEAPONS")
+	menu.weapons_panel.get_card("Sword").get_switch().button_pressed = false
+	menu.go_back()
+	_check(menu.options_panel.visible and not menu.weapons_panel.visible
+			and menu.weapons_btn.text == "%d / %d  ›" % [total - 1, total]
+			and menu._disabled_weapons.has("Sword"),
+			"Back returns to Match Options and the row counts the switched-off weapon")
+
+	menu._ai_count = 1
+	menu._score_target = 25
+	menu._win_mode = 1
+	menu.get_node("%OptionsDefaultsBtn").pressed.emit()
+	var d = settings.MATCH_DEFAULTS if settings else {}
+	_check(menu._ai_count == d.get("ai_count") and menu._score_target == d.get("score_target")
+			and menu._win_mode == d.get("win_mode") and menu._disabled_weapons.is_empty()
+			and menu.weapons_btn.text == "%d / %d  ›" % [total, total],
+			"Match Options DEFAULTS restores factory values and all weapons")
+	_check(menu.settings_panel.get_node("%SettingsDefaultsBtn") != null
+			and menu.get_node("%OptionsDefaultsBtn").tooltip_text != "",
+			"both panels carry a DEFAULTS reset icon")
 	menu.queue_free()
 	await process_frame
 
@@ -115,6 +180,54 @@ func _pause_checks() -> void:
 	_check(pause.get_node("Root/Dim").visible, "pause dims the game behind the card")
 	pause.get_node("%CloseBtn").pressed.emit()
 	_check(not pause.visible and not paused, "corner close button resumes")
+
+	# 5b. SETTINGS inside the pause menu (the shared SettingsPanel)
+	pause._toggle_pause()
+	var sp = pause.settings_panel
+	pause.get_node("%SettingsBtn").pressed.emit()
+	_check(sp.visible and not pause.panel.visible and paused,
+			"pause SETTINGS swaps the pause card for the settings panel")
+	_check(not sp.customize_touch_btn.visible, "pause settings hide EDIT TOUCH LAYOUT")
+	var esc := InputEventAction.new()
+	esc.action = &"Pause"
+	esc.pressed = true
+	pause._input(esc)
+	_check(pause.visible and paused and pause.panel.visible and not sp.visible,
+			"Esc in pause settings steps back to the pause card (still paused)")
+	pause._on_settings_pressed()
+	pause.propagate_notification(Node.NOTIFICATION_WM_GO_BACK_REQUEST)
+	_check(pause.visible and paused and pause.panel.visible and not sp.visible,
+			"Back in pause settings steps back to the pause card")
+	pause._on_settings_pressed()
+	sp.get_node("%SettingsBackBtn").pressed.emit()
+	_check(pause.panel.visible and not sp.visible, "settings back arrow returns to the pause card")
+	pause._on_settings_pressed()
+	pause._on_resume_pressed()
+	pause._toggle_pause()
+	_check(pause.panel.visible and not sp.visible, "the pause menu reopens on the pause card")
+	pause._on_resume_pressed()
+
+	# 7. focus loss / backgrounding pauses; 8. Back toggles
+	pause.propagate_notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
+	_check(pause.visible and paused, "losing focus opens the pause menu")
+	pause.propagate_notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
+	_check(pause.visible and paused, "a second focus loss keeps it open")
+	pause.propagate_notification(Node.NOTIFICATION_WM_GO_BACK_REQUEST)
+	_check(not pause.visible and not paused, "Back closes the pause menu")
+	pause.propagate_notification(Node.NOTIFICATION_APPLICATION_PAUSED)
+	_check(pause.visible and paused, "going to the background opens the pause menu")
+	pause._on_resume_pressed()
+	pause.propagate_notification(Node.NOTIFICATION_WM_GO_BACK_REQUEST)
+	_check(pause.visible and paused, "Back opens the pause menu during play")
+	pause._on_resume_pressed()
+	var fake_post := CanvasLayer.new()
+	root.add_child(fake_post)
+	pause._post_round_menu = fake_post
+	pause.propagate_notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
+	pause.propagate_notification(Node.NOTIFICATION_WM_GO_BACK_REQUEST)
+	_check(not pause.visible and not paused,
+			"focus loss and Back leave the post-round screen alone")
+	fake_post.queue_free()
 	pause.queue_free()
 	await process_frame
 
@@ -146,6 +259,15 @@ func _post_round_checks() -> void:
 			"winner row starred, others ranked")
 	_check(board.get_child_count() == 5, "notebook-line separators between rows (rows rebuilt, not appended)")
 	_check(post.get_node("%Title").text == "BRAVO WINS!", "winner title")
+
+	# 8. Back on the end screen goes to the main menu
+	post.propagate_notification(Node.NOTIFICATION_WM_GO_BACK_REQUEST)
+	await process_frame
+	await process_frame
+	_check(not paused and current_scene != null
+			and current_scene.scene_file_path == MAIN_MENU_PATH,
+			"Back on the end screen goes to the main menu")
+	unload_current_scene()
 
 	paused = false
 	post.queue_free()
