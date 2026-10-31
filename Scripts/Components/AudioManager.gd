@@ -18,14 +18,33 @@ extends Node
 @export var drop_sound: AudioStream
 @export var music_sound: AudioStream
 
-const SOUND_DIR := "res://Assets/audio/vfx/"
-const GENERATED_DIR := "res://Assets/audio/generated/"
+const KENNEY_DIR := "res://Assets/audio/sfx/kenney/"
 const DEFAULT_MUSIC_PATH := "res://Assets/audio/music/Street-Chaos.ogg"
 
-# Multi-variant clips (e.g. swing1/swing2, land1/land2): when no export is
-# assigned, a random clip from these lists plays for cheap variety.
-var _melee_attack_variants: Array[AudioStream] = []
-var _land_variants: Array[AudioStream] = []
+## Gameplay sound library — Kenney packs (CC0; Assets/audio/sfx/kenney/License.txt).
+## Each event plays a random clip from its list; gain_db evens out the packs'
+## loudness (measured RMS), pitch is the random pitch jitter. An export set on
+## the autoload overrides the library for that event. Gunshots stay on the
+## project's own fire.mp3: the Kenney packs have no gun sounds.
+const LIBRARY := {
+	&"hit": {"clips": ["impactPunch_medium_000", "impactPunch_medium_001", "impactPunch_medium_002",
+			"impactPunch_medium_003", "impactPunch_medium_004"], "gain_db": 2.0, "pitch": 0.1},
+	&"death": {"clips": ["impactPunch_heavy_000", "impactPunch_heavy_001", "impactPunch_heavy_002",
+			"impactPunch_heavy_003", "impactPunch_heavy_004"], "gain_db": 2.0, "pitch": 0.1},
+	&"jump": {"clips": ["phaseJump1", "phaseJump2"], "gain_db": -6.0, "pitch": 0.05},
+	&"land": {"clips": ["impactSoft_medium_000", "impactSoft_medium_001", "impactSoft_medium_002",
+			"impactSoft_medium_003", "impactSoft_medium_004"], "gain_db": -8.0, "pitch": 0.1},
+	&"melee": {"clips": ["knifeSlice", "knifeSlice2"], "gain_db": 0.0, "pitch": 0.08},
+	&"ranged": {"clips": ["res://Assets/audio/vfx/fire.mp3"], "gain_db": 0.0, "pitch": 0.05},
+	&"team_swap": {"clips": ["threeTone2"], "gain_db": -4.0, "pitch": 0.0},
+	&"win": {"clips": ["jingles_PIZZI02"], "gain_db": 0.0, "pitch": 0.0},
+	&"pickup": {"clips": ["drawKnife2", "drawKnife3"], "gain_db": 10.0, "pitch": 0.1},
+	&"drop": {"clips": ["impactMetal_light_000", "impactMetal_light_001", "impactMetal_light_002",
+			"impactMetal_light_003", "impactMetal_light_004"], "gain_db": -2.0, "pitch": 0.1},
+}
+
+## event -> Array[AudioStream] (the library clips, loaded once).
+var _library_clips: Dictionary = {}
 
 # UI sounds
 @export var ui_click_sound: AudioStream
@@ -52,49 +71,42 @@ func _load_default_ui_sounds() -> void:
 	if not ui_touch_sound:
 		ui_touch_sound = load("res://Assets/ui/Sounds/tap-a.ogg")
 
-## Library defaults; explicit exports on the autoload still win.
+## Load every library clip once. A clip name without a path lives in KENNEY_DIR.
 func _load_default_gameplay_sounds() -> void:
-	if not jump_sound:
-		jump_sound = load(SOUND_DIR + "jump.mp3")
-	if not melee_attack_sound:
-		_melee_attack_variants = _load_clips(["swing1.mp3", "swing2.mp3"])
-	if not land_sound:
-		_land_variants = _load_clips(["land1.mp3", "land2.mp3"])
-	if not ranged_attack_sound:
-		ranged_attack_sound = load(SOUND_DIR + "fire.mp3")
-	if not pickup_sound:
-		pickup_sound = load(SOUND_DIR + "Pickup.mp3")
-	if not win_sound:
-		win_sound = load(SOUND_DIR + "win-jingle.mp3")
-	if not team_swap_sound:
-		team_swap_sound = load(SOUND_DIR + "Transitions.mp3")
-	# TODO: synthesized placeholders until final assets arrive.
-	if not hit_sound:
-		hit_sound = load(GENERATED_DIR + "hit.wav")
-	if not death_sound:
-		death_sound = load(GENERATED_DIR + "death.wav")
-	if not drop_sound:
-		drop_sound = load(GENERATED_DIR + "drop.wav")
+	for event in LIBRARY:
+		var clips: Array[AudioStream] = []
+		for clip_name: String in LIBRARY[event]["clips"]:
+			var path := clip_name if clip_name.begins_with("res://") else KENNEY_DIR + clip_name + ".ogg"
+			var clip := load(path) as AudioStream
+			if clip:
+				clips.append(clip)
+			else:
+				push_warning("AudioManager: missing sound '%s'" % path)
+		_library_clips[event] = clips
 
-func _load_clips(file_names: Array) -> Array[AudioStream]:
-	var clips: Array[AudioStream] = []
-	for file_name in file_names:
-		var clip := load(SOUND_DIR + file_name) as AudioStream
-		if clip:
-			clips.append(clip)
-	return clips
-
-func _pick_clip(clips: Array[AudioStream]) -> AudioStream:
+## One gameplay event: the export override if set, else a random library clip
+## with the event's gain and pitch jitter.
+func _play_event(event: StringName, override: AudioStream) -> void:
+	var entry: Dictionary = LIBRARY[event]
+	if override:
+		play_sfx(override, entry["pitch"])
+		return
+	var clips: Array = _library_clips.get(event, [])
 	if clips.is_empty():
-		return null
-	return clips[randi() % clips.size()]
+		return
+	play_sfx(clips[randi() % clips.size()], entry["pitch"], entry["gain_db"])
 
-func play_sfx(stream: AudioStream, pitch_random: float = 0.0) -> void:
+## For probes: every library event resolved to at least one clip.
+func get_library_clip_count(event: StringName) -> int:
+	return (_library_clips.get(event, []) as Array).size()
+
+func play_sfx(stream: AudioStream, pitch_random: float = 0.0, volume_db: float = 0.0) -> void:
 	if not sfx_enabled or not stream:
 		return
 
 	var player := AudioStreamPlayer.new()
 	player.stream = stream
+	player.volume_db = volume_db
 	player.bus = AudioServer.get_bus_name(_sfx_bus)
 	if pitch_random > 0.0:
 		player.pitch_scale = 1.0 + randf_range(-pitch_random, pitch_random)
@@ -128,34 +140,34 @@ func stop_music() -> void:
 	_stop_music()
 
 func play_hit() -> void:
-	play_sfx(hit_sound, 0.1)
+	_play_event(&"hit", hit_sound)
 
 func play_death() -> void:
-	play_sfx(death_sound, 0.1)
+	_play_event(&"death", death_sound)
 
 func play_jump() -> void:
-	play_sfx(jump_sound, 0.05)
+	_play_event(&"jump", jump_sound)
 
 func play_land() -> void:
-	play_sfx(land_sound if land_sound else _pick_clip(_land_variants), 0.1)
+	_play_event(&"land", land_sound)
 
 func play_melee_attack() -> void:
-	play_sfx(melee_attack_sound if melee_attack_sound else _pick_clip(_melee_attack_variants), 0.08)
+	_play_event(&"melee", melee_attack_sound)
 
 func play_ranged_fire() -> void:
-	play_sfx(ranged_attack_sound, 0.05)
+	_play_event(&"ranged", ranged_attack_sound)
 
 func play_team_swap() -> void:
-	play_sfx(team_swap_sound, 0.0)
+	_play_event(&"team_swap", team_swap_sound)
 
 func play_win() -> void:
-	play_sfx(win_sound, 0.0)
+	_play_event(&"win", win_sound)
 
 func play_pickup() -> void:
-	play_sfx(pickup_sound, 0.1)
+	_play_event(&"pickup", pickup_sound)
 
 func play_drop() -> void:
-	play_sfx(drop_sound, 0.1)
+	_play_event(&"drop", drop_sound)
 
 func play_ui_click() -> void:
 	play_sfx(ui_click_sound, 0.0)
