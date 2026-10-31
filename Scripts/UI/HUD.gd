@@ -2,15 +2,16 @@ class_name HUD
 extends CanvasLayer
 
 ## In-match HUD (Notebook Doodle, menu_theme): paper scoreboard card, swap
-## timer badge, goal chip (score target / match clock / sudden death), a pause
-## button in the top-right corner and the centre banner. Every Control except
-## the pause button ignores the mouse — Attack is mouse-bound (Actor-Movement
-## skips Attack while the mouse is over the pause button).
+## timer badge, goal chip (score target / match clock / sudden death), the
+## pause button in the top-right corner (the game's only on-screen pause, for
+## mouse AND touch) and the centre banner. Every Control except the pause
+## button ignores the mouse — Attack is mouse-bound (Actor-Movement skips
+## Attack while the mouse is over the pause button).
 
 const TeamDotScript := preload("res://Scripts/UI/TeamDot.gd")
 const LEADER_STAR := preload("res://Assets/ui/ui-2.0/scribble_ui/x1/hud/star_small_full.png")
-## Top-right corner slot of the pause button (the touch PauseButton's default
-## spot too): margin from the canvas edges and button size.
+## Top-right corner slot of the pause button: margin from the canvas edges
+## and button size.
 const CORNER_MARGIN := 22.0
 const PAUSE_SIZE := 56.0
 ## Minimum gap between the goal chip and the swap timer.
@@ -26,9 +27,6 @@ const BANNER_LONG_FONT_SIZE := 72
 @onready var _goal_chip: Control = %GoalChip
 @onready var _goal_label: Label = %GoalLabel
 @onready var _pause_button: Button = %PauseButton
-## Untyped: its script API (uses_touch_controls, get_control_rect) isn't on
-## the CanvasLayer base, and TouchControls.gd has no class_name.
-@onready var _touch_controls = $TouchControls
 
 ## actor -> {"row", "dot", "name", "score", "star"}
 var _rows: Dictionary = {}
@@ -212,29 +210,16 @@ func _update_team_timer() -> void:
 	var timer: Timer = TeamManager._swap_timer
 	_team_timer.update_timer(timer.time_left, TeamManager.swap_interval, timer.is_stopped())
 
-## Top-right row: the pause button sits in the corner (hidden while touch
-## controls are in use — their own PauseButton takes that spot), and the goal
-## chip is centred between the swap timer and whichever pause button is active.
+## Top-right row: the pause button sits in the corner, and the goal chip is
+## centred between the swap timer and it.
 func _update_top_right() -> void:
-	var touch_on: bool = _touch_controls != null and _touch_controls.uses_touch_controls()
-	_pause_button.visible = not touch_on
-
 	var text := _goal_text()
 	_goal_chip.visible = not text.is_empty()
 	if text != _goal_label.text:
 		_goal_label.text = text
 	if not _goal_chip.visible:
 		return
-	var canvas := get_viewport().get_visible_rect().size
-	var insets: Vector4 = SafeAreaUtil.get_canvas_insets(get_viewport())
-	var pause := Rect2(canvas.x - insets.z - CORNER_MARGIN - PAUSE_SIZE, insets.y + CORNER_MARGIN,
-			PAUSE_SIZE, PAUSE_SIZE)
-	if touch_on:
-		# Follow the touch PauseButton while it is still in the top-right band
-		# (a custom layout can move it anywhere).
-		var touch_pause: Rect2 = _touch_controls.get_control_rect("PauseButton")
-		if touch_pause.position.y < 160.0 and touch_pause.get_center().x > canvas.x * 0.5:
-			pause = touch_pause
+	var pause := _pause_button.get_global_rect()
 	var timer_right := _team_timer.get_global_rect().end.x
 	var chip_size := _goal_chip.get_combined_minimum_size()
 	var left := maxf((timer_right + pause.position.x - chip_size.x) * 0.5, timer_right + CHIP_GAP)
@@ -243,6 +228,18 @@ func _update_top_right() -> void:
 	_goal_chip.offset_right = left
 	_goal_chip.offset_top = pause.get_center().y - chip_size.y * 0.5 - _top_bar.offset_top
 	_goal_chip.offset_bottom = _goal_chip.offset_top
+
+## Touch: mouse-from-touch emulation is OFF during play (Attack is the left
+## mouse button), so a Control button never feels a finger mid-match. Catch
+## the raw touch on the pause button here — the TouchScreenButton way. Mouse
+## clicks still arrive through the Button's own pressed signal.
+func _input(event: InputEvent) -> void:
+	var touch := event as InputEventScreenTouch
+	if touch == null or not touch.pressed or not _pause_button.is_visible_in_tree():
+		return
+	if _pause_button.get_global_rect().has_point(touch.position):
+		get_viewport().set_input_as_handled()
+		_on_pause_pressed()
 
 func _on_pause_pressed() -> void:
 	var scene := get_tree().current_scene

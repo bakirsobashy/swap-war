@@ -6,11 +6,13 @@ extends SceneTree
 ##   - every control/touch button rect lies inside the visible canvas rect
 ##   - no two buttons overlap
 ##   - the scoreboard (simulated 4-player labels) fits the viewport width
-##   - the HUD pause button holds the top-right corner while touch controls are
-##     off (the touch PauseButton takes it when they are on)
+##   - the HUD pause button (the only on-screen pause) is visible in the
+##     top-right corner and clear of every touch control
 ##   - the goal chip is on-canvas, clear of the swap timer, the scoreboard card
-##     and the active pause button, and centred between the timer and it;
+##     and the pause button, and centred between the timer and it;
 ##     every resolution runs with touch controls ALWAYS and HIDDEN
+##   - a raw finger tap on the HUD pause button opens the pause menu (touch->
+##     mouse emulation is off mid-match, so the Button itself never sees it)
 
 const RESOLUTIONS: Array[Vector2i] = [
 	Vector2i(400, 800),
@@ -51,7 +53,36 @@ func _run() -> void:
 			await process_frame
 			await process_frame
 			_check_resolution(res)
+	await _pause_tap_check()
 	quit(1 if _fails > 0 else 0)
+
+## A raw finger tap on the HUD pause button opens the pause menu.
+func _pause_tap_check() -> void:
+	var arena := Node.new()
+	arena.name = "Arena"
+	root.add_child(arena)
+	var pause = load("res://Scenes/UI/PauseMenu.tscn").instantiate()
+	arena.add_child(pause)
+	var hud = load("res://Scenes/HUD.tscn").instantiate()
+	arena.add_child(hud)
+	current_scene = arena
+	await process_frame
+	await process_frame
+	var tap := InputEventScreenTouch.new()
+	tap.index = 0
+	tap.pressed = true
+	tap.position = Vector2(300, 300)
+	hud._input(tap)
+	var miss_ok: bool = not pause.visible
+	tap.position = hud.get_node("%PauseButton").get_global_rect().get_center()
+	hud._input(tap)
+	var hit_ok: bool = pause.visible and paused
+	print("pause tap: miss ignored=%s, tap opens pause=%s %s" % [miss_ok, hit_ok, "PASS" if miss_ok and hit_ok else "FAIL"])
+	if not (miss_ok and hit_ok):
+		_fails += 1
+	pause._on_resume_pressed()
+	arena.queue_free()
+	await process_frame
 
 func _check_resolution(res: Vector2i) -> void:
 	print("=== %dx%d (touch %s) ===" % [res.x, res.y, "on" if _hud.get_node("TouchControls").uses_touch_controls() else "off"])
@@ -66,12 +97,15 @@ func _check_resolution(res: Vector2i) -> void:
 	# get_touch_rect() covers the full grab radius (well + activation slop),
 	# so the overlap check tests the real touch zones. Sticks are fetched
 	# untyped (probe discipline: no game-class annotations).
-	for name in ["PauseButton", "DropButton", "JumpButton", "AttackButton"]:
+	for name in ["DropButton", "JumpButton", "AttackButton"]:
 		var b: TouchScreenButton = tc.get_node("%" + name)
 		rects[name] = Rect2(b.position, b.texture_normal.get_size() * b.scale.abs())
 	for name in ["MoveStick", "AimStick"]:
 		var s = tc.get_node("%" + name)
 		rects[name] = s.get_touch_rect()
+	# The HUD's pause button shares the screen with the touch controls.
+	var hud_pause = _hud.get_node("%PauseButton")
+	rects["HudPause"] = hud_pause.get_global_rect()
 
 	for name in rects:
 		var r: Rect2 = rects[name]
@@ -97,7 +131,7 @@ func _check_resolution(res: Vector2i) -> void:
 	# The swap timer (top-left) and pause button (top-right) must not sit on
 	# top of the centered score labels.
 	var timer_rect: Rect2 = _hud.get_node("%TeamTimer").get_global_rect()
-	var pause_rect: Rect2 = rects["PauseButton"]
+	var pause_rect: Rect2 = rects["HudPause"]
 	for child in score_board.get_children():
 		var label_rect: Rect2 = child.get_global_rect()
 		if timer_rect.intersects(label_rect, true):
@@ -115,13 +149,10 @@ func _check_resolution(res: Vector2i) -> void:
 	print("GoalChip rect=%s inside=%s" % [chip_rect, "PASS" if chip_ok else "FAIL"])
 	if not chip_ok:
 		_fails += 1
-	# The HUD's own pause button holds the top-right corner while touch
-	# controls are off (their PauseButton takes the spot when they are on).
-	var hud_pause = _hud.get_node("%PauseButton")
-	var touch_on: bool = tc.uses_touch_controls()
-	var active_pause: Rect2 = pause_rect if touch_on else hud_pause.get_global_rect()
-	var pause_ok: bool = hud_pause.visible != touch_on and canvas.encloses(active_pause)
-	print("active pause rect=%s hud button visible=%s ok=%s" % [active_pause, hud_pause.visible, "PASS" if pause_ok else "FAIL"])
+	# The HUD pause button shows in every touch mode, in the top-right corner.
+	var active_pause: Rect2 = pause_rect
+	var pause_ok: bool = hud_pause.visible and active_pause.get_center().x > canvas_size.x * 0.8 			and active_pause.position.y < 120.0
+	print("pause rect=%s visible=%s ok=%s" % [active_pause, hud_pause.visible, "PASS" if pause_ok else "FAIL"])
 	if not pause_ok:
 		_fails += 1
 	var chip_blockers := {"TeamTimer": timer_rect, "ScoreCard": card_rect, "Pause": active_pause}

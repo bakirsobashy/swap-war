@@ -6,7 +6,7 @@ extends SceneTree
 ##       in-memory -> clear -> section gone.
 ##   (b) Editor behavior — enter/exit lifecycle (emulation flags, layer
 ##       visibility, sticks suppressed, actions blanked), selection of all
-##       six controls + selection box / +- pair tracking, overlay exclusion,
+##       five controls + selection box / +- pair tracking, overlay exclusion,
 ##       drag with on-canvas clamping + commit, +- stepping with limits,
 ##       RESET, exit restores the emulation flags.
 ##   (c) Game-side apply — HUD with a custom dict: per-control denormalized
@@ -151,7 +151,7 @@ func _probe() -> void:
 			and str(tc.get_node("%AttackButton").action) == "",
 			"b: gameplay actions blanked")
 
-	# --- select each of the six ---
+	# --- select each control ---
 	var all_selected := true
 	for name in names:
 		editor._input(_touch_event(0, true, tc.get_control_rect(name).get_center()))
@@ -260,9 +260,9 @@ func _probe() -> void:
 	await process_frame
 
 	print("\n=== (c) game-side apply ===")
-	# PauseButton at (0.7, 0.1) denormalizes cleanly — values near the right
+	# DropButton at (0.7, 0.1) denormalizes cleanly — values near the right
 	# edge would engage the on-canvas clamp (covered by the (b) far-drag test).
-	settings.touch_layout = {"MoveStick": Vector3(0.2, 0.8, 1.5), "PauseButton": Vector3(0.7, 0.1, 0.6)}
+	settings.touch_layout = {"MoveStick": Vector3(0.2, 0.8, 1.5), "DropButton": Vector3(0.7, 0.1, 0.6)}
 	var hud: Node = (load("res://Scenes/HUD.tscn") as PackedScene).instantiate()
 	root.add_child(hud)
 	await process_frame
@@ -274,12 +274,12 @@ func _probe() -> void:
 			"c: MoveStick denormalized (position x %.0f, y %.0f)" % [ms_pos.x, ms_pos.y])
 	_check(absf(float(gtc.get_control_node("MoveStick").scale.x) - gtc.get_layout_scale() * 1.5) < 0.011,
 			"c: MoveStick scale = btn_scale * 1.5")
-	var pb_pos: Vector2 = gtc.get_control_node("PauseButton").position
-	_check(absf(pb_pos.x - 0.7 * gcanvas.x) < 0.51 and absf(pb_pos.y - 0.1 * gcanvas.y) < 0.51,
-			"c: PauseButton denormalized (position x %.0f, y %.0f)" % [pb_pos.x, pb_pos.y])
-	_check(absf(float(gtc.get_control_node("PauseButton").scale.x)
-			- gtc.get_layout_scale() * 0.6 * gtc.get_art_scale("PauseButton")) < 0.011,
-			"c: PauseButton scale = btn_scale * 0.6 * art scale")
+	var db_pos: Vector2 = gtc.get_control_node("DropButton").position
+	_check(absf(db_pos.x - 0.7 * gcanvas.x) < 0.51 and absf(db_pos.y - 0.1 * gcanvas.y) < 0.51,
+			"c: DropButton denormalized (position x %.0f, y %.0f)" % [db_pos.x, db_pos.y])
+	_check(absf(float(gtc.get_control_node("DropButton").scale.x)
+			- gtc.get_layout_scale() * 0.6 * gtc.get_art_scale("DropButton")) < 0.011,
+			"c: DropButton scale = btn_scale * 0.6 * art scale")
 
 	# Resize: positions re-denormalize to the new canvas.
 	root.size = Vector2i(1080, 1920)
