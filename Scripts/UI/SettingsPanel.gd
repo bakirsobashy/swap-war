@@ -73,6 +73,13 @@ func toggle_music() -> void:
 func _on_back_pressed() -> void:
 	back_requested.emit()
 
+## DEFAULTS: audio, touch mode and auto attack back to factory values.
+func _on_defaults_pressed() -> void:
+	if SettingsManager:
+		SettingsManager.reset_settings_to_defaults()
+	refresh()
+	audio_changed.emit()
+
 func _on_customize_touch_pressed() -> void:
 	customize_touch_requested.emit()
 

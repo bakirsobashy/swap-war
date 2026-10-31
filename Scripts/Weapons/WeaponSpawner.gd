@@ -17,17 +17,6 @@ const MAX_ACTIVE_WEAPONS: int = 10
 @export var melee_weight: float = 3.0
 @export var gun_weight: float = 1.0
 
-const MELEE_SCENES: Array[PackedScene] = [
-	preload("res://Scenes/Weapons/Sword.tscn"),
-	preload("res://Scenes/Weapons/Spear.tscn"),
-	preload("res://Scenes/Weapons/Fork.tscn"),
-]
-
-const GUN_SCENES: Array[PackedScene] = [
-	preload("res://Scenes/Weapons/Pistol.tscn"),
-	preload("res://Scenes/Weapons/Rifle.tscn"),
-]
-
 static var _active_weapon_count: int = 0
 static var _pending_spawns: int = 0
 
@@ -115,8 +104,8 @@ func _spawn_wave() -> void:
 
 func _pick_weapon_scene() -> PackedScene:
 	var allow_guns := _count_active_guns() < max_active_guns
-	var gun_scenes := GUN_SCENES.duplicate()
-	var melee_scenes := MELEE_SCENES.duplicate()
+	var gun_scenes := _enabled_scenes("ranged")
+	var melee_scenes := _enabled_scenes("melee")
 
 	if allow_guns and not gun_scenes.is_empty() and not melee_scenes.is_empty():
 		var total := melee_weight + gun_weight
@@ -130,6 +119,22 @@ func _pick_weapon_scene() -> PackedScene:
 	elif allow_guns and not gun_scenes.is_empty():
 		return gun_scenes.pick_random()
 	return null
+
+
+## Registry weapons of one category ("melee" / "ranged") that are switched on
+## in CHOOSE WEAPONS (SettingsManager.disabled_weapons).
+func _enabled_scenes(category: String) -> Array[PackedScene]:
+	var scenes: Array[PackedScene] = []
+	for weapon_name in WeaponDatabase.get_names():
+		var data := WeaponDatabase.get_data(weapon_name)
+		if data == null or data.category != category:
+			continue
+		if SettingsManager and not SettingsManager.is_weapon_enabled(weapon_name):
+			continue
+		var scene := WeaponDatabase.get_scene(weapon_name)
+		if scene:
+			scenes.append(scene)
+	return scenes
 
 
 func _count_active_guns() -> int:

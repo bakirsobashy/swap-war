@@ -1,0 +1,85 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scripts/UI/WeaponsPanel.gd" id="1_panel"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/arrow_left.png" id="2_back"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/check.png" id="3_check"]
+
+[node name="WeaponsPanel" type="PanelContainer"]
+custom_minimum_size = Vector2(1020, 0)
+script = ExtResource("1_panel")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Header" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+
+[node name="WeaponsBackBtn" type="Button" parent="VBox/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 0
+tooltip_text = "Back"
+theme_type_variation = &"IconButton"
+icon = ExtResource("2_back")
+icon_alignment = 1
+
+[node name="Title" type="Label" parent="VBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 6
+theme_type_variation = &"HeaderLabel"
+text = "WEAPONS"
+horizontal_alignment = 1
+
+[node name="HeaderSpacer" type="Control" parent="VBox/Header"]
+custom_minimum_size = Vector2(56, 0)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Toolbar" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="CountLabel" type="Label" parent="VBox/Toolbar"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"HintLabel"
+theme_override_font_sizes/font_size = 24
+text = "5 of 5 weapons in game"
+vertical_alignment = 1
+
+[node name="IncludeAllBtn" type="Button" parent="VBox/Toolbar"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"PillButton"
+text = "INCLUDE ALL"
+icon = ExtResource("3_check")
+
+[node name="Scroll" type="ScrollContainer" parent="VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 420)
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Margin" type="MarginContainer" parent="VBox/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 6
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 20
+
+[node name="CardGrid" type="GridContainer" parent="VBox/Scroll/Margin"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 26
+theme_override_constants/v_separation = 28
+columns = 3
+
+[connection signal="pressed" from="VBox/Header/WeaponsBackBtn" to="." method="_on_back_pressed"]
+[connection signal="pressed" from="VBox/Header/WeaponsBackBtn" to="." method="_play_click"]
+[connection signal="pressed" from="VBox/Toolbar/IncludeAllBtn" to="." method="_on_include_all_pressed"]
+[connection signal="pressed" from="VBox/Toolbar/IncludeAllBtn" to="." method="_play_click"]

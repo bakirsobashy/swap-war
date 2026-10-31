@@ -1,23 +1,25 @@
 [gd_scene format=3 uid="uid://b4m3x7q1main0"]
 
 [ext_resource type="Script" uid="uid://euc6e166pilj" path="res://Scripts/UI/MainMenu.gd" id="1_main0"]
-[ext_resource type="Theme" path="res://Assets/ui/Themes/menu_theme.tres" id="2_theme"]
+[ext_resource type="Theme" uid="uid://biu6bq2tywh2t" path="res://Assets/ui/Themes/menu_theme.tres" id="2_theme"]
 [ext_resource type="PackedScene" path="res://Scenes/UI/TouchLayoutEditor.tscn" id="4_editor"]
 [ext_resource type="PackedScene" path="res://Scenes/UI/Stepper.tscn" id="5_stepper"]
-[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/decor/paper_lined.png" id="6_paper"]
-[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/decor/cloud.png" id="7_cloud"]
-[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/decor/sparkle_star.png" id="8_sparkle_star"]
-[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/decor/sparkle_cross.png" id="9_sparkle_cross"]
-[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/decor/arrow_doodle.png" id="10_arrow"]
-[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/play.png" id="11_play"]
-[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/levels.png" id="12_levels"]
-[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/settings.png" id="13_settings"]
-[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/quit.png" id="14_quit"]
-[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/sound_on.png" id="15_sound_on"]
-[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/music_on.png" id="16_music_on"]
-[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/arrow_left.png" id="17_back"]
-[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/hud/star_small_full.png" id="18_star_small"]
+[ext_resource type="Texture2D" uid="uid://dbf08kg72vtii" path="res://Assets/ui/ui-2.0/scribble_ui/x1/decor/paper_lined.png" id="6_paper"]
+[ext_resource type="Texture2D" uid="uid://n52wliika3il" path="res://Assets/ui/ui-2.0/scribble_ui/x1/decor/cloud.png" id="7_cloud"]
+[ext_resource type="Texture2D" uid="uid://dgjc3rjbbsb76" path="res://Assets/ui/ui-2.0/scribble_ui/x1/decor/sparkle_star.png" id="8_sparkle_star"]
+[ext_resource type="Texture2D" uid="uid://bqfsp8wrcwe4a" path="res://Assets/ui/ui-2.0/scribble_ui/x1/decor/sparkle_cross.png" id="9_sparkle_cross"]
+[ext_resource type="Texture2D" uid="uid://dyy8tq41fq24n" path="res://Assets/ui/ui-2.0/scribble_ui/x1/decor/arrow_doodle.png" id="10_arrow"]
+[ext_resource type="Texture2D" uid="uid://ca5gvbya26k2i" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/play.png" id="11_play"]
+[ext_resource type="Texture2D" uid="uid://bdcbdwpt27le" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/levels.png" id="12_levels"]
+[ext_resource type="Texture2D" uid="uid://dn2j7fbosxnyf" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/settings.png" id="13_settings"]
+[ext_resource type="Texture2D" uid="uid://b3yg61ioq58sh" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/quit.png" id="14_quit"]
+[ext_resource type="Texture2D" uid="uid://w5tm5r5nqpmq" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/sound_on.png" id="15_sound_on"]
+[ext_resource type="Texture2D" uid="uid://udige0u26j8q" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/music_on.png" id="16_music_on"]
+[ext_resource type="Texture2D" uid="uid://dcntybiixm5m8" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/arrow_left.png" id="17_back"]
+[ext_resource type="Texture2D" uid="uid://e7yc8knydqc3" path="res://Assets/ui/ui-2.0/scribble_ui/x1/hud/star_small_full.png" id="18_star_small"]
 [ext_resource type="PackedScene" path="res://Scenes/UI/SettingsPanel.tscn" id="19_settings_panel"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/restart.png" id="20_reset"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/WeaponsPanel.tscn" id="21_weapons_panel"]
 
 [node name="MainMenu" type="CanvasLayer" unique_id=553296457]
 script = ExtResource("1_main0")
@@ -254,7 +256,6 @@ mouse_filter = 2
 
 [node name="OptionsPanel" type="PanelContainer" parent="Root/Center" unique_id=79168547]
 unique_name_in_owner = true
-visible = false
 custom_minimum_size = Vector2(640, 0)
 layout_mode = 2
 
@@ -281,10 +282,14 @@ theme_type_variation = &"HeaderLabel"
 text = "MATCH OPTIONS"
 horizontal_alignment = 1
 
-[node name="HeaderSpacer" type="Control" parent="Root/Center/OptionsPanel/VBox/Header" unique_id=930100031]
-custom_minimum_size = Vector2(56, 0)
+[node name="OptionsDefaultsBtn" type="Button" parent="Root/Center/OptionsPanel/VBox/Header" unique_id=930100031]
+unique_name_in_owner = true
 layout_mode = 2
-mouse_filter = 2
+size_flags_vertical = 0
+tooltip_text = "Reset match options to defaults"
+theme_type_variation = &"IconButton"
+icon = ExtResource("20_reset")
+icon_alignment = 1
 
 [node name="Rows" type="GridContainer" parent="Root/Center/OptionsPanel/VBox" unique_id=930100032]
 layout_mode = 2
@@ -314,6 +319,28 @@ vertical_alignment = 1
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+items = PackedStringArray()
+
+[node name="WeaponsLabel" type="Label" parent="Root/Center/OptionsPanel/VBox/Rows" unique_id=930100094]
+layout_mode = 2
+theme_type_variation = &"RowLabel"
+text = "Weapons"
+vertical_alignment = 1
+
+[node name="WeaponsRow" type="HBoxContainer" parent="Root/Center/OptionsPanel/VBox/Rows" unique_id=930100095]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="WeaponsBtn" type="Button" parent="Root/Center/OptionsPanel/VBox/Rows/WeaponsRow" unique_id=930100096]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 44)
+layout_mode = 2
+size_flags_vertical = 4
+tooltip_text = "Choose which weapons drop in matches"
+theme_type_variation = &"PillButton"
+text = "5 / 5  ›"
 
 [node name="ModeLabel" type="Label" parent="Root/Center/OptionsPanel/VBox/Rows" unique_id=610058224]
 layout_mode = 2
@@ -411,6 +438,11 @@ icon = ExtResource("11_play")
 custom_minimum_size = Vector2(0, 8)
 layout_mode = 2
 mouse_filter = 2
+
+[node name="WeaponsPanel" parent="Root/Center" unique_id=930100097 instance=ExtResource("21_weapons_panel")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
 
 [node name="HelpPanel" type="PanelContainer" parent="Root/Center" unique_id=1390669815]
 unique_name_in_owner = true
@@ -727,7 +759,6 @@ layout_mode = 2
 
 [node name="TouchLayoutEditor" parent="." unique_id=910000002 instance=ExtResource("4_editor")]
 unique_name_in_owner = true
-layout_mode = 3
 
 [connection signal="pressed" from="Root/MainPanel/Buttons/PlayBtn" to="." method="_on_play_pressed"]
 [connection signal="pressed" from="Root/MainPanel/Buttons/PlayBtn" to="." method="_play_click"]
@@ -752,7 +783,13 @@ layout_mode = 3
 [connection signal="pressed" from="Root/Center/OptionsPanel/VBox/StartMatchBtn" to="." method="_play_click"]
 [connection signal="pressed" from="Root/Center/HelpPanel/VBox/Header/HelpBackBtn" to="." method="_on_back_pressed"]
 [connection signal="pressed" from="Root/Center/HelpPanel/VBox/Header/HelpBackBtn" to="." method="_play_click"]
-[connection signal="close_requested" from="TouchLayoutEditor" to="." method="_on_touch_editor_closed"]
+[connection signal="audio_changed" from="Root/Center/SettingsPanel" to="." method="_refresh_corner_icons"]
 [connection signal="back_requested" from="Root/Center/SettingsPanel" to="." method="_on_back_pressed"]
 [connection signal="customize_touch_requested" from="Root/Center/SettingsPanel" to="." method="_on_customize_touch_pressed"]
-[connection signal="audio_changed" from="Root/Center/SettingsPanel" to="." method="_refresh_corner_icons"]
+[connection signal="close_requested" from="TouchLayoutEditor" to="." method="_on_touch_editor_closed"]
+[connection signal="pressed" from="Root/Center/OptionsPanel/VBox/Header/OptionsDefaultsBtn" to="." method="_on_options_defaults_pressed"]
+[connection signal="pressed" from="Root/Center/OptionsPanel/VBox/Header/OptionsDefaultsBtn" to="." method="_play_click"]
+[connection signal="pressed" from="Root/Center/OptionsPanel/VBox/Rows/WeaponsRow/WeaponsBtn" to="." method="_on_weapons_pressed"]
+[connection signal="pressed" from="Root/Center/OptionsPanel/VBox/Rows/WeaponsRow/WeaponsBtn" to="." method="_play_click"]
+[connection signal="back_requested" from="Root/Center/WeaponsPanel" to="." method="_on_weapons_back"]
+[connection signal="selection_changed" from="Root/Center/WeaponsPanel" to="." method="_on_weapons_changed"]

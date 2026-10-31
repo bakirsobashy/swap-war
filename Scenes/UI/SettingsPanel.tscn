@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/sound_on.png" id="15_sound_on"]
 [ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/music_on.png" id="16_music_on"]
 [ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/arrow_left.png" id="17_back"]
+[ext_resource type="Texture2D" path="res://Assets/ui/ui-2.0/scribble_ui/x1/icons/restart.png" id="18_reset"]
 
 [node name="SettingsPanel" type="PanelContainer" unique_id=1285881015]
 custom_minimum_size = Vector2(640, 0)
@@ -34,10 +35,14 @@ theme_type_variation = &"HeaderLabel"
 text = "SETTINGS"
 horizontal_alignment = 1
 
-[node name="HeaderSpacer" type="Control" parent="VBox/Header" unique_id=930100091]
-custom_minimum_size = Vector2(56, 0)
+[node name="SettingsDefaultsBtn" type="Button" parent="VBox/Header" unique_id=930100091]
+unique_name_in_owner = true
 layout_mode = 2
-mouse_filter = 2
+size_flags_vertical = 0
+tooltip_text = "Reset settings to defaults"
+theme_type_variation = &"IconButton"
+icon = ExtResource("18_reset")
+icon_alignment = 1
 
 [node name="Rows" type="GridContainer" parent="VBox" unique_id=930100092]
 layout_mode = 2
@@ -172,3 +177,5 @@ mouse_filter = 2
 [connection signal="toggled" from="VBox/Rows/AutoAttackRow/AutoAttackCheck" to="." method="_play_click" unbinds=1]
 [connection signal="pressed" from="VBox/CustomizeTouchBtn" to="." method="_on_customize_touch_pressed"]
 [connection signal="pressed" from="VBox/CustomizeTouchBtn" to="." method="_play_click"]
+[connection signal="pressed" from="VBox/Header/SettingsDefaultsBtn" to="." method="_on_defaults_pressed"]
+[connection signal="pressed" from="VBox/Header/SettingsDefaultsBtn" to="." method="_play_click"]

@@ -34,6 +34,7 @@ func _init() -> void:
 
 func _run() -> void:
 	await _main_menu_checks()
+	await _weapons_checks()
 	await _pause_checks()
 	await _post_round_checks()
 
@@ -128,6 +129,44 @@ func _main_menu_checks() -> void:
 	_check(menu.main_panel.visible and not menu.settings_panel.visible,
 			"Back from Settings returns to the main screen")
 
+	menu.queue_free()
+	await process_frame
+
+## CHOOSE WEAPONS row + panel and the two DEFAULTS buttons (Match Options
+## state only — START is never pressed, so nothing is persisted).
+func _weapons_checks() -> void:
+	var settings = root.get_node_or_null("/root/SettingsManager")
+	var menu = (load("res://Scenes/UI/MainMenu.tscn") as PackedScene).instantiate()
+	root.add_child(menu)
+	await process_frame
+	await process_frame
+	menu._on_play_pressed()
+	menu._disabled_weapons = PackedStringArray()
+	menu._update_options_ui()
+	var total: int = menu.weapons_panel.get_total_count()
+	_check(menu.weapons_btn.text == "%d / %d  ›" % [total, total], "Weapons row shows all %d on" % total)
+
+	menu.get_node("%WeaponsBtn").pressed.emit()
+	_check(menu.weapons_panel.visible and not menu.options_panel.visible, "Weapons row opens CHOOSE WEAPONS")
+	menu.weapons_panel.get_card("Sword").get_switch().button_pressed = false
+	menu.go_back()
+	_check(menu.options_panel.visible and not menu.weapons_panel.visible
+			and menu.weapons_btn.text == "%d / %d  ›" % [total - 1, total]
+			and menu._disabled_weapons.has("Sword"),
+			"Back returns to Match Options and the row counts the switched-off weapon")
+
+	menu._ai_count = 1
+	menu._score_target = 25
+	menu._win_mode = 1
+	menu.get_node("%OptionsDefaultsBtn").pressed.emit()
+	var d = settings.MATCH_DEFAULTS if settings else {}
+	_check(menu._ai_count == d.get("ai_count") and menu._score_target == d.get("score_target")
+			and menu._win_mode == d.get("win_mode") and menu._disabled_weapons.is_empty()
+			and menu.weapons_btn.text == "%d / %d  ›" % [total, total],
+			"Match Options DEFAULTS restores factory values and all weapons")
+	_check(menu.settings_panel.get_node("%SettingsDefaultsBtn") != null
+			and menu.get_node("%OptionsDefaultsBtn").tooltip_text != "",
+			"both panels carry a DEFAULTS reset icon")
 	menu.queue_free()
 	await process_frame
 

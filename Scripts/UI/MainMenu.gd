@@ -9,6 +9,8 @@ const AI_COUNT_MIN := 1
 @onready var options_panel: PanelContainer = %OptionsPanel
 @onready var help_panel: PanelContainer = %HelpPanel
 @onready var settings_panel: SettingsPanel = %SettingsPanel
+@onready var weapons_panel: WeaponsPanel = %WeaponsPanel
+@onready var weapons_btn: Button = %WeaponsBtn
 @onready var touch_layout_editor: Control = %TouchLayoutEditor
 
 @onready var ai_stepper: Stepper = %AIStepper
@@ -33,6 +35,7 @@ const AI_COUNT_MIN := 1
 	options_panel: %StartMatchBtn,
 	help_panel: %HelpBackBtn,
 	settings_panel: settings_panel.get_default_focus(),
+	weapons_panel: weapons_panel.get_default_focus(),
 }
 
 var _ai_count := 3
@@ -40,6 +43,8 @@ var _win_mode := SettingsManager.WinMode.SCORE_TARGET
 var _score_target := 10
 var _match_duration := 120.0
 var _arena_index := 0
+## Weapons switched off in CHOOSE WEAPONS; saved with START MATCH.
+var _disabled_weapons := PackedStringArray()
 
 func _ready() -> void:
 	if SettingsManager:
@@ -48,6 +53,7 @@ func _ready() -> void:
 		_score_target = SettingsManager.score_target
 		_match_duration = SettingsManager.match_duration_seconds
 		_arena_index = _path_to_index(SettingsManager.selected_arena_path)
+		_disabled_weapons = SettingsManager.disabled_weapons.duplicate()
 
 	_populate_arena_options()
 	_update_options_ui()
@@ -77,6 +83,8 @@ func _notification(what: int) -> void:
 func go_back() -> void:
 	if touch_layout_editor.visible:
 		_on_touch_editor_closed()
+	elif weapons_panel.visible:
+		_on_weapons_back()
 	elif not main_panel.visible:
 		_on_back_pressed()
 	else:
@@ -87,6 +95,7 @@ func _show_panel(panel: Control) -> void:
 	options_panel.visible = false
 	help_panel.visible = false
 	settings_panel.visible = false
+	weapons_panel.visible = false
 	touch_layout_editor.visible = false
 	panel.visible = true
 	# Drop focus left on a now-hidden button; the next nav press re-seeds it.
@@ -122,8 +131,33 @@ func _on_back_pressed() -> void:
 func _on_start_match_pressed() -> void:
 	if SettingsManager:
 		SettingsManager.set_match_options(_ai_count, _win_mode, _score_target, _match_duration)
+		SettingsManager.set_disabled_weapons(_disabled_weapons)
 		SettingsManager.set_arena_path(ArenaDatabase.get_arena_path_by_index(_arena_index))
 	get_tree().change_scene_to_file(SettingsManager.selected_arena_path)
+
+func _on_weapons_pressed() -> void:
+	weapons_panel.set_disabled(_disabled_weapons)
+	_show_panel(weapons_panel)
+
+## Weapons panel BACK (arrow / Android Back) returns to Match Options.
+func _on_weapons_back() -> void:
+	_show_panel(options_panel)
+	_update_options_ui()
+
+func _on_weapons_changed() -> void:
+	_disabled_weapons = weapons_panel.get_disabled()
+	_update_options_ui()
+
+## Match Options DEFAULTS: factory match values (saved with START MATCH).
+func _on_options_defaults_pressed() -> void:
+	if SettingsManager:
+		_ai_count = SettingsManager.MATCH_DEFAULTS["ai_count"]
+		_win_mode = SettingsManager.MATCH_DEFAULTS["win_mode"]
+		_score_target = SettingsManager.MATCH_DEFAULTS["score_target"]
+		_match_duration = SettingsManager.MATCH_DEFAULTS["match_duration_seconds"]
+	_arena_index = ArenaDatabase.get_default_index()
+	_disabled_weapons = PackedStringArray()
+	_update_options_ui()
 
 func _on_ai_stepper_changed(index: int) -> void:
 	_ai_count = index + AI_COUNT_MIN
@@ -166,6 +200,10 @@ func _update_options_ui() -> void:
 	var by_score := _win_mode == SettingsManager.WinMode.SCORE_TARGET
 	_set_row_active(score_label, score_row, score_slider, by_score)
 	_set_row_active(duration_label, duration_row, duration_slider, not by_score)
+	# The panel filters unknown names and never allows "all off".
+	weapons_panel.set_disabled(_disabled_weapons)
+	_disabled_weapons = weapons_panel.get_disabled()
+	weapons_btn.text = "%d / %d  ›" % [weapons_panel.get_enabled_count(), weapons_panel.get_total_count()]
 
 func _set_row_active(label: Control, row: Control, slider: Slider, active: bool) -> void:
 	var tint := Color.WHITE if active else INACTIVE_TINT
